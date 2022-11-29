@@ -15,7 +15,7 @@ from pdfminer.converter import PDFPageAggregator
 from pdfminer.layout import LAParams, LTChar, LTFigure, LTTextBox, LTTextLine
 import re
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
-
+from langdetect import detect
 
 import logging
 logger = logging.getLogger()
@@ -175,7 +175,7 @@ def extract_figure_text(lt_obj, largest_text):
                 line += child_text
     return (largest_text, text)
 
-def pdf_text(filename):
+def extract_title_and_text_from_all_pages(filename):
     fp = open(filename, 'rb')
     parser = PDFParser(fp)
     doc = PDFDocument(parser, '')
@@ -184,14 +184,15 @@ def pdf_text(filename):
     laparams = LAParams()
     device = PDFPageAggregator(rsrcmgr, laparams=laparams)
     interpreter = PDFPageInterpreter(rsrcmgr, device)
-
-    text = ''
+    text = ""
     largest_text = {
-        'contents': '',
-        'y0': 0,
-        'size': 0
+    'contents': '',
+    'y0': 0,
+    'size': 0
     }
-    for page in PDFPage.create_pages(doc):
+    largest_text_per_page = []
+    for page in PDFPage.get_pages(fp):
+        # for page in PDFPage.create_pages(doc):
         interpreter.process_page(page)
         layout = device.get_result()
         for lt_obj in layout:
@@ -204,18 +205,21 @@ def pdf_text(filename):
                 stripped_to_chars = re.sub(r'[ \t\n]', '', lt_obj.get_text().strip())
                 if (len(stripped_to_chars) > MAX_CHARS * 2):
                     continue
-
                 largest_text = extract_largest_text(lt_obj, largest_text)
                 text += lt_obj.get_text() + '\n'
+            largest_text_per_page.append(largest_text)
 
-        # Remove unprocessed CID text
-        largest_text['contents'] = re.sub(r'(\(cid:[0-9 \t-]*\))*', '', largest_text['contents'])
+    cleaned_text = clean_text(text)
 
-        # Clean title
-        largest_text['contents'] = clean_title(largest_text['contents'])
+    title = largest_text_per_page[0]
 
-        # Only parse the first page
-        return largest_text['contents'] 
+    # Remove unprocessed CID text
+    title['contents'] = re.sub(r'(\(cid:[0-9 \t-]*\))*', '', title['contents'])
+
+    # Clean title
+    title['contents'] = clean_text(title['contents'])
+
+    return title["contents"], cleaned_text
 
 
 def select_page_with_text(pdf):
@@ -241,20 +245,20 @@ def select_page_with_text(pdf):
         logger.info("PDF is not machine readable")
 
 
-def clean_title(title):
+def clean_text(text):
     """
     Clean the title by removing 
     illegal characters and adding / removing spaces
     """
     # Remove illegal characters
-    title = re.sub(ILLEGAL_CHARACTERS_RE, " ", title)
+    text = re.sub(ILLEGAL_CHARACTERS_RE, " ", text)
     # Space out merged words by adding a space before a capital letter if it appears after a lowercase letter
-    title = re.sub(r'([a-z](?=[A-Z])|[A-Z](?=[A-Z][a-z]))', r'\1 ', title)
+    text = re.sub(r'([a-z](?=[A-Z])|[A-Z](?=[A-Z][a-z]))', r'\1 ', text)
     # Take empty space off beginning and end of string
-    title = title.strip()
+    text = text.strip()
     # Take out excess spaces
-    title = re.sub('\s+'," ",title)
-    return title
+    text = re.sub('\s+'," ",text)
+    return text
 
 
 def get_bold_text_from_pdf(pdf, page_number):
@@ -265,11 +269,11 @@ def get_bold_text_from_pdf(pdf, page_number):
     """
     with pdfplumber.open(pdf) as opened_pdf: 
         text = opened_pdf.pages[page_number]
-        clean_text = text.filter(lambda obj: obj["object_type"] == "char" and "Bold" in obj["fontname"])
-        title = clean_text.extract_text()
+        bold_text = text.filter(lambda obj: obj["object_type"] == "char" and "Bold" in obj["fontname"])
+        title = bold_text.extract_text()
         # If length of title is nothing, try take extracted words from the page read as the title
         if len(title) == 0:
-            text_from_page = " ".join(clean_text.extract_text().split(" ")[0 : 25]) + "..."
+            text_from_page = " ".join(bold_text.extract_text().split(" ")[0 : 25]) + "..."
             # If unable to extract text with pdfplumber, try with PyPDF2
             if text_from_page == "...":
                 with open(pdf, "rb") as opened_pdf:
@@ -279,12 +283,12 @@ def get_bold_text_from_pdf(pdf, page_number):
                     # Find dates from pages
                     text_from_page = page_to_be_read.extract_text()
                     # Clean title
-                    text_from_page = clean_title(text_from_page)
+                    text_from_page = clean_text(text_from_page)
                     return text_from_page
             else:
-                return clean_title(text_from_page)
+                return clean_text(text_from_page)
         else:
-            return clean_title(title)
+            return clean_text(title)
 
 
 def get_title_from_metadata(pdf):
@@ -297,7 +301,7 @@ def get_title_from_metadata(pdf):
         return title
 
 
-def get_titles(pdf):
+def get_title_and_text(pdf):
     """
     This function brings together all previous functions
     and applies heuristics for when to apply each function 
@@ -306,26 +310,28 @@ def get_titles(pdf):
     page_number = select_page_with_text(pdf)
     logger.info(page_number)
     # Try get title from metadata first
-    title = str(get_title_from_metadata(pdf))
-    junk_titles = ["Date", "Microsoft Word", "email", "Enter your title here", "Email:", "To:", "Dear"]
+    meta_title = str(get_title_from_metadata(pdf))
+    # Get title and text from text
+    title, text = extract_title_and_text_from_all_pages(pdf)
+    # Define junk titles
+    junk_titles = ["Date", "Microsoft Word", "email", "Enter your title here", "Email:", "To:", "Dear", "@"]
     # If title is either none, too short, contains junk title keywords, is entirely numeric, then get bold text from pdf
-    if (title == "None" or len(title.split(" ")) < 3) or any(item in " ".join(title.split(" ")[0:10]) for item in junk_titles) or (re.sub(" ","", re.sub(r'[^\w\s]',"",title)).isnumeric()):
-        title = pdf_text(pdf)
+    if (meta_title == "None" or len(meta_title.split(" ")) < 3) or any(item in " ".join(meta_title.split(" ")[0:10]) for item in junk_titles) or (re.sub(" ","", re.sub(r'[^\w\s]',"",meta_title)).isnumeric()):
         # If the title text is still too short, is only numeric, or is only regulator name
         if len(title.split(" ")) < 3 or (re.sub(" ","", re.sub(r'[^\w\s]',"",title)).isnumeric()) or any(regulator_name == title for regulator_name in regulator_name_list):
-            title = get_bold_text_from_pdf(pdf, page_number)
-            return title
+            bold_title = get_bold_text_from_pdf(pdf, page_number)
+            return bold_title, text
         else:
-            return title
+            return title, text
     else:
-        return clean_title(title)
+        return clean_text(meta_title), text
 
 
 def cut_title(title):
     """
     Cuts title length down to 25 tokens
     """
-    if len(title.split(" ")) > 25:
+    if len(str(title).split(" ")) > 25:
         title = " ".join(title.split(" ")[0 : 25]) + "..."
         return title
     else:
@@ -335,21 +341,21 @@ def cut_title(title):
 ####################### Iterate through pdfs in all_pdfs ########################
 
 
+
+
 pdfs = []
-title_list = []
+dates_found = []
 
 for pdf in os.listdir(f"/Users/thomas/Documents/BEIS/input_data/all_pdfs/"):
-    if pdf == ".DS_Store":
-        continue
-    else:
-        logger.info(pdf)
-        pdfs.append(pdf)
-        title_found = get_titles(f"/Users/thomas/Documents/BEIS/input_data/all_pdfs/{pdf}")
+    logger.info(pdf)
+    if pdf != ".DS_Store":
+        filename = "/Users/thomas/Documents/BEIS/input_data/all_pdfs/" + pdf
+        title_found, text = get_title_and_text(filename)
         title = cut_title(title_found)
-        title_list.append(title)
+        # Replace forward slashes found
+        title = re.sub("/", ":", title)
+        if ("research" not in title) and (detect(text) == "en"):
+            with open("/Users/thomas/Documents/BEIS/input_data/all_pdfs_text/" + title + ".txt", "w") as f:
+                f.write(text)
 
-logger.info(len(pdfs))
-logger.info(len(title_list))
-
-# Output to excel
-pd.DataFrame({"PDFs" : pdfs, "Title" : title_list}).to_excel("titles_from_pdfsv4.xlsx", engine = "openpyxl")
+logger.info("Done!")
