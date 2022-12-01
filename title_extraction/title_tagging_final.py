@@ -15,14 +15,14 @@ from pdfminer.converter import PDFPageAggregator
 from pdfminer.layout import LAParams, LTChar, LTFigure, LTTextBox, LTTextLine
 import re
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
-from langdetect import detect
+
 
 import logging
 logger = logging.getLogger()
 logging.basicConfig(level=logging.INFO)
 
 # Define regulators
-regulator_name_list = ["Health and Safety Executive", "Ofgem", "Environmental Agency"]
+regulator_name_list = ["Health and Safety Executive", "HSE", "Ofgem", "Environmental Agency", "EA"]
 
 
 def make_parsing_state(*sequential, **named):
@@ -250,6 +250,8 @@ def clean_text(text):
     Clean the title by removing 
     illegal characters and adding / removing spaces
     """
+    # Remove paragraphs
+    text = re.sub("\n", " ", text)
     # Remove illegal characters
     text = re.sub(ILLEGAL_CHARACTERS_RE, " ", text)
     # Space out merged words by adding a space before a capital letter if it appears after a lowercase letter
@@ -272,21 +274,22 @@ def get_bold_text_from_pdf(pdf, page_number):
         bold_text = text.filter(lambda obj: obj["object_type"] == "char" and "Bold" in obj["fontname"])
         title = bold_text.extract_text()
         # If length of title is nothing, try take extracted words from the page read as the title
-        if len(title) == 0:
-            text_from_page = " ".join(bold_text.extract_text().split(" ")[0 : 25]) + "..."
-            # If unable to extract text with pdfplumber, try with PyPDF2
-            if text_from_page == "...":
-                with open(pdf, "rb") as opened_pdf:
-                    reader = PdfReader(opened_pdf) 
-                    # Pages to read
-                    page_to_be_read = reader.pages[page_number]
-                    # Find dates from pages
-                    text_from_page = page_to_be_read.extract_text()
-                    # Clean title
-                    text_from_page = clean_text(text_from_page)
-                    return text_from_page
-            else:
-                return clean_text(text_from_page)
+        if len(clean_text(title).split(" ")) <= 3 or len([1 for regulator_name in regulator_name_list if clean_text(title) == regulator_name]) > 0:
+            # text_from_page = clean_text(" ".join(bold_text.extract_text().split(" ")[0 : 25])) + "..."
+            # # If unable to extract text with pdfplumber, try with PyPDF2
+            # if text_from_page == "..." or text_from_page == clean_text(title) + "...":
+            #     with open(pdf, "rb") as opened_pdf:
+            #         reader = PdfReader(opened_pdf) 
+            #         # Pages to read
+            #         page_to_be_read = reader.pages[page_number]
+            #         # Find dates from pages
+            #         text_from_page = page_to_be_read.extract_text()
+            #         # Clean title
+            #         text_from_page = clean_text(text_from_page)
+            #         return text_from_page
+            # else:
+            #     return clean_text(text_from_page)
+            return ""
         else:
             return clean_text(title)
 
@@ -300,6 +303,16 @@ def get_title_from_metadata(pdf):
         title = pdf_reader.getDocumentInfo().title  
         return title
 
+import difflib
+
+def metadata_title_similarity_score(meta_title, text):
+    large_string = re.sub(r'[^\w\s]', '', text[0:300])
+    query_string = re.sub(r'[^\w\s]', '', meta_title)
+    for reg_name in regulator_name_list:
+        query_string = re.sub(reg_name, "", query_string)
+    s = difflib.SequenceMatcher(None, large_string, query_string)
+    similarity_of_title_to_first_few_lines = sum(n for i,j,n in s.get_matching_blocks()) / float(len(query_string) + 1)
+    return similarity_of_title_to_first_few_lines
 
 def get_title_and_text(pdf):
     """
@@ -308,19 +321,25 @@ def get_title_and_text(pdf):
     """
     # Get page number
     page_number = select_page_with_text(pdf)
-    logger.info(page_number)
     # Try get title from metadata first
     meta_title = str(get_title_from_metadata(pdf))
+    clean_meta_title = clean_text(meta_title)
     # Get title and text from text
     title, text = extract_title_and_text_from_all_pages(pdf)
+    clean_title = clean_text(title)
     # Define junk titles
     junk_titles = ["Date", "Microsoft Word", "email", "Enter your title here", "Email:", "To:", "Dear", "@"]
+    # Get similarity score
+    similarity_score = metadata_title_similarity_score(meta_title, text)
     # If title is either none, too short, contains junk title keywords, is entirely numeric, then get bold text from pdf
-    if (meta_title == "None" or len(meta_title.split(" ")) < 3) or any(item in " ".join(meta_title.split(" ")[0:10]) for item in junk_titles) or (re.sub(" ","", re.sub(r'[^\w\s]',"",meta_title)).isnumeric()):
+    if (similarity_score < 0.7) or (clean_meta_title == "None") or (len(clean_meta_title.split(" ")) <= 3) or any(item in " ".join(clean_meta_title.split(" ")[0:10]) for item in junk_titles) or (re.sub(" ","", re.sub(r'[^\w\s]',"",clean_meta_title)).isnumeric()):
         # If the title text is still too short, is only numeric, or is only regulator name
-        if len(title.split(" ")) < 3 or (re.sub(" ","", re.sub(r'[^\w\s]',"",title)).isnumeric()) or any(regulator_name == title for regulator_name in regulator_name_list):
+        if (len(clean_title.split(" ")) <= 3) or (re.sub(" ","", re.sub(r'[^\w\s]',"",clean_title)).isnumeric()) or any(regulator_name == title for regulator_name in regulator_name_list):
             bold_title = get_bold_text_from_pdf(pdf, page_number)
-            return bold_title, text
+            if bold_title == "":
+                return " ".join(text.split(" ")[0 : 25]) + "...", text
+            else:
+                return bold_title, text
         else:
             return title, text
     else:
@@ -331,31 +350,18 @@ def cut_title(title):
     """
     Cuts title length down to 25 tokens
     """
+    title = re.sub("Figure 1", "", title)
+    title = re.sub(r'[^\w\s]','',title)
     if len(str(title).split(" ")) > 25:
         title = " ".join(title.split(" ")[0 : 25]) + "..."
         return title
     else:
         return title
 
-
-####################### Iterate through pdfs in all_pdfs ########################
-
-
-
-
-pdfs = []
-dates_found = []
-
-for pdf in os.listdir(f"/Users/thomas/Documents/BEIS/input_data/all_pdfs/"):
-    logger.info(pdf)
-    if pdf != ".DS_Store":
-        filename = "/Users/thomas/Documents/BEIS/input_data/all_pdfs/" + pdf
-        title_found, text = get_title_and_text(filename)
-        title = cut_title(title_found)
-        # Replace forward slashes found
-        title = re.sub("/", ":", title)
-        if ("research" not in title) and (detect(text) == "en"):
-            with open("/Users/thomas/Documents/BEIS/input_data/all_pdfs_text/" + title + ".txt", "w") as f:
-                f.write(text)
-
-logger.info("Done!")
+def summary(text, title):
+    """
+    Define function to create a summary of the document
+    i.e first 80 characters of the document
+    """
+    summary = re.sub(title, "", text[0:80])
+    return summary
