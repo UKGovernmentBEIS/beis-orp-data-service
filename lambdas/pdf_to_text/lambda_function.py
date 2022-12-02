@@ -1,5 +1,4 @@
 import boto3
-import unidecode
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
@@ -14,8 +13,6 @@ import io
 logger = logging.getLogger()
 logging.basicConfig(level=logging.INFO)
 
-
-IS_LOG_ON = True
 MIN_CHARS = 6
 MAX_WORDS = 20
 MAX_CHARS = MAX_WORDS * 10
@@ -31,11 +28,6 @@ CHAR_PARSING_STATE = make_parsing_state(
     "INIT_X", "INIT_D", "INSIDE_WORD")
 
 
-def log(text):
-    if IS_LOG_ON:
-        print("--- " + text)
-
-
 def empty_str(s):
     return len(s.strip()) == 0
 
@@ -45,9 +37,6 @@ def is_close(a, b, relative_tolerance=TOLERANCE):
 
 
 def update_largest_text(line, y0, size, largest_text):
-    log("update size: " + str(size))
-    log("largest_text size: " + str(largest_text["size"]))
-
     # Sometimes font size is not correctly read, so we
     # fallback to text y0 (not even height may be calculated).
     # In this case, we consider the first line of text to be a title.
@@ -74,7 +63,6 @@ def extract_largest_text(obj, largest_text):
     # Also skip other elements such as `LTAnno`.
     for i, child in enumerate(obj):
         if isinstance(child, LTTextLine):
-            log("lt_obj child line: " + str(child))
             for j, child2 in enumerate(child):
                 if j > 1 and isinstance(child2, LTChar):
                     largest_text = update_largest_text(
@@ -83,7 +71,6 @@ def extract_largest_text(obj, largest_text):
                     # Only need to parse size of one char
                     break
         elif i > 1 and isinstance(child, LTChar):
-            log("lt_obj child char: " + str(child))
             largest_text = update_largest_text(
                 obj.get_text(), child.y0, child.size, largest_text
             )
@@ -106,7 +93,6 @@ def extract_figure_text(lt_obj, largest_text):
     char_previous_x1 = 0
     state = CHAR_PARSING_STATE.INIT_X
     for child in lt_obj:
-        log("child: " + str(child))
 
         # Ignore other elements
         if not isinstance(child, LTChar):
@@ -115,14 +101,9 @@ def extract_figure_text(lt_obj, largest_text):
         char_y0 = child.y0
         char_size = child.size
         char_text = child.get_text()
-        decoded_char_text = unidecode.unidecode(
-            char_text.encode("utf-8").decode("utf-8")
-        )
-        log("char: " + str(char_size) + " " + str(decoded_char_text))
 
         # A new line was detected
         if char_size != size:
-            log("new line")
             largest_text = update_largest_text(
                 line, y0, size, largest_text)
             text += line + "\n"
@@ -138,9 +119,6 @@ def extract_figure_text(lt_obj, largest_text):
             # NOTE: A word starting with lowercase can't be
             # distinguished from the current word.
             char_current_distance = abs(child.x0 - char_previous_x1)
-            log("char_current_distance: " + str(char_current_distance))
-            log("char_distance: " + str(char_distance))
-            log("state: " + str(state))
 
             # Initialization
             if state == CHAR_PARSING_STATE.INIT_X:
@@ -159,7 +137,6 @@ def extract_figure_text(lt_obj, largest_text):
             if (state == CHAR_PARSING_STATE.INSIDE_WORD) and (
                 child.x1 < char_previous_x1
             ):
-                log("x-position decreased")
                 line += " "
                 char_previous_x1 = child.x1
                 state = CHAR_PARSING_STATE.INIT_D
@@ -167,10 +144,6 @@ def extract_figure_text(lt_obj, largest_text):
             elif (state == CHAR_PARSING_STATE.INSIDE_WORD) and (
                 char_current_distance > char_distance * 8.5
             ):
-                log("space detected")
-                log("char_current_distance: " +
-                    str(char_current_distance))
-                log("char_distance: " + str(char_distance))
                 line += " "
                 char_previous_x1 = child.x1
             # When larger distance is detected between chars, use it to
@@ -229,7 +202,6 @@ def extract_title_and_text_from_all_pages(doc_bytes):
         interpreter.process_page(page)
         layout = device.get_result()
         for lt_obj in layout:
-            log("lt_obj: " + str(lt_obj))
             if isinstance(lt_obj, LTFigure):
                 (largest_text, figure_text) = extract_figure_text(
                     lt_obj, largest_text)
