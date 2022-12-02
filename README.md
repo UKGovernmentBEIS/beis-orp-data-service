@@ -18,3 +18,6 @@ DVC is a tool for large dataset versioning - think Git for data. The raw data is
 
 - Python (>= v3.8)
 - AWS access to beis-dvc-bucket
+
+### To Upload a Docker Image to Amazon ECR Repo
+ - `sh aws_image_uploader.sh` and input your account ID and name of the Docker image you want to upload
