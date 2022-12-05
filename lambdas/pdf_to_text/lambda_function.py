@@ -8,11 +8,7 @@ from pdfminer.converter import PDFPageAggregator
 from pdfminer.layout import LAParams, LTChar, LTFigure, LTTextBox, LTTextLine
 import re
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
-import logging
 import io
-
-logger = logging.getLogger()
-logging.basicConfig(level=logging.INFO)
 
 MIN_CHARS = 6
 MAX_WORDS = 20
@@ -25,12 +21,7 @@ def make_parsing_state(*sequential, **named):
     return type("ParsingState", (), enums)
 
 
-CHAR_PARSING_STATE = make_parsing_state(
-    "INIT_X", "INIT_D", "INSIDE_WORD")
-
-
-def empty_str(s):
-    return len(s.strip()) == 0
+CHAR_PARSING_STATE = make_parsing_state("INIT_X", "INIT_D", "INSIDE_WORD")
 
 
 def is_close(a, b, relative_tolerance=TOLERANCE):
@@ -41,15 +32,16 @@ def update_largest_text(line, y0, size, largest_text):
     # Sometimes font size is not correctly read, so we
     # fallback to text y0 (not even height may be calculated).
     # In this case, we consider the first line of text to be a title.
-    if (size == largest_text["size"] == 0) and (
-            y0 - largest_text["y0"] < -TOLERANCE):
+    if (size == largest_text["size"] == 0) and (y0 - largest_text["y0"] < -TOLERANCE):
         return largest_text
 
     # If it is a split line, it may contain a new line at the end
     line = re.sub(r"\n$", " ", line)
 
     if size - largest_text["size"] > TOLERANCE:
-        largest_text = {"contents": line, "y0": y0, "size": size}
+        largest_text["contents"] = line
+        largest_text["y0"] = y0
+        largest_text["size"] = size
     # Title spans multiple lines
     elif is_close(size, largest_text["size"]):
         largest_text["contents"] = largest_text["contents"] + line
@@ -81,11 +73,9 @@ def extract_largest_text(obj, largest_text):
 
 
 def extract_figure_text(lt_obj, largest_text):
-    """
-    Extract text contained in a `LTFigure`.
-    Since text is encoded in `LTChar` elements, we detect separate lines
-    by keeping track of changes in font size.
-    """
+    # Extract text contained in a `LTFigure`.
+    # Since text is encoded in `LTChar` elements, we detect separate lines
+    # by keeping track of changes in font size.
     text = ""
     line = ""
     y0 = 0
@@ -105,8 +95,7 @@ def extract_figure_text(lt_obj, largest_text):
 
         # A new line was detected
         if char_size != size:
-            largest_text = update_largest_text(
-                line, y0, size, largest_text)
+            largest_text = update_largest_text(line, y0, size, largest_text)
             text += line + "\n"
             line = char_text
             y0 = char_y0
@@ -160,29 +149,26 @@ def extract_figure_text(lt_obj, largest_text):
             else:
                 char_previous_x1 = child.x1
             child_text = child.get_text()
-            if not empty_str(child_text):
+            if not len(child_text.strip()) == 0:
                 line += child_text
     return (largest_text, text)
 
 
 def clean_text(text):
-    """
-    Clean the title by removing
-    illegal characters and adding / removing spaces
-    """
-    # Remove paragraphs
+    # Clean the title by removing
+    # illegal characters and adding / removing spaces
+
     text = re.sub("\n", " ", text)
-    # Remove illegal characters
     text = re.sub(ILLEGAL_CHARACTERS_RE, " ", text)
+
     # Space out merged words by adding a space before a capital letter
     # if it appears after a lowercase letter
     text = re.sub(
         r"([a-z](?=[A-Z])|[A-Z](?=[A-Z][a-z]))",
         r"\1 ",
-        text)
-    # Take empty space off beginning and end of string
+        text
+    )
     text = text.strip()
-    # Take out excess spaces
     text = re.sub("\\s+", " ", text)
     return text
 
@@ -201,10 +187,12 @@ def extract_title_and_text_from_all_pages(doc_bytes_io):
     text = ""
     largest_text = {"contents": "", "y0": 0, "size": 0}
     largest_text_per_page = []
+
     for page in PDFPage.get_pages(doc_bytes_io):
         # for page in PDFPage.create_pages(doc):
         interpreter.process_page(page)
         layout = device.get_result()
+
         for lt_obj in layout:
             if isinstance(lt_obj, LTFigure):
                 (largest_text, figure_text) = extract_figure_text(
@@ -212,13 +200,13 @@ def extract_title_and_text_from_all_pages(doc_bytes_io):
                 text += figure_text
             elif isinstance(lt_obj, (LTTextBox, LTTextLine)):
                 # Ignore body text blocks
-                stripped_to_chars = re.sub(
-                    r"[ \t\n]", "", lt_obj.get_text().strip())
+                stripped_to_chars = re.sub(r"[ \t\n]", "", lt_obj.get_text().strip())
                 if len(stripped_to_chars) > MAX_CHARS * 2:
                     continue
-                largest_text = extract_largest_text(
-                    lt_obj, largest_text)
+
+                largest_text = extract_largest_text(lt_obj, largest_text)
                 text += lt_obj.get_text() + "\n"
+
             largest_text_per_page.append(largest_text)
 
     cleaned_text = clean_text(text)
@@ -227,12 +215,13 @@ def extract_title_and_text_from_all_pages(doc_bytes_io):
     title = re.sub(
         r"(\(cid:[0-9 \t-]*\))*",
         "",
-        title)
+        title
+    )
 
     # Clean title
-    title = clean_text(title)
+    cleaned_title = clean_text(title)
 
-    return title, cleaned_text
+    return cleaned_title, cleaned_text
 
 
 def handler(event, context):
@@ -259,8 +248,6 @@ def handler(event, context):
         Key=f'processed/{title}.txt'
     )
 
-    print(f"Title of document: {title} \n\n")
-    print(f"Document text: \n {text}")
     return {
         'statusCode': 200
     }
