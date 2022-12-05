@@ -1,4 +1,5 @@
 import boto3
+from PyPDF2 import PdfFileReader
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
@@ -186,8 +187,11 @@ def clean_text(text):
     return text
 
 
-def extract_title_and_text_from_all_pages(doc_bytes):
-    parser = PDFParser(doc_bytes)
+def extract_title_and_text_from_all_pages(doc_bytes_io):
+    pdf_reader = PdfFileReader(doc_bytes_io)
+    title = pdf_reader.getDocumentInfo().title
+
+    parser = PDFParser(doc_bytes_io)
     doc = PDFDocument(parser, "")
     parser.set_document(doc)
     rsrcmgr = PDFResourceManager()
@@ -197,7 +201,7 @@ def extract_title_and_text_from_all_pages(doc_bytes):
     text = ""
     largest_text = {"contents": "", "y0": 0, "size": 0}
     largest_text_per_page = []
-    for page in PDFPage.get_pages(doc_bytes):
+    for page in PDFPage.get_pages(doc_bytes_io):
         # for page in PDFPage.create_pages(doc):
         interpreter.process_page(page)
         layout = device.get_result()
@@ -219,18 +223,16 @@ def extract_title_and_text_from_all_pages(doc_bytes):
 
     cleaned_text = clean_text(text)
 
-    title = largest_text_per_page[0]
-
     # Remove unprocessed CID text
-    title["contents"] = re.sub(
+    title = re.sub(
         r"(\(cid:[0-9 \t-]*\))*",
         "",
-        title["contents"])
+        title)
 
     # Clean title
-    title["contents"] = clean_text(title["contents"])
+    title = clean_text(title)
 
-    return title["contents"], cleaned_text
+    return title, cleaned_text
 
 
 def handler(event, context):
@@ -246,11 +248,19 @@ def handler(event, context):
     )['Body']
 
     doc_bytes = doc_stream.read()
-    title, text = extract_title_and_text_from_all_pages(io.BytesIO(doc_bytes))
+    doc_bytes_io = io.BytesIO(doc_bytes)
+
+    # doc_bytes = doc_stream.read()
+    title, text = extract_title_and_text_from_all_pages(doc_bytes_io)
+
+    s3_client.put_object(
+        Body=text,
+        Bucket=bucket_name,
+        Key=f'processed/{title}.txt'
+    )
 
     print(f"Title of document: {title} \n\n")
     print(f"Document text: \n {text}")
     return {
-        'statusCode': 200,
-        'body': 'Hello from Lambda!'
+        'statusCode': 200
     }
