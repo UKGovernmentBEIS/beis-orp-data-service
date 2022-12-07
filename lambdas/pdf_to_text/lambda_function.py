@@ -11,6 +11,7 @@ from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 import io
 from uuid import uuid4
 import pymongo
+from bson import ObjectId
 
 MIN_CHARS = 6
 MAX_WORDS = 20
@@ -254,22 +255,20 @@ def handler(event, context):
 
     # Create a MongoDB client, open a connection to Amazon DocumentDB as a
     # replica set and specify the read preference as secondary preferred
-    client = pymongo.MongoClient(
-        """mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc.eu-west-2.docdb.amazonaws.com:27017/
+    db_client = pymongo.MongoClient(
+        """mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc.eu-west-2.docdb.amazonaws.com:27017/\
     ?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false""")
-    db = client.documents
-
-    # Specify the collection to be used
+    db = db_client.documents
     col = db.testing
 
-    # Insert a single document
-    col.insert_one({
-        "_id": object_id,
-        "title": title
-    })
+    col.insert_one(
+        {
+            "_id": ObjectId(object_id.replace('-', '')),
+            "title": title
+        }
+    )
 
-    # Close the connection
-    client.close()
+    db_client.close()
 
     # Insert code to put document into DocumentDB with key = object_id and title = title
     return {
