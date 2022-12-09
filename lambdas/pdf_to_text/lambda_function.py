@@ -9,7 +9,7 @@ from pdfminer.layout import LAParams, LTChar, LTFigure, LTTextBox, LTTextLine
 import re
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 import io
-from uuid import uuid4
+import os
 import pymongo
 from bson import ObjectId
 
@@ -231,9 +231,12 @@ def handler(event, context):
     bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
     object_key = event["Records"][0]["s3"]["object"]["key"]
     object_size = event["Records"][0]["s3"]["object"]["size"]
-    object_id = uuid4()
+    object_id = ObjectId()
+
     print(f"New document in {bucket_name}: {object_key}, with size: {object_size}")
     print(f"Assigning document the unique ID: {object_id}")
+
+    os.system('wget https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem')
 
     s3_client = boto3.client('s3')
     doc_stream = s3_client.get_object(
@@ -247,30 +250,30 @@ def handler(event, context):
     # doc_bytes = doc_stream.read()
     title, text = extract_title_and_text_from_all_pages(doc_bytes_io)
 
-    s3_client.put_object(
-        Body=text,
-        Bucket=bucket_name,
-        Key=f'processed/{object_id}.txt'
-    )
-
     # Create a MongoDB client, open a connection to Amazon DocumentDB as a
     # replica set and specify the read preference as secondary preferred
     db_client = pymongo.MongoClient(
-        """mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc.eu-west-2.docdb.amazonaws.com:27017/\
-    ?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false""")
+        ("mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc."
+         "eu-west-2.docdb.amazonaws.com:27017/?ssl=true&ssl_ca_certs=rds-combined-ca-bundle.pem&"
+         "replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"))
     db = db_client.documents
     col = db.testing
 
     col.insert_one(
         {
-            "_id": ObjectId(object_id.replace('-', '')),
+            "_id": object_id,
             "title": title
         }
     )
 
     db_client.close()
 
-    # Insert code to put document into DocumentDB with key = object_id and title = title
+    s3_client.put_object(
+        Body=text,
+        Bucket=bucket_name,
+        Key=f'processed/{object_id}.txt'
+    )
+
     return {
         'statusCode': 200
     }
