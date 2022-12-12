@@ -2,7 +2,7 @@
 .old.bak/
 terraform/
 data-collection/
-
+venv/
 
 # Mac
 .DS_Store
@@ -74,3 +74,5 @@ __pycache__/
 *.bkp
 *.dtmp
 *.txt
+munging.ipynb
+*.DS_Store
