@@ -173,6 +173,12 @@ def clean_text(text):
     )
     text = text.strip()
     text = re.sub("\\s+", " ", text)
+    text = text.lower()
+    text = text.replace("\t", " ")
+    text = re.sub('<.*?>', "", text)
+    text = text.replace("_x000c_", "")
+    text = re.sub('\\s+', " ", text)
+
     return text
 
 
@@ -277,11 +283,14 @@ def handler(event, context):
 
     # db_client.close()
 
-    # s3_client.put_object(
-    #     Body=text,
-    #     Bucket=bucket_name,
-    #     Key=f'processed/{object_id}.txt'
-    # )
+    s3_client.put_object(
+        Body=text,
+        Bucket=bucket_name,
+        Key=f'processed/{title}.txt',
+        Metadata={
+            'uuid': uuid
+        }
+    )
 
     return {
         'statusCode': 200
