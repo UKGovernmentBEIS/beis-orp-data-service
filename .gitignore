@@ -26,7 +26,6 @@ bazel-*
 .classpath
 
 # Compiled
-data/
 dist/
 out/
 *.class
