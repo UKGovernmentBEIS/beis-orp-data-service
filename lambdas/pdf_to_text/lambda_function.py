@@ -234,19 +234,20 @@ def extract_title_and_text_from_all_pages(doc_bytes_io):
 
 
 def handler(event, context):
-    bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
+    source_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
+    destination_bucket_name = 'beis-orp-dev-datalake'
     object_key = event["Records"][0]["s3"]["object"]["key"]
     object_size = event["Records"][0]["s3"]["object"]["size"]
 
     s3_client = boto3.client('s3')
 
     doc_stream = s3_client.get_object(
-        Bucket=bucket_name,
+        Bucket=source_bucket_name,
         Key=object_key
     )['Body']
 
     metadata = s3_client.head_object(
-        Bucket=bucket_name,
+        Bucket=source_bucket_name,
         Key=object_key
     )['Metadata']
 
@@ -257,7 +258,8 @@ def handler(event, context):
 
     uuid = metadata['uuid']
 
-    print(f"New document in {bucket_name}: {object_key}, with size: {object_size}")
+    print(
+        f"New document in {source_bucket_name}: {object_key}, with size: {object_size}")
     print(f"Title of document: {title}")
     print(f"Document text: {text}")
     print(f"UUID obtained is: {uuid}")
@@ -285,8 +287,8 @@ def handler(event, context):
 
     s3_client.put_object(
         Body=text,
-        Bucket=bucket_name,
-        Key=f'processed/{title}.txt',
+        Bucket=destination_bucket_name,
+        Key=f'processed/{uuid}.txt',
         Metadata={
             'uuid': uuid
         }

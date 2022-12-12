@@ -1,11 +1,12 @@
 import boto3
-import io
 
 
 def handler(event, context):
     bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
     object_key = event["Records"][0]["s3"]["object"]["key"]
     object_size = event["Records"][0]["s3"]["object"]["size"]
+
+    print(f"New document in {bucket_name}: {object_key}, with size: {object_size}")
 
     s3_client = boto3.client('s3')
 
@@ -20,12 +21,10 @@ def handler(event, context):
     )['Metadata']
 
     doc_bytes = doc_stream.read()
-    doc_bytes_io = io.BytesIO(doc_bytes)
-
+    doc_text = doc_bytes.decode('utf8')
     uuid = metadata['uuid']
 
-    print(f"New document in {bucket_name}: {object_key}, with size: {object_size}")
-    print(f"Document text: {doc_bytes_io}")
+    print(f"Document text: {doc_text}")
     print(f"UUID obtained is: {uuid}")
 
     # Create a MongoDB client, open a connection to Amazon DocumentDB as a
