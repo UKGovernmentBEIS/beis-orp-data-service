@@ -1,5 +1,79 @@
+# Folders
+.old.bak/
+terraform/
+data-collection/
 venv/
+
+# Mac
+.DS_Store
+
+# Bazel
+bazel-*
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+*.geany
+.ijwb/
+.spyproject/
+
+# VS Code
 .vscode/
+.settings/
+.project
+.classpath
+
+# Compiled
+data/
+dist/
+out/
+*.class
+
+# Package
+*.jarg
+*.war
+*.ear
+
+# Gradle
+.gradle/
+
+# Debug
+dep.tree
+
+# Databases
+db/
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml #
+hs_err_pid*
+
+# Log
+logs/
+*.log
+
+# VIM swap
+*.swp
+*.swo
+
+# Python cache
+__pycache__
+**/__pycache__
+__pycache__/
+**.pyc
+*.pyc
+
+# data
+*.csv
+*.p
+*.pickle
+*.parquet
+*.key*
+*.json
+*.jsonl
+*.bkp
+*.dtmp
+*.txt
 munging.ipynb
 *.DS_Store
 advent_of_code/
