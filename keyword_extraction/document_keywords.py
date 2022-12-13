@@ -1,30 +1,28 @@
+from keybert import KeyBERT
+from bs4 import BeautifulSoup
+from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 wnl = WordNetLemmatizer()
-from nltk.corpus import stopwords
-from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
-from nltk.tokenize import word_tokenize
-from bs4 import BeautifulSoup
+import wordninja
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfVectorizer
+import os
 import re
 
-# Stop words
+# Define stopwords
 stop_words = stopwords.words('english')
 english_stop_words = [w for w in ENGLISH_STOP_WORDS]
-regulator_names_list = ["hse", "ofgem", "ea"]
-
-stop_words.extend(["use", "uses", "used", "www", "gov", "uk", "guidance", "pubns"])
-stop_words.extend(regulator_names_list)
+stop_words.extend(["use", "uses", "used", "www", "gov", "uk", "guidance", "pubns", "page"])
 stop_words.extend(english_stop_words)
-
-# define stopwords
-remove_stop_words = set(stop_words)
 
 # Preprocess data after embeddings are created
 def pre_process_tokenization_function(text):
     text = BeautifulSoup(text).get_text()
     # fetch alphabetic characters
     text = re.sub("[^a-zA-Z]", " ", text)
+    # define stopwords
+    remove_stop_words = set(stop_words)
     # lowercase
     text = text.lower()
     # tokenize 
@@ -39,29 +37,31 @@ def pre_process_tokenization_function(text):
     lemmatised_sentence = [wnl.lemmatize(word) for word in filtered_sentence]
     return lemmatised_sentence
 
-# Define vectorization model
-vectorizer = TfidfVectorizer(analyzer='word',stop_words= stop_words, max_features=15, tokenizer = pre_process_tokenization_function)
+# Import KeyBERT
+kw_model = KeyBERT()
 
-# Get keywords from document
-def get_keywords(text):
-    vectorizer.fit([" ".join(pre_process_tokenization_function(text))])
-    keywords = vectorizer.get_feature_names_out()
-    return keywords
+# Vectorizer model
+vectorizer_model= CountVectorizer(stop_words="english", tokenizer = pre_process_tokenization_function) # prevents noise and improves representation of clusters
 
+keywords_list = []
+txt_list = []
 
-import os
+# Read and extract keywords for uuid docs
+for txt in os.listdir("/Users/thomas/Documents/BEIS/input_data/new_txt/"):
+    file = open("/Users/thomas/Documents/BEIS/input_data/new_txt/" + txt, "r")
+    X = file.read()
+
+    # Extract keywords
+    d = re.sub("Health and Safety Executive", "", X)
+    d = re.sub("Ofgem", "", d)
+    d = re.sub("Environmental Agency","", d)
+    d = " ".join(wordninja.split(d))
+    keywords = kw_model.extract_keywords(d, vectorizer = vectorizer_model, top_n = 10)
+    keywords_list.append(keywords)
+    txt_list.append(txt)
+
 import pandas as pd
 import openpyxl
 
-keywords_list = []
-title_list = []
-
-DIRECTORY = "/Users/thomas/Documents/BEIS/input_data/all_pdfs_text/"
-for title in os.listdir(DIRECTORY):
-    fileObject = open(DIRECTORY + title, "r")
-    guidance = fileObject.read()
-    keywords = get_keywords(guidance)
-    keywords_list.append(keywords)
-    title_list.append(title)
-
-pd.DataFrame({"Title" : title_list, "Keywords" : keywords_list}).to_excel("keywords.xlsx", engine = "openpyxl")
+df = pd.DataFrame({"UUID" : txt_list, "Keywords" : keywords_list})
+df.to_excel("20221210-Keywords.xlsx", engine = "openpyxl")
