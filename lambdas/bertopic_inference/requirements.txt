@@ -1,5 +1,8 @@
 beautifulsoup4==4.11.1
-boto3==1.24.59
-nltk==3.8
+hdbscan==0.8.29
+bertopic==0.12.0
+boto3==1.21.32
+nltk==3.7
 scikit_learn==1.2.0
+smart_open==5.2.1
 torch==1.13.0

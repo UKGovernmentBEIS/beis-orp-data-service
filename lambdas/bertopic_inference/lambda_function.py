@@ -1,6 +1,4 @@
-from nltk.corpus import stopwords
-from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
-import nltk
+import bertopic
 import boto3
 import os
 from statistics import mode
@@ -9,19 +7,31 @@ import torch
 from bs4 import BeautifulSoup
 import re
 from nltk.stem import WordNetLemmatizer
-
-
 wnl = WordNetLemmatizer()
-nltk.download('stopwords')
+import pickle
+import nltk
+from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+from smart_open import open as smart_open
+import io
+
+
+# Change directory to tmp directory
+os.chdir('/tmp')
+if not os.path.exists(os.path.join('mydir')):
+    os.makedirs('mydir')
+save_path = os.path.join(os.getcwd(), 'mydir')
+nltk.download('stopwords', download_dir = save_path)
 
 # Stopwords
-stop_words = stopwords.words('english')
+stopwords = open(os.path.join(save_path, "corpora/stopwords/english"), "r").read()
+stopwords = stopwords.split("\n")
 english_stop_words = [w for w in ENGLISH_STOP_WORDS]
-stop_words.extend(["use", "uses", "used", "www", "gov",
+stopwords.extend(["use", "uses", "used", "www", "gov",
                    "uk", "guidance", "pubns", "page"])
-stop_words.extend(english_stop_words)
+stopwords.extend(english_stop_words)
 
 
+# Define tokenization function
 def pre_process_tokenization_function(
         documents: str,
         stop_words,
@@ -48,10 +58,11 @@ def pre_process_tokenization_function(
     return lemmatised_sentence
 
 
+# Define download text from bucket function
 def download_sample_text(
         s3_resource,
         bucket='beis-orp-dev-ingest',
-        key='txt/00e6929569a9456a8f79e5f1064ef0a3.txt'):
+        key='trigger-inference'):
 
     sample_text = s3_resource.get_object(bucket, key)['Body'].read()
     return sample_text
@@ -62,10 +73,17 @@ def download_model(
         bucket='beis-orp-dev-clustering-models',
         key='051222_bertopic_longformer_kmeans3'):
 
-    location = f'/tmp/{os.path.basename(key)}'
-    if not os.path.exists(location):
-        s3_resource.Object(bucket, key).download_file(location)
-    return location
+    os.chdir('/tmp')
+    if not os.path.exists(os.path.join('modeldir')):
+        os.makedirs('modeldir')
+    save_path = os.path.join(os.getcwd(), 'modeldir')
+    s3_resource.Bucket(bucket).download_file(key, os.path.join(save_path, key))
+    with smart_open(os.path.join(save_path, key), 'rb') as f:
+        buffer = io.BytesIO(f.read())
+        model = torch.load(buffer)
+    # open(os.path.join(save_path, key), 'rb') as model_data:
+    #     model = pickle.load(model_data)
+        return model    
 
 
 def split_list(a, n):
@@ -94,8 +112,7 @@ def split_document_into_chunks(
     return extended_docs
 
 
-def classify_data(model_path, input_data):
-    model = torch.jit.load(model_path)
+def classify_data(model, input_data):
     split_document = split_document_into_chunks(input_data)
     topics = []
     for i in range(0, len(split_document)):
@@ -128,24 +145,20 @@ def handler(event, context):
 
     doc_bytes = doc_stream.read()
     doc_text = doc_bytes.decode('utf8')
-    uuid = metadata['uuid']
+    # uuid = metadata['uuid']
 
-    print(f"Document text: {doc_text}")
-    print(f"UUID obtained is: {uuid}")
+    # print(f"Document text: {doc_text}")
+    # print(f"UUID obtained is: {uuid}")
 
     # download model
-    model_path = download_model(
-        s3_resource=s3_resource,
-        bucket='beis-orp-dev-clustering-models',
-        key='models/pytorch_model.pt'
-    )
-    # download image
+    model = download_model(s3_resource = s3_resource)
+    
+    # download text
     input_data = download_sample_text(
-        s3_resource=s3_resource,
-        bucket=event['url']
-    )
+        s3_resource=s3_resource)
+
     # classify text
-    topic = classify_data(model_path, input_data)
+    topic = classify_data(model, input_data)
     if topic:
         return {
             'statusCode': 200,
