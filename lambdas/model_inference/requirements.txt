@@ -1,5 +1,5 @@
 beautifulsoup4==4.11.1
-boto3==1.26.28
-nltk==3.7
+boto3==1.24.59
+nltk==3.8
 scikit_learn==1.2.0
-torch==1.12.1
+torch==1.13.0
