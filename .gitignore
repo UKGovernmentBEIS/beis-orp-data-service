@@ -26,7 +26,6 @@ bazel-*
 .classpath
 
 # Compiled
-data/
 dist/
 out/
 *.class
@@ -73,6 +72,7 @@ __pycache__/
 *.jsonl
 *.bkp
 *.dtmp
-*.txt
 munging.ipynb
 *.DS_Store
+advent_of_code/
+.ipynb_checkpoints/

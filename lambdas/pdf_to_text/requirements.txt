@@ -1,0 +1,6 @@
+boto3==1.24.59
+openpyxl==3.0.10
+pdfminer==20191125
+pdfminer.six==20221105
+pymongo==4.3.3
+PyPDF2==2.12.1
