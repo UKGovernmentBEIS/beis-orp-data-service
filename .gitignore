@@ -77,4 +77,3 @@ munging.ipynb
 *.DS_Store
 advent_of_code/
 .ipynb_checkpoints/
-rds-combined-ca-bundle.pem

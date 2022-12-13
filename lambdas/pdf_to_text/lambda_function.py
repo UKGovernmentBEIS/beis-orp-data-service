@@ -9,9 +9,8 @@ from pdfminer.layout import LAParams, LTChar, LTFigure, LTTextBox, LTTextLine
 import re
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 import io
-# import os
-# import pymongo
-# from bson import ObjectId
+import pymongo
+
 
 MIN_CHARS = 6
 MAX_WORDS = 20
@@ -247,8 +246,9 @@ def handler(event, context):
     doc_bytes = doc_stream.read()
     doc_bytes_io = io.BytesIO(doc_bytes)
 
-    title, text = extract_title_and_text_from_all_pages(doc_bytes_io)
+    print(doc_bytes_io)
 
+    title, text = extract_title_and_text_from_all_pages(doc_bytes_io)
     uuid = metadata['uuid']
 
     print(f"New document in {bucket_name}: {object_key}, with size: {object_size}")
@@ -259,29 +259,35 @@ def handler(event, context):
     # Create a MongoDB client, open a connection to Amazon DocumentDB as a
     # replica set and specify the read preference as secondary preferred
 
-    # os.system('wget https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem')
+    db_client = pymongo.MongoClient(
+        ("mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc."
+         "eu-west-2.docdb.amazonaws.com:27017/?tls=true&tlsCAFile=rds-combined-ca-bundle.pem&"
+         "replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"))
+    db = db_client.orp
+    col = db.documents
 
-    # db_client = pymongo.MongoClient(
-    #     ("mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc."
-    #      "eu-west-2.docdb.amazonaws.com:27017/?ssl=true&ssl_ca_certs=rds-combined-ca-bundle.pem&"
-    #      "replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"))
-    # db = db_client.documents
-    # col = db.testing
+    col.insert_one(
+        {
+            "title": title,
+            "uuid": uuid
+        }
+    )
 
-    # col.insert_one(
-    #     {
-    #         "title": title,
-    #         "uuid": uuid
-    #     }
-    # )
+    test_query = col.find_one(
+        {
+            'uuid': uuid
+        }
+    )
 
-    # db_client.close()
+    print(test_query)
 
-    # s3_client.put_object(
-    #     Body=text,
-    #     Bucket=bucket_name,
-    #     Key=f'processed/{object_id}.txt'
-    # )
+    db_client.close()
+
+    s3_client.put_object(
+        Body=text,
+        Bucket=bucket_name,
+        Key=f'processed/{uuid}.txt'
+    )
 
     return {
         'statusCode': 200
