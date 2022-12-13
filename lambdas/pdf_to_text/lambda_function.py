@@ -17,6 +17,8 @@ MAX_WORDS = 20
 MAX_CHARS = MAX_WORDS * 10
 TOLERANCE = 1e-06
 
+DESTINATION_BUCKET = "beis-orp-dev-datalake"  # Bucket to write extracted text to
+
 
 def make_parsing_state(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
@@ -227,43 +229,44 @@ def extract_title_and_text_from_all_pages(doc_bytes_io):
 
 
 def handler(event, context):
-    bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
+
+    # Ascertain the bucket, key and size of uploaded PDF
+    source_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
     object_key = event["Records"][0]["s3"]["object"]["key"]
     object_size = event["Records"][0]["s3"]["object"]["size"]
 
-    s3_client = boto3.client('s3')
+    s3_client = boto3.client("s3")
 
+    # Pull the ingested PDF and associated UUID
     doc_stream = s3_client.get_object(
-        Bucket=bucket_name,
+        Bucket=source_bucket_name,
         Key=object_key
-    )['Body']
+    )["Body"]
 
     metadata = s3_client.head_object(
-        Bucket=bucket_name,
+        Bucket=source_bucket_name,
         Key=object_key
-    )['Metadata']
+    )["Metadata"]
 
     doc_bytes = doc_stream.read()
     doc_bytes_io = io.BytesIO(doc_bytes)
 
-    print(doc_bytes_io)
-
     title, text = extract_title_and_text_from_all_pages(doc_bytes_io)
-    uuid = metadata['uuid']
+    uuid = metadata["uuid"]
 
-    print(f"New document in {bucket_name}: {object_key}, with size: {object_size}")
+    print(
+        f"New document in {source_bucket_name}: {object_key}, with size: {object_size}"
+    )
     print(f"Title of document: {title}")
-    print(f"Document text: {text}")
     print(f"UUID obtained is: {uuid}")
 
-    # Create a MongoDB client, open a connection to Amazon DocumentDB as a
-    # replica set and specify the read preference as secondary preferred
-
+    # Create a MongoDB client, open a connection to Amazon DocumentDB
+    # Store the title and UUID of the document in DocumentDB
     db_client = pymongo.MongoClient(
         ("mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc."
          "eu-west-2.docdb.amazonaws.com:27017/?tls=true&tlsCAFile=rds-combined-ca-bundle.pem&"
          "replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"))
-    db = db_client.orp
+    db = db_client.bre_orp
     col = db.documents
 
     col.insert_one(
@@ -275,20 +278,19 @@ def handler(event, context):
 
     test_query = col.find_one(
         {
-            'uuid': uuid
+            "uuid": uuid
         }
     )
-
     print(test_query)
 
     db_client.close()
 
+    # Save the extracted as a text file in the bucket defined at the top
+    # The filename is the UUID created by the upload API
     s3_client.put_object(
         Body=text,
-        Bucket=bucket_name,
-        Key=f'processed/{uuid}.txt'
+        Bucket=DESTINATION_BUCKET,
+        Key=f"processed/{uuid}.txt"
     )
 
-    return {
-        'statusCode': 200
-    }
+    return {"statusCode": 200}
