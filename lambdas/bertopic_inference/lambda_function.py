@@ -13,10 +13,11 @@ from preprocess.preprocess_function import pre_process_tokenization_function
 import __main__
 
 
-# Change directory to tmp directory
+# Define new directory to tmp directory
 save_path = os.path.join('/tmp', 'mydir')
 os.makedirs(save_path)
 nltk.download('stopwords', download_dir = save_path)
+# nltk.download('punkt', download_dir = save_path)
 
 # Stopwords
 stopwords = open(os.path.join(save_path, "corpora/stopwords/english"), "r").read()
@@ -30,10 +31,16 @@ stopwords.extend(english_stop_words)
 def download_sample_text(
         s3_client,
         bucket='beis-orp-dev-ingest',
-        key='trigger-inference'):
+        prefix='trigger-inference'):
 
-    sample_text = s3_client.get_object(bucket, key)['Body'].read()
-    return sample_text
+    # sample_text = s3_client.get_object(bucket, prefix + "/0a14fd708bfa4f6b83d5cdafffb2e00b.txt")['Body'].read() 
+        response = s3_client.list_objects_v2(
+        Bucket=bucket, Prefix=prefix, StartAfter=prefix,)
+        s3_files = response["Contents"]
+        for s3_file in s3_files:
+            file_content = s3_client.get_object(
+                Bucket=bucket, Key=s3_file["Key"])["Body"].read().decode('utf-8') 
+        return file_content
 
 
 def download_model(
@@ -66,16 +73,15 @@ def split_list(a, n):
 
 
 def split_document_into_chunks(
-        self,
         documents: str):
 
     extended_docs = []
-    doclength = len(word_tokenize(documents))
+    doclength = len(documents.split(" "))
     number_to_split_into = round(doclength / 4000 + 0.5)  # round up
     if number_to_split_into <= 1:
         extended_docs.append(documents)
     else:
-        split_docs = list(self.split_list(documents, number_to_split_into))
+        split_docs = list(split_list(documents, number_to_split_into))
         for num_docs in range(0, number_to_split_into):
             extended_docs.append(split_docs[num_docs])
     return extended_docs
@@ -86,7 +92,7 @@ def classify_data(model, input_data):
     topics = []
     for i in range(0, len(split_document)):
         topic = model.transform(split_document[i])
-        topics.append(topic)
+        topics.append(topic[0][0])
         # prediction = model(input_data)
     return mode(topics)
 
