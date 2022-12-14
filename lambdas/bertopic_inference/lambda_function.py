@@ -10,6 +10,8 @@ from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 from smart_open import open as smart_open
 import io
 from preprocess.preprocess_function import pre_process_tokenization_function
+import __main__
+
 
 # Change directory to tmp directory
 save_path = os.path.join('/tmp', 'mydir')
@@ -26,22 +28,25 @@ stopwords.extend(english_stop_words)
 
 # Define download text from bucket function
 def download_sample_text(
-        s3_resource,
+        s3_client,
         bucket='beis-orp-dev-ingest',
         key='trigger-inference'):
 
-    sample_text = s3_resource.get_object(bucket, key)['Body'].read()
+    sample_text = s3_client.get_object(bucket, key)['Body'].read()
     return sample_text
 
 
 def download_model(
         s3_resource,
         bucket='beis-orp-dev-clustering-models',
-        key='051222_bertopic_longformer_kmeans3'):
+        key='051222_torch.pt'):
 
     save_path = os.path.join('/tmp', 'modeldir')
     os.makedirs(save_path)
     s3_resource.Bucket(bucket).download_file(key, os.path.join(save_path, key))
+    # Set prepreocess attribute
+    setattr(__main__, "pre_process_tokenization_function", pre_process_tokenization_function)
+    # Load the model in 
     with smart_open(os.path.join(save_path, key), 'rb') as f:
         buffer = io.BytesIO(f.read())
         model = torch.load(buffer)
@@ -119,7 +124,7 @@ def handler(event, context):
     
     # download text
     input_data = download_sample_text(
-        s3_resource=s3_resource)
+        s3_client=s3_client)
 
     # classify text
     topic = classify_data(model, input_data)
