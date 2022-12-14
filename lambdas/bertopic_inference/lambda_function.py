@@ -13,7 +13,7 @@ import nltk
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 from smart_open import open as smart_open
 import io
-
+from preprocess.preprocess_function import pre_process_tokenization_function
 
 # Change directory to tmp directory
 save_path = os.path.join('/tmp', 'mydir')
@@ -27,34 +27,6 @@ english_stop_words = [w for w in ENGLISH_STOP_WORDS]
 stopwords.extend(["use", "uses", "used", "www", "gov",
                    "uk", "guidance", "pubns", "page"])
 stopwords.extend(english_stop_words)
-
-
-# Define tokenization function
-def pre_process_tokenization_function(
-        documents: str,
-        stop_words,
-        wnl):
-
-    # Preprocess data after embeddings are created
-    text = BeautifulSoup(documents).get_text()
-    # fetch alphabetic characters
-    text = re.sub("[^a-zA-Z]", " ", text)
-    # define stopwords
-    remove_stop_words = set(stop_words)
-    # lowercase
-    text = text.lower()
-    # tokenize
-    word_tokens = word_tokenize(text)
-    filtered_sentence = []
-    for w in word_tokens:
-        if w not in remove_stop_words:
-            filtered_sentence.append(w)
-    # # Remove any small characters remaining
-    filtered_sentence = [word for word in filtered_sentence if len(word) > 1]
-    # # Lemmatise text
-    lemmatised_sentence = [wnl.lemmatize(word) for word in filtered_sentence]
-    return lemmatised_sentence
-
 
 # Define download text from bucket function
 def download_sample_text(
