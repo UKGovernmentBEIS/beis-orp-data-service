@@ -1,13 +1,9 @@
 import bertopic
+from nltk.tokenize import word_tokenize
 import boto3
 import os
 from statistics import mode
-from nltk.tokenize import word_tokenize
 import torch
-from bs4 import BeautifulSoup
-import re
-from nltk.stem import WordNetLemmatizer
-wnl = WordNetLemmatizer()
 import pickle
 import nltk
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS

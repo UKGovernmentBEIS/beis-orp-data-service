@@ -1,3 +1,8 @@
+from nltk.tokenize import word_tokenize
+from bs4 import BeautifulSoup
+import re
+from nltk.stem import WordNetLemmatizer
+wnl = WordNetLemmatizer()
 
 # Define tokenization function
 def pre_process_tokenization_function(

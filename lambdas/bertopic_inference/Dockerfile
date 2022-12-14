@@ -8,6 +8,7 @@ RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
 # Copy function code
 COPY lambda_function.py ${LAMBDA_TASK_ROOT}
+COPY preprocess/ ${LAMBDA_TASK_ROOT}/preprocess/
 
 # Set tmp directory
 ENV NUMBA_CACHE_DIR=/tmp/
