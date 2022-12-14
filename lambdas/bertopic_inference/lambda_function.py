@@ -16,10 +16,8 @@ import io
 
 
 # Change directory to tmp directory
-os.chdir('/tmp')
-if not os.path.exists(os.path.join('mydir')):
-    os.makedirs('mydir')
-save_path = os.path.join(os.getcwd(), 'mydir')
+save_path = os.path.join('/tmp', 'mydir')
+os.makedirs(save_path)
 nltk.download('stopwords', download_dir = save_path)
 
 # Stopwords
@@ -73,10 +71,8 @@ def download_model(
         bucket='beis-orp-dev-clustering-models',
         key='051222_bertopic_longformer_kmeans3'):
 
-    os.chdir('/tmp')
-    if not os.path.exists(os.path.join('modeldir')):
-        os.makedirs('modeldir')
-    save_path = os.path.join(os.getcwd(), 'modeldir')
+    save_path = os.path.join('/tmp', 'modeldir')
+    os.makedirs(save_path)
     s3_resource.Bucket(bucket).download_file(key, os.path.join(save_path, key))
     with smart_open(os.path.join(save_path, key), 'rb') as f:
         buffer = io.BytesIO(f.read())
