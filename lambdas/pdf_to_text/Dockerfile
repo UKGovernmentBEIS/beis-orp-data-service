@@ -2,11 +2,10 @@ FROM public.ecr.aws/lambda/python:3.9
 
 # Install the function's dependencies using file requirements.txt
 # from your project folder.
-
 COPY requirements.txt  .
 RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
-# Copy function code
+# Copy function code and certificates
 COPY pdf_to_text.py ${LAMBDA_TASK_ROOT}
 COPY rds-combined-ca-bundle.pem ${LAMBDA_TASK_ROOT}
 

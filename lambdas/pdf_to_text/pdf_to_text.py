@@ -9,14 +9,15 @@ from pdfminer.layout import LAParams, LTChar, LTFigure, LTTextBox, LTTextLine
 import re
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 import io
-# import os
-# import pymongo
-# from bson import ObjectId
+import pymongo
+
 
 MIN_CHARS = 6
 MAX_WORDS = 20
 MAX_CHARS = MAX_WORDS * 10
 TOLERANCE = 1e-06
+
+DESTINATION_BUCKET_NAME = 'beis-orp-dev-datalake'
 
 
 def make_parsing_state(*sequential, **named):
@@ -235,7 +236,6 @@ def extract_title_and_text_from_all_pages(doc_bytes_io):
 
 def handler(event, context):
     source_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
-    destination_bucket_name = 'beis-orp-dev-datalake'
     object_key = event["Records"][0]["s3"]["object"]["key"]
     object_size = event["Records"][0]["s3"]["object"]["size"]
 
@@ -261,33 +261,39 @@ def handler(event, context):
     print(
         f"New document in {source_bucket_name}: {object_key}, with size: {object_size}")
     print(f"Title of document: {title}")
-    print(f"Document text: {text}")
     print(f"UUID obtained is: {uuid}")
 
-    # Create a MongoDB client, open a connection to Amazon DocumentDB as a
-    # replica set and specify the read preference as secondary preferred
+    # Create a MongoDB client and open a connection to Amazon DocumentDB
+    db_client = pymongo.MongoClient(
+        ("mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc."
+         "eu-west-2.docdb.amazonaws.com:27017/?directConnection=true"),
+        tls=True,
+        tlsCAFile='./rds-combined-ca-bundle.pem'
+    )
 
-    # os.system('wget https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem')
+    print('Connected to DocumentDB')
 
-    # db_client = pymongo.MongoClient(
-    #     ("mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc."
-    #      "eu-west-2.docdb.amazonaws.com:27017/?ssl=true&ssl_ca_certs=rds-combined-ca-bundle.pem&"
-    #      "replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"))
-    # db = db_client.documents
-    # col = db.testing
+    db = db_client.bre_orp
+    collection = db.documents
 
-    # col.insert_one(
-    #     {
-    #         "title": title,
-    #         "uuid": uuid
-    #     }
-    # )
+    doc = {
+        "title": title,
+        "uuid": uuid
+    }
 
-    # db_client.close()
+    # Insert document to DB if it doesn't already exist
+    if not collection.find_one(doc):
+        collection.insert_one(doc)
+
+    # Test query and print the result to the screen
+    print(collection.find_one(doc))
+    print('Inserted document correctly')
+
+    db_client.close()
 
     s3_client.put_object(
         Body=text,
-        Bucket=destination_bucket_name,
+        Bucket=DESTINATION_BUCKET_NAME,
         Key=f'processed/{uuid}.txt',
         Metadata={
             'uuid': uuid
