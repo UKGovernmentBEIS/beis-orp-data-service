@@ -17,7 +17,7 @@ MAX_WORDS = 20
 MAX_CHARS = MAX_WORDS * 10
 TOLERANCE = 1e-06
 
-DESTINATION_BUCKET_NAME = 'beis-orp-dev-datalake'
+DESTINATION_BUCKET_NAME = "beis-orp-dev-datalake"
 
 
 def make_parsing_state(*sequential, **named):
@@ -176,9 +176,9 @@ def clean_text(text):
     text = re.sub("\\s+", " ", text)
     text = text.lower()
     text = text.replace("\t", " ")
-    text = re.sub('<.*?>', "", text)
+    text = re.sub("<.*?>", "", text)
     text = text.replace("_x000c_", "")
-    text = re.sub('\\s+', " ", text)
+    text = re.sub("\\s+", " ", text)
 
     return text
 
@@ -239,24 +239,24 @@ def handler(event, context):
     object_key = event["Records"][0]["s3"]["object"]["key"]
     object_size = event["Records"][0]["s3"]["object"]["size"]
 
-    s3_client = boto3.client('s3')
+    s3_client = boto3.client("s3")
 
     doc_stream = s3_client.get_object(
         Bucket=source_bucket_name,
         Key=object_key
-    )['Body']
+    )["Body"]
 
     metadata = s3_client.head_object(
         Bucket=source_bucket_name,
         Key=object_key
-    )['Metadata']
+    )["Metadata"]
 
     doc_bytes = doc_stream.read()
     doc_bytes_io = io.BytesIO(doc_bytes)
 
     title, text = extract_title_and_text_from_all_pages(doc_bytes_io)
 
-    uuid = metadata['uuid']
+    uuid = metadata["uuid"]
 
     print(
         f"New document in {source_bucket_name}: {object_key}, with size: {object_size}")
@@ -264,14 +264,14 @@ def handler(event, context):
     print(f"UUID obtained is: {uuid}")
 
     # Create a MongoDB client and open a connection to Amazon DocumentDB
+    print("Connecting to DocumentDB")
     db_client = pymongo.MongoClient(
         ("mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc."
          "eu-west-2.docdb.amazonaws.com:27017/?directConnection=true"),
         tls=True,
-        tlsCAFile='./rds-combined-ca-bundle.pem'
+        tlsCAFile="./rds-combined-ca-bundle.pem"
     )
-
-    print('Connected to DocumentDB')
+    print("Connected to DocumentDB")
 
     db = db_client.bre_orp
     collection = db.documents
@@ -284,22 +284,23 @@ def handler(event, context):
     # Insert document to DB if it doesn't already exist
     if not collection.find_one(doc):
         collection.insert_one(doc)
+        print("Inserted document to DocumentDB")
 
     # Test query and print the result to the screen
-    print(collection.find_one(doc))
-    print('Inserted document correctly')
-
+    print(f"Document inserted: {collection.find_one(doc)}")
     db_client.close()
 
+    print("Saving text to data lake")
     s3_client.put_object(
         Body=text,
         Bucket=DESTINATION_BUCKET_NAME,
-        Key=f'processed/{uuid}.txt',
+        Key=f"processed/{uuid}.txt",
         Metadata={
-            'uuid': uuid
+            "uuid": uuid
         }
     )
+    print("Saved text to data lake")
 
     return {
-        'statusCode': 200
+        "statusCode": 200
     }
