@@ -37,9 +37,8 @@ def download_sample_text(
         response = s3_client.list_objects_v2(
         Bucket=bucket, Prefix=prefix, StartAfter=prefix,)
         s3_files = response["Contents"]
-        for s3_file in s3_files:
-            file_content = s3_client.get_object(
-                Bucket=bucket, Key=s3_file["Key"])["Body"].read().decode('utf-8') 
+        latest = max(s3_files, key=lambda x: x['LastModified'])
+        file_content = s3_client.get_object(Bucket=bucket, Key=latest["Key"])["Body"].read().decode('utf-8') 
         return file_content
 
 
@@ -121,24 +120,12 @@ def handler(event, context):
     # uuid = metadata['uuid']
     test_uuid = "3d45dddd-0eae-401f-aaa2-1a0e3e93eece"
 
-    # print(f"Document text: {doc_text}")
-    # print(f"UUID obtained is: {uuid}")
-    # # Create a MongoDB client and open a connection to Amazon DocumentDB
-    # uri = "mongodb://ddbadmin:<insertYourPassword>@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc.eu-west-2.docdb.amazonaws.com:27017/?ssl=true&ssl_ca_certs=rds-combined-ca-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
-
-    # db_client = pymongo.MongoClient(uri)
-
-    # requests.get('https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem')
-
     db_client = pymongo.MongoClient(
         ("mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc."
          "eu-west-2.docdb.amazonaws.com:27017/?directConnection=true"),
         tls=True,
         tlsCAFile="./rds-combined-ca-bundle.pem"
     )
-
-    # db_client = pymongo.MongoClient('mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc.eu-west-2.docdb.amazonaws.com:27017/?tls=true&tlsCAFile=rds-combined-ca-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false') 
-    # col = db.testing
 
     print(db_client.list_database_names())
 
@@ -147,10 +134,6 @@ def handler(event, context):
     # Define document database
     db = db_client.bre_orp
     collection = db.documents
-
-    # doc = {
-    #     "uuid": test_uuid
-    # }
 
     # download model
     model = download_model(s3_resource = s3_resource)
