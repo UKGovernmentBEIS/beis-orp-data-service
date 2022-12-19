@@ -1,4 +1,5 @@
 import bertopic
+import pymongo
 from nltk.tokenize import word_tokenize
 import boto3
 import os
@@ -10,8 +11,8 @@ from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 from smart_open import open as smart_open
 import io
 from preprocess.preprocess_function import pre_process_tokenization_function
+import certifi
 import __main__
-
 
 # Define new directory to tmp directory
 save_path = os.path.join('/tmp', 'mydir')
@@ -33,7 +34,6 @@ def download_sample_text(
         bucket='beis-orp-dev-ingest',
         prefix='trigger-inference'):
 
-    # sample_text = s3_client.get_object(bucket, prefix + "/0a14fd708bfa4f6b83d5cdafffb2e00b.txt")['Body'].read() 
         response = s3_client.list_objects_v2(
         Bucket=bucket, Prefix=prefix, StartAfter=prefix,)
         s3_files = response["Contents"]
@@ -118,12 +118,37 @@ def handler(event, context):
         Key=object_key
     )['Metadata']
 
-    doc_bytes = doc_stream.read()
-    doc_text = doc_bytes.decode('utf8')
     # uuid = metadata['uuid']
+    test_uuid = "3d45dddd-0eae-401f-aaa2-1a0e3e93eece"
 
     # print(f"Document text: {doc_text}")
     # print(f"UUID obtained is: {uuid}")
+    # # Create a MongoDB client and open a connection to Amazon DocumentDB
+    # uri = "mongodb://ddbadmin:<insertYourPassword>@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc.eu-west-2.docdb.amazonaws.com:27017/?ssl=true&ssl_ca_certs=rds-combined-ca-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
+
+    # db_client = pymongo.MongoClient(uri)
+
+    # requests.get('https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem')
+
+    db_client = pymongo.MongoClient(
+        ("mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc."
+         "eu-west-2.docdb.amazonaws.com:27017/?ssl=true&ssl_ca_certs=rds-combined-ca-bundle.pem&"
+         "replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"), tlsCAFile=certifi.where())
+
+    # db_client = pymongo.MongoClient('mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc.eu-west-2.docdb.amazonaws.com:27017/?tls=true&tlsCAFile=rds-combined-ca-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false') 
+    # col = db.testing
+
+    print(db_client.list_database_names())
+
+    print("Connected to DocumentDB")
+    
+    # Define document database
+    db = db_client.bre_orp
+    collection = db.documents
+
+    doc = {
+        "uuid": test_uuid
+    }
 
     # download model
     model = download_model(s3_resource = s3_resource)
@@ -134,13 +159,15 @@ def handler(event, context):
 
     # classify text
     topic = classify_data(model, input_data)
-    if topic:
-        return {
-            'statusCode': 200,
-            'class': topic
+    print("Topic predicted")
+
+    # Insert document to DB 
+    db.bre_orp.update_one({"uuid": test_uuid}, {"$set": {"topic": topic}})
+    db_client.close()
+    print("Topic updated in documentDB")
+
+    return {
+        'statusCode': 200
         }
-    else:
-        return {
-            'statusCode': 404,
-            'class': None
-        }
+
+
