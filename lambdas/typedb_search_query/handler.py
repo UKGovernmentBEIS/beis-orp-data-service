@@ -12,7 +12,7 @@ from typedb.client import TransactionType, SessionType, TypeDB
 from datetime import datetime
 
 
-return_vals = ['title', 'summary', 'document_uid', 'legislative_origins','regulator_id', 'uri', 'date_uploaded', 'data_published', 'version']
+return_vals = ['title', 'summary', 'document_uid', 'legislative_origins','regulator_id', 'uri', 'date_uploaded', 'data_published', 'version', 'object_key']
 leg_vals = ['url', 'title', 'leg_type', 'leg_division']
 
 LOGGER = logging.getLogger()
@@ -87,7 +87,7 @@ def lambda_handler(ev, context):
         ans = matchgroupquery(query, session)
         num_ret = len(ans)
         res = [dict(getUniqueResult(a.concept_maps())) for a in ans[:10]]
-        LOGGER.info(f"Ret -> {len(res)}")
+        LOGGER.info(f"Ret -> {num_ret}")
         # Query the graph database for legislative origins
         LOGGER.info("Querying the graph for legislative origins")
         for doc in res:
