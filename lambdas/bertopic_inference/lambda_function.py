@@ -132,8 +132,10 @@ def handler(event, context):
 
     db_client = pymongo.MongoClient(
         ("mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc."
-         "eu-west-2.docdb.amazonaws.com:27017/?ssl=true&ssl_ca_certs=rds-combined-ca-bundle.pem&"
-         "replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"), tlsCAFile=certifi.where())
+         "eu-west-2.docdb.amazonaws.com:27017/?directConnection=true"),
+        tls=True,
+        tlsCAFile="./rds-combined-ca-bundle.pem"
+    )
 
     # db_client = pymongo.MongoClient('mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc.eu-west-2.docdb.amazonaws.com:27017/?tls=true&tlsCAFile=rds-combined-ca-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false') 
     # col = db.testing
