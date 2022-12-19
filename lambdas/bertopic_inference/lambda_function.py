@@ -148,9 +148,9 @@ def handler(event, context):
     db = db_client.bre_orp
     collection = db.documents
 
-    doc = {
-        "uuid": test_uuid
-    }
+    # doc = {
+    #     "uuid": test_uuid
+    # }
 
     # download model
     model = download_model(s3_resource = s3_resource)
@@ -161,10 +161,20 @@ def handler(event, context):
 
     # classify text
     topic = classify_data(model, input_data)
-    print("Topic predicted")
+
+    # Map names back onto topics
+    if topic == 0:
+        topic = "0_equipment_executive_exposure_assessment"
+    if topic == 1:
+        topic = "1_supplier_electricity_scheme_measure"
+    if topic == 2:
+        topic = "2_waste_soil_emission_monitoring"
+
+    print(f"Topic predicted is: {topic}")
 
     # Insert document to DB 
-    db.bre_orp.update_one({"uuid": test_uuid}, {"$set": {"topic": topic}})
+    print(collection.find_one({"uuid": test_uuid}))
+    collection.find_one_and_update({"uuid": test_uuid}, {"$set": {"topic": topic}})
     db_client.close()
     print("Topic updated in documentDB")
 
