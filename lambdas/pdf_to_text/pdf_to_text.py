@@ -234,6 +234,15 @@ def extract_title_and_text_from_all_pages(doc_bytes_io):
     return cleaned_title, cleaned_text
 
 
+def extract_summary(text, title):
+    """
+    Define function to create a summary of the document
+    i.e first 80 characters of the document
+    """
+    summary = ' '.join(re.sub(title, "", clean_text(text)).split(' ')[:80])
+    return summary
+
+
 def handler(event, context):
     source_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
     object_key = event["Records"][0]["s3"]["object"]["key"]
@@ -255,6 +264,7 @@ def handler(event, context):
     doc_bytes_io = io.BytesIO(doc_bytes)
 
     title, text = extract_title_and_text_from_all_pages(doc_bytes_io)
+    summary = extract_summary(text, title)
 
     uuid = metadata["uuid"]
 
@@ -278,7 +288,8 @@ def handler(event, context):
 
     doc = {
         "title": title,
-        "uuid": uuid
+        "uuid": uuid,
+        "summary": summary
     }
 
     # Insert document to DB if it doesn't already exist
