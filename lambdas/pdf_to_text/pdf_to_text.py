@@ -246,7 +246,6 @@ def extract_summary(text, title):
 def handler(event, context):
     source_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
     object_key = event["Records"][0]["s3"]["object"]["key"]
-    object_size = event["Records"][0]["s3"]["object"]["size"]
 
     s3_client = boto3.client("s3")
 
@@ -269,7 +268,7 @@ def handler(event, context):
     uuid = metadata["uuid"]
 
     print(
-        f"New document in {source_bucket_name}: {object_key}, with size: {object_size}")
+        f"New document in {source_bucket_name}: {object_key}")
     print(f"Title of document: {title}")
     print(f"UUID obtained is: {uuid}")
 
@@ -288,8 +287,10 @@ def handler(event, context):
 
     doc = {
         "title": title,
-        "uuid": uuid,
-        "summary": summary
+        "document_uid": uuid,
+        "summary": summary,
+        "uri": f"s3://{source_bucket_name}/{object_key}",
+        "object_key": object_key
     }
 
     # Insert document to DB if it doesn't already exist
@@ -313,5 +314,6 @@ def handler(event, context):
     print("Saved text to data lake")
 
     return {
-        "statusCode": 200
+        "statusCode": 200,
+        "documentUUID": uuid
     }
