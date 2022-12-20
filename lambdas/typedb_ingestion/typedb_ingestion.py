@@ -9,8 +9,8 @@ DESTINATION_QUEUE_URL = "https://sqs.eu-west-2.amazonaws.com/455762151948/update
 
 
 def handler(event, context):
-    print(event["Records"][0])
-    document_uuid = event["Records"][0]["s3"]["lambda"]["document_uuid"]
+    print(f"Event received: {event}")
+    document_uuid = event["document_uuid"]
 
     # Create a MongoDB client and open a connection to Amazon DocumentDB
     print("Connecting to DocumentDB")
@@ -31,10 +31,11 @@ def handler(event, context):
     # Find document matching the UUID
     document = collection.find_one(query)
 
-    # Test query and print the result to the screen
+    # Print the query result to the screen
     print(f"Document found: {document}")
     db_client.close()
 
+    # Create an SQS client and send the document
     sqs = boto3.client("sqs")
     print("Sending document to SQS")
     response = sqs.send_message(
