@@ -113,13 +113,13 @@ def handler(event, context):
 
     uuid = metadata['uuid']
 
+    print("Connecting to DocumentDB")
     db_client = pymongo.MongoClient(
         ("mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc."
          "eu-west-2.docdb.amazonaws.com:27017/?directConnection=true"),
         tls=True,
         tlsCAFile="./rds-combined-ca-bundle.pem"
     )
-
     print("Connected to DocumentDB")
 
     # Define document database
@@ -147,11 +147,13 @@ def handler(event, context):
     print(f"Topic predicted is: {topic}")
 
     # Insert document to DB
-    print(collection.find_one({"uuid": uuid}))
-    collection.find_one_and_update({"uuid": uuid}, {"$set": {"topic": topic}})
+    print(collection.find_one({"document_uid": uuid}))
+    collection.find_one_and_update({"document_uid": uuid}, {
+                                   "$set": {"regulatory_topic": topic}})
     db_client.close()
     print("Topic updated in documentDB")
 
     return {
-        'statusCode': 200
+        "statusCode": 200,
+        "document_uid": uuid
     }

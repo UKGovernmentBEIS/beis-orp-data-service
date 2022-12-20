@@ -7,7 +7,7 @@ COPY requirements.txt  .
 RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
 # Copy function code
-COPY lambda_function.py ${LAMBDA_TASK_ROOT}
+COPY bertopic_inference.py ${LAMBDA_TASK_ROOT}
 COPY preprocess/ ${LAMBDA_TASK_ROOT}/preprocess/
 COPY rds-combined-ca-bundle.pem ${LAMBDA_TASK_ROOT}
 
