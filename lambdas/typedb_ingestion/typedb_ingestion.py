@@ -25,7 +25,7 @@ def handler(event, context):
     collection = db.documents
 
     query = {
-        "uuid": document_uuid
+        "document_uid": document_uuid
     }
 
     # Find document matching the UUID
