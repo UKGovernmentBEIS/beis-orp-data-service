@@ -111,7 +111,7 @@ def handler(event, context):
         Key=object_key
     )['Metadata']
 
-    uuid = metadata['uuid']
+    document_uid = metadata['uuid']
 
     print("Connecting to DocumentDB")
     db_client = pymongo.MongoClient(
@@ -147,13 +147,14 @@ def handler(event, context):
     print(f"Topic predicted is: {topic}")
 
     # Insert document to DB
-    print(collection.find_one({"document_uid": uuid}))
-    collection.find_one_and_update({"document_uid": uuid}, {
+    print(collection.find_one({"document_uid": document_uid}))
+    collection.find_one_and_update({"document_uid": document_uid}, {
                                    "$set": {"regulatory_topic": topic}})
     db_client.close()
     print("Topic updated in documentDB")
 
     return {
         "statusCode": 200,
-        "document_uid": uuid
+        "document_uid": document_uid,
+        "object_key": object_key
     }
