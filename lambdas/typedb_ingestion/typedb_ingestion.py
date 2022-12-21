@@ -10,7 +10,7 @@ DESTINATION_QUEUE_URL = "https://sqs.eu-west-2.amazonaws.com/455762151948/update
 
 def handler(event, context):
     print(f"Event received: {event}")
-    document_uuid = event["document_uuid"]
+    document_uid = event["document_uid"]
 
     # Create a MongoDB client and open a connection to Amazon DocumentDB
     print("Connecting to DocumentDB")
@@ -25,11 +25,12 @@ def handler(event, context):
     collection = db.documents
 
     query = {
-        "document_uid": document_uuid
+        "document_uid": document_uid
     }
 
     # Find document matching the UUID
     document = collection.find_one(query)
+    del document['_id']
 
     # Print the query result to the screen
     print(f"Document found: {document}")
