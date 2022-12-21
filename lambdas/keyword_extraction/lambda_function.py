@@ -1,20 +1,23 @@
 import pymongo
 import boto3
-from keybert import KeyBERT
+# from keybert import KeyBERT
 import wordninja
 from sklearn.feature_extraction.text import CountVectorizer
 import os
 import re
-from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
-import nltk
+# from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+# import nltk
 from smart_open import open as smart_open
 import torch
 import io
 from nltk.tokenize import word_tokenize
 from bs4 import BeautifulSoup
 from nltk.stem import WordNetLemmatizer
+
+print('Initiating WordNetLemmatizer')
 wnl = WordNetLemmatizer()
-import zipfile
+print('Initiated WordNetLemmatizer')
+
 
 # # Define new directory to tmp directory
 save_path = os.path.join('/tmp', 'stopword_dir')
@@ -42,7 +45,7 @@ stopwords = open("./stopwords.txt", "r")
 stopwords = stopwords.read()
 stopwords = [i for i in stopwords.split("\n")]
 stopwords.extend(["use", "uses", "used", "www", "gov",
-                   "uk", "guidance", "pubns", "page"])
+                  "uk", "guidance", "pubns", "page"])
 
 # Import KeyBERT
 # model_path = os.path.join('/tmp', 'modeldir')
@@ -51,7 +54,8 @@ stopwords.extend(["use", "uses", "used", "www", "gov",
 #     f.write(kw_model = KeyBERT())
 #     f.close()
 
-# from tempfile import NamedTemporaryFile 
+# from tempfile import NamedTemporaryFile
+
 
 def download_model(
         s3_resource,
@@ -68,10 +72,12 @@ def download_model(
         return model
 
 # Define tokenization function
+
+
 def pre_process_tokenization_function(
         documents: str,
-        stop_words = stopwords,
-        wnl = wnl):
+        stop_words=stopwords,
+        wnl=wnl):
 
     # Preprocess data after embeddings are created
     text = BeautifulSoup(documents).get_text()
@@ -93,29 +99,38 @@ def pre_process_tokenization_function(
     lemmatised_sentence = [wnl.lemmatize(word) for word in filtered_sentence]
     return lemmatised_sentence
 
+
 # Vectorizer model
-vectorizer_model= CountVectorizer(stop_words="english", tokenizer = pre_process_tokenization_function) # prevents noise and improves representation of clusters
+# prevents noise and improves representation of clusters
+vectorizer_model = CountVectorizer(
+    stop_words="english",
+    tokenizer=pre_process_tokenization_function)
 
 # Define download text from bucket function
+
+
 def download_sample_text(
         s3_client,
         bucket='beis-orp-dev-datalake',
         prefix='processed_keyword_extraction'):
 
-        response = s3_client.list_objects_v2(
+    response = s3_client.list_objects_v2(
         Bucket=bucket, Prefix=prefix, StartAfter=prefix,)
-        s3_files = response["Contents"]
-        latest = max(s3_files, key=lambda x: x['LastModified'])
-        file_content = s3_client.get_object(Bucket=bucket, Key=latest["Key"])["Body"].read().decode('utf-8') 
-        return file_content
+    s3_files = response["Contents"]
+    latest = max(s3_files, key=lambda x: x['LastModified'])
+    file_content = s3_client.get_object(Bucket=bucket, Key=latest["Key"])[
+        "Body"].read().decode('utf-8')
+    return file_content
 
 # Extract keywords
+
+
 def extract_keywords(text, kw_model):
     text = re.sub("Health and Safety Executive", "", text)
     text = re.sub("Ofgem", "", text)
-    text = re.sub("Environmental Agency","", text)
+    text = re.sub("Environmental Agency", "", text)
     text = " ".join(wordninja.split(text))
-    keywords = kw_model.extract_keywords(text, vectorizer = vectorizer_model, top_n = 10)
+    keywords = kw_model.extract_keywords(text, vectorizer=vectorizer_model, top_n=10)
     return keywords
 
 
@@ -165,19 +180,18 @@ def handler(event, context):
     print(db_client.list_database_names())
 
     print("Connected to DocumentDB")
-    
+
     # Define document database
     db = db_client.bre_orp
     collection = db.documents
 
-    # Insert document to DB 
+    # Insert document to DB
     print(collection.find_one({"document_uid": test_uuid}))
-    collection.find_one_and_update({"document_uid": test_uuid}, {"$set": {"keywords": keywords}})
+    collection.find_one_and_update({"document_uid": test_uuid}, {
+                                   "$set": {"keywords": keywords}})
     db_client.close()
     print("Keywords updated in documentDB")
 
     return {
         'statusCode': 200
-        }
-    
-
+    }
