@@ -102,9 +102,8 @@ def extract_keywords(text, kw_model):
 def handler(event, context):
 
     print(f"Event received: {event}")
-    # document_uid = event["document_uid"]
-    # object_key = event["object_key"]
-    object_key = event["Records"][0]["s3"]["object"]["key"]
+    document_uid = event["document_uid"]
+    object_key = event["object_key"]
 
     s3_client = boto3.client('s3')
     s3_resource = boto3.resource('s3')
@@ -121,8 +120,6 @@ def handler(event, context):
 
     print(f"Keywords predicted are: {keywords}")
 
-    test_uuid = "3d45dddd-0eae-401f-aaa2-1a0e3e93eece"
-
     # Connect to documentDB
     db_client = pymongo.MongoClient(
         ("mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc."
@@ -138,14 +135,14 @@ def handler(event, context):
     collection = db.documents
 
     # Insert document to DB
-    print(collection.find_one({"document_uid": test_uuid}))
-    collection.find_one_and_update({"document_uid": test_uuid}, {
+    print(collection.find_one({"document_uid": document_uid}))
+    collection.find_one_and_update({"document_uid": document_uid}, {
                                    "$set": {"keywords": keywords}})
     db_client.close()
     print("Keywords updated in documentDB")
 
     return {
         "statusCode": 200,
-        "document_uid": test_uuid,
+        "document_uid": document_uid,
         "object_key": object_key
     }
