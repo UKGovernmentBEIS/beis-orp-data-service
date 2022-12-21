@@ -1,5 +1,7 @@
 import boto3
-from PyPDF2 import PdfFileReader
+import pdfplumber
+import difflib
+from PyPDF2 import PdfFileReader, PdfReader
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
@@ -18,6 +20,14 @@ MAX_CHARS = MAX_WORDS * 10
 TOLERANCE = 1e-06
 
 DESTINATION_BUCKET_NAME = "beis-orp-dev-datalake"
+
+regulator_name_list = [
+    "Health and Safety Executive",
+    "HSE",
+    "Ofgem",
+    "Environmental Agency",
+    "EA",
+]
 
 
 def make_parsing_state(*sequential, **named):
@@ -184,8 +194,8 @@ def clean_text(text):
 
 
 def extract_title_and_text_from_all_pages(doc_bytes_io):
-    pdf_reader = PdfFileReader(doc_bytes_io)
-    title = pdf_reader.getDocumentInfo().title
+    # pdf_reader = PdfFileReader(doc_bytes_io)
+    # title = pdf_reader.getDocumentInfo().title
 
     parser = PDFParser(doc_bytes_io)
     doc = PDFDocument(parser, "")
@@ -221,23 +231,175 @@ def extract_title_and_text_from_all_pages(doc_bytes_io):
 
     cleaned_text = clean_text(text)
 
-    # Remove unprocessed CID text
-    title = re.sub(
+    title = largest_text_per_page[0]
+
+    title["contents"] = re.sub(
         r"(\(cid:[0-9 \t-]*\))*",
         "",
-        title
-    )
+        title["contents"])
 
     # Clean title
-    cleaned_title = clean_text(title)
+    cleaned_title = clean_text(title["contents"])
 
     return cleaned_title, cleaned_text
+
+
+def select_page_with_text(pdf):
+    """
+    Open and read a pdf
+    Extract the number of pages
+    Extract from text from each page
+    The first page with length of text greater than 10 is returned
+    """
+    try:
+        # Find number of pages in pdf
+        with open(pdf, "rb") as f:
+            number_of_pages = PdfReader(f).numPages
+            f.close()
+            pdf = pdfplumber.open(pdf)
+            for page_number in range(0, number_of_pages):
+                text = pdf.pages[page_number].extract_text()
+                if len(text) > 10:
+                    return page_number
+                else:
+                    continue
+    except AttributeError:
+        print("PDF is not machine readable")
+
+
+def get_bold_text_from_pdf(pdf, page_number):
+    """
+    Extract text in bold text
+    If the text in bold is empty
+    Extract and return text from the page given
+    """
+    with pdfplumber.open(pdf) as opened_pdf:
+        text = opened_pdf.pages[page_number]
+        bold_text = text.filter(
+            lambda obj: obj["object_type"] == "char" and "Bold" in obj["fontname"]
+        )
+        title = bold_text.extract_text()
+        # If length of title is nothing, try take extracted words from
+        # the page read as the title
+        if (
+            len(clean_text(title).split(" ")) <= 3
+            or len(
+                [
+                    1
+                    for regulator_name in regulator_name_list
+                    if clean_text(title) == regulator_name
+                ]
+            )
+            > 0
+        ):
+            return ""
+        else:
+            return clean_text(title)
+
+
+def get_title_from_metadata(pdf):
+    """
+    Extract title from metadata of the pdf
+    """
+    with open(pdf, "rb") as f:
+        pdf_reader = PdfFileReader(f)
+        title = pdf_reader.getDocumentInfo().title
+        return title
+
+
+def metadata_title_similarity_score(meta_title, text):
+    large_string = re.sub(r"[^\w\s]", "", text[0:300])
+    query_string = re.sub(r"[^\w\s]", "", meta_title)
+    for reg_name in regulator_name_list:
+        query_string = re.sub(reg_name, "", query_string)
+    s = difflib.SequenceMatcher(None, large_string, query_string)
+    similarity_of_title_to_first_few_lines = sum(
+        n for i, j, n in s.get_matching_blocks()
+    ) / float(len(query_string) + 1)
+    return similarity_of_title_to_first_few_lines
+
+
+def get_title_and_text(pdf):
+    """
+    This function brings together all previous functions
+    and applies heuristics for when to apply each function
+    """
+    # Get page number
+    page_number = select_page_with_text(pdf)
+    # Try get title from metadata first
+    meta_title = str(get_title_from_metadata(pdf))
+    clean_meta_title = clean_text(meta_title)
+    # Get title and text from text
+    title, text = extract_title_and_text_from_all_pages(pdf)
+    clean_title = clean_text(title)
+    # Define junk titles
+    junk_titles = [
+        "Date",
+        "Microsoft Word",
+        "email",
+        "Enter your title here",
+        "Email:",
+        "To:",
+        "Dear",
+        "@",
+    ]
+    # Get similarity score
+    similarity_score = metadata_title_similarity_score(
+        meta_title, text)
+    # If title is either none, too short, contains junk title
+    # keywords, is entirely numeric, then get bold text from pdf
+    if (
+        (similarity_score < 0.7)
+        or (clean_meta_title == "None")
+        or (len(clean_meta_title.split(" ")) <= 3)
+        or any(
+            item in " ".join(clean_meta_title.split(" ")[0:10]) for item in junk_titles
+        )
+        or (re.sub(" ", "", re.sub(r"[^\w\s]", "", clean_meta_title)).isnumeric())
+    ):
+        # If the title text is still too short, is only numeric, or is
+        # only regulator name
+        if (
+            (len(clean_title.split(" ")) <= 3)
+            or (re.sub(" ", "", re.sub(r"[^\w\s]", "", clean_title)).isnumeric())
+            or any(regulator_name == title for regulator_name in regulator_name_list)
+        ):
+            bold_title = get_bold_text_from_pdf(pdf, page_number)
+            if bold_title == "":
+                return " ".join(text.split(" ")[0:25]) + "...", text
+            else:
+                return bold_title, text
+        else:
+            return title, text
+    else:
+        return clean_text(meta_title), text
+
+
+def cut_title(title):
+    """
+    Cuts title length down to 25 tokens
+    """
+    title = re.sub("Figure 1", "", title)
+    title = re.sub(r"[^\w\s]", "", title)
+    if len(str(title).split(" ")) > 25:
+        title = " ".join(title.split(" ")[0:25]) + "..."
+        return title
+    else:
+        return title
+
+
+def extract_summary(text, title):
+    """
+    Define function to create a summary of the document
+    i.e first 80 characters of the document
+    """
+    summary = ' '.join(re.sub(title, "", clean_text(text)).split(' ')[:80])
+    return summary
 
 
 def handler(event, context):
     source_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
     object_key = event["Records"][0]["s3"]["object"]["key"]
-    object_size = event["Records"][0]["s3"]["object"]["size"]
 
     s3_client = boto3.client("s3")
 
@@ -255,11 +417,12 @@ def handler(event, context):
     doc_bytes_io = io.BytesIO(doc_bytes)
 
     title, text = extract_title_and_text_from_all_pages(doc_bytes_io)
+    summary = extract_summary(text, title)
 
     uuid = metadata["uuid"]
 
     print(
-        f"New document in {source_bucket_name}: {object_key}, with size: {object_size}")
+        f"New document in {source_bucket_name}: {object_key}")
     print(f"Title of document: {title}")
     print(f"UUID obtained is: {uuid}")
 
@@ -278,7 +441,10 @@ def handler(event, context):
 
     doc = {
         "title": title,
-        "uuid": uuid
+        "document_uid": uuid,
+        "summary": summary,
+        "uri": f"s3://{source_bucket_name}/{object_key}",
+        "object_key": object_key
     }
 
     # Insert document to DB if it doesn't already exist
@@ -302,5 +468,6 @@ def handler(event, context):
     print("Saved text to data lake")
 
     return {
-        "statusCode": 200
+        "statusCode": 200,
+        "document_uid": uuid
     }
