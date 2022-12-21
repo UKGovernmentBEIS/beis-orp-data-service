@@ -5,7 +5,6 @@ import wordninja
 from sklearn.feature_extraction.text import CountVectorizer
 import os
 import re
-from preprocess.preprocess_function import pre_process_tokenization_function
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 import nltk
 from smart_open import open as smart_open
@@ -15,15 +14,19 @@ from nltk.tokenize import word_tokenize
 from bs4 import BeautifulSoup
 from nltk.stem import WordNetLemmatizer
 wnl = WordNetLemmatizer()
+import zipfile
 
 # # Define new directory to tmp directory
 save_path = os.path.join('/tmp', 'stopword_dir')
 os.makedirs(save_path, exist_ok=True)
 # nltk.download('stopwords', download_dir = save_path)
-# nltk.download('punkt', download_dir='nltk_data/')
-# nltk.download('wordnet', download_dir = 'nltk_data/')
-# nltk.download('omw-1.4', download_dir = 'nltk_data/')
+# nltk.download('punkt', download_dir=save_path)
+nltk.download('wordnet', download_dir = save_path)
+nltk.download('omw-1.4', download_dir = save_path)
 # nltk.download('punkt')
+
+with zipfile.ZipFile(os.path.join(save_path, "corpora"), 'r') as zip_ref:
+    zip_ref.extractall(os.path.join(save_path, "corpora"))
 
 # # Stopwords
 # stopwords = open(os.path.join(save_path, "corpora/stopwords/english"), "r").read()
@@ -32,6 +35,8 @@ os.makedirs(save_path, exist_ok=True)
 # stopwords.extend(["use", "uses", "used", "www", "gov",
 #                    "uk", "guidance", "pubns", "page"])
 # stopwords.extend(english_stop_words)
+
+nltk.data.path.append("keyword_extraction/nltk_data")
 
 stopwords = open("./stopwords.txt", "r")
 stopwords = stopwords.read()
