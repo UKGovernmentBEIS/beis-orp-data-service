@@ -20,7 +20,10 @@ wnl = WordNetLemmatizer()
 save_path = os.path.join('/tmp', 'stopword_dir')
 os.makedirs(save_path, exist_ok=True)
 # nltk.download('stopwords', download_dir = save_path)
-nltk.download('punkt', download_dir = save_path)
+# nltk.download('punkt', download_dir='nltk_data/')
+# nltk.download('wordnet', download_dir = 'nltk_data/')
+# nltk.download('omw-1.4', download_dir = 'nltk_data/')
+# nltk.download('punkt')
 
 # # Stopwords
 # stopwords = open(os.path.join(save_path, "corpora/stopwords/english"), "r").read()

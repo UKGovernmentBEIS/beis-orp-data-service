@@ -11,6 +11,7 @@ COPY lambda_function.py ${LAMBDA_TASK_ROOT}
 COPY preprocess/ ${LAMBDA_TASK_ROOT}/preprocess/
 COPY stopwords.txt ${LAMBDA_TASK_ROOT}
 COPY rds-combined-ca-bundle.pem ${LAMBDA_TASK_ROOT}
+COPY nltk_data ./nltk_data ${LAMBDA_TASK_ROOT}
 
 # Set tmp directory
 ENV NUMBA_CACHE_DIR=/tmp/
