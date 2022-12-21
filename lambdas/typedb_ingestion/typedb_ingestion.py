@@ -10,7 +10,7 @@ DESTINATION_QUEUE_URL = "https://sqs.eu-west-2.amazonaws.com/455762151948/update
 
 def handler(event, context):
     print(f"Event received: {event}")
-    document_uid = event["document_uid"]
+    document_uid = event["responsePayload"]["document_uid"]
 
     # Create a MongoDB client and open a connection to Amazon DocumentDB
     db_client = pymongo.MongoClient(
