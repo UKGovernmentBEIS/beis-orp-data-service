@@ -53,14 +53,6 @@ stopwords = [i for i in stopwords.split("\n")]
 stopwords.extend(["use", "uses", "used", "www", "gov",
                   "uk", "guidance", "pubns", "page"])
 
-# Import KeyBERT
-# model_path = os.path.join('/tmp', 'modeldir')
-# os.makedirs(model_path)
-# with open(model_path + "/keybert.py", "rb") as f:
-#     f.write(kw_model = KeyBERT())
-#     f.close()
-
-# from tempfile import NamedTemporaryFile
 
 
 def download_model(
@@ -142,11 +134,11 @@ def extract_keywords(text, kw_model):
 
 def handler(event, context):
 
-    bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
-    object_key = event["Records"][0]["s3"]["object"]["key"]
-    object_size = event["Records"][0]["s3"]["object"]["size"]
+    # bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
+    # object_key = event["Records"][0]["s3"]["object"]["key"]
+    # object_size = event["Records"][0]["s3"]["object"]["size"]
 
-    print(f"New document in {bucket_name}: {object_key}, with size: {object_size}")
+    # print(f"New document in {bucket_name}: {object_key}, with size: {object_size}")
 
     s3_client = boto3.client('s3')
     s3_resource = boto3.resource('s3')
