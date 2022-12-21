@@ -11,13 +11,16 @@ import nltk
 from smart_open import open as smart_open
 import torch
 import io
-
+from nltk.tokenize import word_tokenize
+from bs4 import BeautifulSoup
+from nltk.stem import WordNetLemmatizer
+wnl = WordNetLemmatizer()
 
 # # Define new directory to tmp directory
-# save_path = os.path.join('/tmp', 'stopword_dir')
-# os.makedirs(save_path, exist_ok=True)
+save_path = os.path.join('/tmp', 'stopword_dir')
+os.makedirs(save_path, exist_ok=True)
 # nltk.download('stopwords', download_dir = save_path)
-# # nltk.download('punkt', download_dir = save_path)
+nltk.download('punkt', download_dir = save_path)
 
 # # Stopwords
 # stopwords = open(os.path.join(save_path, "corpora/stopwords/english"), "r").read()
@@ -55,6 +58,32 @@ def download_model(
         buffer = io.BytesIO(f.read())
         model = torch.load(buffer)
         return model
+
+# Define tokenization function
+def pre_process_tokenization_function(
+        documents: str,
+        stop_words = stopwords,
+        wnl = wnl):
+
+    # Preprocess data after embeddings are created
+    text = BeautifulSoup(documents).get_text()
+    # fetch alphabetic characters
+    text = re.sub("[^a-zA-Z]", " ", text)
+    # define stopwords
+    remove_stop_words = set(stop_words)
+    # lowercase
+    text = text.lower()
+    # tokenize
+    word_tokens = word_tokenize(text)
+    filtered_sentence = []
+    for w in word_tokens:
+        if w not in remove_stop_words:
+            filtered_sentence.append(w)
+    # # Remove any small characters remaining
+    filtered_sentence = [word for word in filtered_sentence if len(word) > 1]
+    # # Lemmatise text
+    lemmatised_sentence = [wnl.lemmatize(word) for word in filtered_sentence]
+    return lemmatised_sentence
 
 # Vectorizer model
 vectorizer_model= CountVectorizer(stop_words="english", tokenizer = pre_process_tokenization_function) # prevents noise and improves representation of clusters
@@ -104,8 +133,20 @@ def handler(event, context):
     # )['Metadata']
 
     # uuid = metadata['uuid']
+
+    # download text
+    input_data = download_sample_text(
+        s3_client=s3_client)
+
+    # classify text
+    kw_model = download_model(s3_resource)
+    keywords = extract_keywords(input_data, kw_model)
+
+    print(f"Keywords predicted are: {keywords}")
+
     test_uuid = "3d45dddd-0eae-401f-aaa2-1a0e3e93eece"
 
+    # Connect to documentDB
     db_client = pymongo.MongoClient(
         ("mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc."
          "eu-west-2.docdb.amazonaws.com:27017/?directConnection=true"),
@@ -120,16 +161,6 @@ def handler(event, context):
     # Define document database
     db = db_client.bre_orp
     collection = db.documents
-    
-    # download text
-    input_data = download_sample_text(
-        s3_client=s3_client)
-
-    # classify text
-    kw_model = download_model(s3_resource)
-    keywords = extract_keywords(input_data, kw_model)
-
-    print(f"Keywords predicted are: {keywords}")
 
     # Insert document to DB 
     print(collection.find_one({"document_uid": test_uuid}))
