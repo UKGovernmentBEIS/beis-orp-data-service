@@ -13,7 +13,6 @@ def handler(event, context):
     document_uid = event["document_uid"]
 
     # Create a MongoDB client and open a connection to Amazon DocumentDB
-    print("Connecting to DocumentDB")
     db_client = pymongo.MongoClient(
         SOURCE_DATABASE,
         tls=True,
@@ -23,7 +22,6 @@ def handler(event, context):
 
     db = db_client.bre_orp
     collection = db.documents
-
     query = {
         "document_uid": document_uid
     }
@@ -45,7 +43,4 @@ def handler(event, context):
     )
 
     print(response)
-
-    return {
-        "statusCode": 200
-    }
+    return response
