@@ -469,5 +469,5 @@ def handler(event, context):
 
     return {
         "statusCode": 200,
-        "documentUUID": uuid
+        "document_uid": uuid
     }
