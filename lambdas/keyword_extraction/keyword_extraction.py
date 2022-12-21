@@ -16,21 +16,24 @@ import zipfile
 
 SOURCE_BUCKET = "beis-orp-dev-datalake"
 
+print('Initiating WordNetLemmatizer')
 wnl = WordNetLemmatizer()
 print('Initiated WordNetLemmatizer')
 
 # Define new directory to tmp directory
 save_path = os.path.join('/tmp', 'nltk_data')
 os.makedirs(save_path, exist_ok=True)
-
 nltk.download('wordnet', download_dir=save_path)
 nltk.download('omw-1.4', download_dir=save_path)
+nltk.download('punkt', download_dir=save_path)
 
-# Unzip wordnet
+# Unzip all resources
 with zipfile.ZipFile(os.path.join(save_path, "corpora", "wordnet.zip"), 'r') as zip_ref:
     zip_ref.extractall(os.path.join(save_path, "corpora"))
 with zipfile.ZipFile(os.path.join(save_path, "corpora", "omw-1.4.zip"), 'r') as zip_ref:
     zip_ref.extractall(os.path.join(save_path, "corpora"))
+with zipfile.ZipFile(os.path.join(save_path, "tokenizers", "punkt.zip"), 'r') as zip_ref:
+    zip_ref.extractall(os.path.join(save_path, "tokenizers"))
 
 print(os.listdir(save_path))
 
@@ -49,8 +52,7 @@ def download_model(
     save_path = os.path.join('/tmp', 'modeldir')
     os.makedirs(save_path, exist_ok=True)
     s3_resource.Bucket(bucket).download_file(key, os.path.join(save_path, key))
-
-    # Load the model
+    # Load the model in
     with smart_open(os.path.join(save_path, key), 'rb') as f:
         buffer = io.BytesIO(f.read())
         model = torch.load(buffer)
@@ -102,8 +104,10 @@ def extract_keywords(text, kw_model):
 def handler(event, context):
 
     print(f"Event received: {event}")
-    document_uid = event["document_uid"]
-    object_key = event["object_key"]
+    document_uid = event["responsePayload"]["document_uid"]
+    object_key = event["responsePayload"]["object_key"]
+
+    print(f"Object Key: {object_key}")
 
     s3_client = boto3.client('s3')
     s3_resource = boto3.resource('s3')
