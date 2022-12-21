@@ -16,7 +16,7 @@ COPY nltk_data/ ./nltk_data ${LAMBDA_TASK_ROOT}
 # Set tmp directory
 ENV NUMBA_CACHE_DIR=/tmp/
 ENV TRANSFORMERS_CACHE=/tmp/
-ENV NLTK_DATA=${LAMBDA_TASK_ROOT}/nltk_data
+ENV NLTK_DATA=/tmp/nltk_data/
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
 CMD [ "lambda_function.handler" ]

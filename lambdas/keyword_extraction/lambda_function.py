@@ -6,13 +6,14 @@ from sklearn.feature_extraction.text import CountVectorizer
 import os
 import re
 # from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
-# import nltk
+import nltk
 from smart_open import open as smart_open
 import torch
 import io
 from nltk.tokenize import word_tokenize
 from bs4 import BeautifulSoup
 from nltk.stem import WordNetLemmatizer
+import zipfile
 
 print('Initiating WordNetLemmatizer')
 wnl = WordNetLemmatizer()
@@ -20,7 +21,7 @@ print('Initiated WordNetLemmatizer')
 
 
 # # Define new directory to tmp directory
-save_path = os.path.join('/tmp', 'stopword_dir')
+save_path = os.path.join('/tmp', 'nltk_data')
 os.makedirs(save_path, exist_ok=True)
 # nltk.download('stopwords', download_dir = save_path)
 # nltk.download('punkt', download_dir=save_path)
@@ -28,8 +29,13 @@ nltk.download('wordnet', download_dir = save_path)
 nltk.download('omw-1.4', download_dir = save_path)
 # nltk.download('punkt')
 
-with zipfile.ZipFile(os.path.join(save_path, "corpora"), 'r') as zip_ref:
+# unzip wordnet
+with zipfile.ZipFile(os.path.join(save_path, "corpora", "wordnet.zip"), 'r') as zip_ref:
     zip_ref.extractall(os.path.join(save_path, "corpora"))
+with zipfile.ZipFile(os.path.join(save_path, "corpora", "omw-1.4.zip"), 'r') as zip_ref:
+    zip_ref.extractall(os.path.join(save_path, "corpora"))
+
+print(os.listdir(save_path))
 
 # # Stopwords
 # stopwords = open(os.path.join(save_path, "corpora/stopwords/english"), "r").read()
@@ -39,7 +45,7 @@ with zipfile.ZipFile(os.path.join(save_path, "corpora"), 'r') as zip_ref:
 #                    "uk", "guidance", "pubns", "page"])
 # stopwords.extend(english_stop_words)
 
-nltk.data.path.append("keyword_extraction/nltk_data")
+# nltk.data.path.append("keyword_extraction/nltk_data")
 
 stopwords = open("./stopwords.txt", "r")
 stopwords = stopwords.read()
