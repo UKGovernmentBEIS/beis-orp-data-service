@@ -417,6 +417,7 @@ def handler(event, context):
     doc_bytes_io = io.BytesIO(doc_bytes)
 
     title, text = extract_title_and_text_from_all_pages(doc_bytes_io)
+    title = cut_title(title)
     summary = extract_summary(text, title)
 
     uuid = metadata["uuid"]
