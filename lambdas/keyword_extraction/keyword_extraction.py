@@ -141,7 +141,7 @@ def handler(event, context):
     # Insert document to DB
     print(collection.find_one({"document_uid": document_uid}))
     collection.find_one_and_update({"document_uid": document_uid}, {
-                                   "$set": {"keywords": keywords}})
+                                   "$set": {"subject_keywords": keywords}})
     db_client.close()
     print("Keywords updated in documentDB")
 
