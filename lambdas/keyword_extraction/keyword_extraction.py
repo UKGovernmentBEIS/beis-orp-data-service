@@ -121,6 +121,7 @@ def handler(event, context):
     # Classify Text
     kw_model = download_model(s3_resource)
     keywords = extract_keywords(doc_stream, kw_model)
+    subject_keywords = [i[0] for i in keywords]
 
     print(f"Keywords predicted are: {keywords}")
 
@@ -141,7 +142,7 @@ def handler(event, context):
     # Insert document to DB
     print(collection.find_one({"document_uid": document_uid}))
     collection.find_one_and_update({"document_uid": document_uid}, {
-                                   "$set": {"keywords": keywords}})
+                                   "$set": {"subject_keywords": subject_keywords}})
     db_client.close()
     print("Keywords updated in documentDB")
 

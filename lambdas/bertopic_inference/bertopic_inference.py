@@ -44,7 +44,8 @@ def download_model(
         key='051222_torch.pt'):
 
     save_path = os.path.join('/tmp', 'modeldir')
-    os.makedirs(save_path)
+    if not os.path.isdir(save_path):
+        os.makedirs(save_path)
     s3_resource.Bucket(bucket).download_file(key, os.path.join(save_path, key))
     # Set prepreocess attribute
     setattr(
