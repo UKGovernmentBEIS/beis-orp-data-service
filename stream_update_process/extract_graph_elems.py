@@ -3,12 +3,13 @@ from datetime import datetime
 from json_flatten import flatten
 
 colmap = {
-  'data.dates.date_uploaded':'date_uploaded',
- 'data.dates.date_published':'date_published',
- 'data.dates.date_changed':'date_changed'
+    'data.dates.date_uploaded': 'date_uploaded',
+    'data.dates.date_published': 'date_published',
+    'data.dates.date_changed': 'date_changed'
 }
 
-def extractElements(js:dict, dict_thing_attrs:dict):
+
+def extractElements(js: dict, dict_thing_attrs: dict):
     nodes = []
     links = []
     doc = flatten(js)
@@ -20,7 +21,7 @@ def extractElements(js:dict, dict_thing_attrs:dict):
     regID = [('node_id', hashID([doc.get(i) for i in ['uri', 'title']]))]
 
     nodes.append([
-        "regulatoryDocument", 
+        "regulatoryDocument",
         regID,
         getElements(doc, dict_thing_attrs["regulatoryDocument"]) + regID
     ])
@@ -29,7 +30,7 @@ def extractElements(js:dict, dict_thing_attrs:dict):
     doc['regulator_id'] = doc.get('regulator_id', 'reg_test')
     reguID = [('node_id', hashID([doc['regulator_id']]))]
     nodes.append([
-        "regulator", 
+        "regulator",
         reguID,
         getElements(doc, dict_thing_attrs["regulator"]) + reguID
     ])
@@ -39,10 +40,10 @@ def extractElements(js:dict, dict_thing_attrs:dict):
         'publication',
         'check',
         [
-            ( "regulatoryDocument", regID, "issued"),
+            ("regulatoryDocument", regID, "issued"),
             ("regulator", reguID, "issuedBy"),
         ],
-        getElements(doc,dict_thing_attrs['publication']) 
+        getElements(doc, dict_thing_attrs['publication'])
     ])
 
     # insert leg.org. node
@@ -53,13 +54,13 @@ def extractElements(js:dict, dict_thing_attrs:dict):
         leg_etype = "primaryLegislation" if leg['leg_type'] == "Primary" else "secondaryLegislation"
         legID = [('node_id', hashID([leg['url']]))]
         nodes.append([
-            leg_etype, 
+            leg_etype,
             legID,
             getElements(leg, dict_thing_attrs[leg_etype]) + legID
         ])
 
         # insert regDoc < pub > leg.org
-        links =[[rtype,ids, nds+[(leg_etype, legID, "issuedFor")], attrs] for rtype, ids, nds, attrs in links]
-       
+        links = [[rtype, ids, nds + [(leg_etype, legID, "issuedFor")], attrs]
+                 for rtype, ids, nds, attrs in links]
 
-    return {'entities': nodes, 'links':links}
+    return {'entities': nodes, 'links': links}

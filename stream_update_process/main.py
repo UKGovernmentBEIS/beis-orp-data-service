@@ -21,7 +21,8 @@ logging.basicConfig(filename=LOGFILE,
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                     datefmt='%H:%M:%S',
                     level=logging.INFO)
-                    
+
+
 def message_handler(message, attr_type_dict, dict_thing_attrs, session):
     msg_body = message.body
     logger.info(f"Received Message:\n{msg_body}")
@@ -34,13 +35,13 @@ def message_handler(message, attr_type_dict, dict_thing_attrs, session):
         # process record into graph elems
         gdata = extractElements(data, dict_thing_attrs)
         # process elems into db queries
-        queries, mqueries = process_record(gdata, attr_type_dict, dict_thing_attrs, session)
+        queries, mqueries = process_record(
+            gdata, attr_type_dict, dict_thing_attrs, session)
         queries = list(filter(None, queries))
         mqueries = list(filter(None, mqueries))
 
         logger.info(f"Number of queries to [INSERT] [{len(queries)}]")
         logger.info(f"Number of queries to [MATCH-INSERT] [{len(mqueries)}]")
-       
 
     except Exception as e:
         logger.exception(f"ERROR: Query Transform - \n {e}")
@@ -50,12 +51,13 @@ def message_handler(message, attr_type_dict, dict_thing_attrs, session):
         # batch ingest into tdb
         batch_insert(session, queries)
         batch_match_insert(session, mqueries)
-        
+
         logger.info(f"--- Deleting the message ---")
         message.delete()
 
     except Exception as e:
         logger.exception(f"ERROR: DB Ingestion - \n {e}")
+
 
 if __name__ == "__main__":
 
@@ -63,28 +65,29 @@ if __name__ == "__main__":
     SCHEMA_FILE = "schema/orp-gdb-schema.json"
     TYPEDB_DATABASE_NAME = os.environ['TYPEDB_DATABASE_NAME']
     TYPEDB_DOCU_SQS_NAME = os.environ['TYPEDB_DOCU_SQS_NAME']
-    
+
     # ======
-    client = TypeDB.core_client('localhost:1729') 
+    client = TypeDB.core_client('localhost:1729')
     session = client.session(TYPEDB_DATABASE_NAME, SessionType.DATA)
 
-
     schema = json.loads(open(SCHEMA_FILE).read())
-    dict_thing_attrs = {thing:v['attr'] for i in schema.values() for thing, v in i.items()}
-    attr_type_dict = {k:v['value'] for k,v in schema['attribute'].items()}
+    dict_thing_attrs = {thing: v['attr']
+                        for i in schema.values() for thing, v in i.items()}
+    attr_type_dict = {k: v['value'] for k, v in schema['attribute'].items()}
 
     # poll message from sqs
     queue = get_queue(TYPEDB_DOCU_SQS_NAME)
     msg_cnt = 1
     queue_messages = get_queue_messages(queue)
 
-    if (len(queue_messages)>0):
-        while len(queue_messages)>0:
-            logger.info(f"Loaded [{len(queue_messages)}] messages in the queue [{queue.url}].")
+    if (len(queue_messages) > 0):
+        while len(queue_messages) > 0:
+            logger.info(
+                f"Loaded [{len(queue_messages)}] messages in the queue [{queue.url}].")
             for message in queue_messages:
                 logger.info(f"=== Started processing message [{msg_cnt}] ===")
                 message_handler(message, attr_type_dict, dict_thing_attrs, session)
-                msg_cnt+=1
+                msg_cnt += 1
             queue_messages = get_queue_messages(queue)
 
         logger.info(f"--- End of updating process ---\n")
