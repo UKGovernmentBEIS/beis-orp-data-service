@@ -12,6 +12,8 @@ ROW = WORD_NAMESPACE + 'tr'
 CELL = WORD_NAMESPACE + 'tc'
 
 # Function from stackoverflow to pull text from a docx file
+
+
 def get_docx_text(path):
     """
     param: path Str: Take the path of a docx file as argument
@@ -33,33 +35,41 @@ def get_docx_text(path):
     return '\n\n'.join(paragraphs)
 
 # Function from stackoverflow to get metadata from docx
+
+
 def getMetaData(doc):
     """
     param: doc docx
     returns: metadata
     """
-    metadata = {}
+
     prop = doc.core_properties
-    metadata["author"] = prop.author
-    metadata["category"] = prop.category
-    metadata["comments"] = prop.comments
-    metadata["content_status"] = prop.content_status
-    metadata["created"] = prop.created
-    metadata["identifier"] = prop.identifier
-    metadata["keywords"] = prop.keywords
-    metadata["last_modified_by"] = prop.last_modified_by
-    metadata["language"] = prop.language
-    metadata["modified"] = prop.modified
-    metadata["subject"] = prop.subject
-    metadata["title"] = prop.title
-    metadata["version"] = prop.version
+    metadata = {
+        "author": prop.author,
+        "category": prop.category,
+        "comments": prop.comments,
+        "content_status": prop.content_status,
+        "created": prop.created,
+        "identifier": prop.identifier,
+        "keywords": prop.keywords,
+        "last_modified_by": prop.last_modified_by,
+        "language": prop.language,
+        "modified": prop.modified,
+        "subject": prop.subject,
+        "title": prop.title,
+        "version": prop.version
+    }
+
     return metadata
 
+
 # Get text
-text = get_docx_text("/Users/thomas/Documents/BEIS/scraper/ONR/onr_documents/Nuclear safety_NS-TAST-GD-003 (Issue 9.2)_September 2024_Safety Systems.docx")
+text = get_docx_text(
+    "/Users/thomas/Documents/BEIS/scraper/ONR/onr_documents/Nuclear safety_NS-TAST-GD-003 (Issue 9.2)_September 2024_Safety Systems.docx")
 
 # Get metadata
-doc = docx.Document("/Users/thomas/Documents/BEIS/scraper/ONR/onr_documents/Nuclear safety_NS-TAST-GD-003 (Issue 9.2)_September 2024_Safety Systems.docx")
+doc = docx.Document(
+    "/Users/thomas/Documents/BEIS/scraper/ONR/onr_documents/Nuclear safety_NS-TAST-GD-003 (Issue 9.2)_September 2024_Safety Systems.docx")
 metadata = getMetaData(doc)
 
 # Get publishing date from metadata
