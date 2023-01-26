@@ -46,7 +46,7 @@ def initialisation(resource_path=NLTK_DATA_PATH, model_path=MODEL_PATH):
 
     logger.info('Completed initialisation')
 
-    return {'statusCode': HTTPStatus.ok}
+    return {'statusCode': HTTPStatus.OK}
 
 
 def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
@@ -167,7 +167,7 @@ def mongo_connect_and_pull(document_uid,
 
     logger.info('Sent to DocumentDB')
 
-    return {'statusCode': HTTPStatus.ok}
+    return {'statusCode': HTTPStatus.OK}
 
 
 @logger.inject_lambda_context(log_event=True)
