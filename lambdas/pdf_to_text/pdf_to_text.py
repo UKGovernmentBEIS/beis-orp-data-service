@@ -31,15 +31,13 @@ regulator_name_list = [
 
 
 def make_parsing_state(*sequential, **named):
+    # Function that returns the index of the string passed to it
+    # TODO: Determine necessity and clean up
     enums = dict(zip(sequential, range(len(sequential))), **named)
     return type("ParsingState", (), enums)
 
 
 CHAR_PARSING_STATE = make_parsing_state("INIT_X", "INIT_D", "INSIDE_WORD")
-
-
-def is_close(a, b, relative_tolerance=TOLERANCE):
-    return abs(a - b) <= relative_tolerance * max(abs(a), abs(b))
 
 
 def update_largest_text(line, y0, size, largest_text):
@@ -57,7 +55,7 @@ def update_largest_text(line, y0, size, largest_text):
         largest_text["y0"] = y0
         largest_text["size"] = size
     # Title spans multiple lines
-    elif is_close(size, largest_text["size"]):
+    elif abs(size - largest_text["size"]) <= TOLERANCE * max(abs(size), abs(largest_text["size"])):
         largest_text["contents"] = largest_text["contents"] + line
         largest_text["y0"] = y0
 
