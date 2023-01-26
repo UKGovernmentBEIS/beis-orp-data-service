@@ -1,11 +1,11 @@
 import boto3
 import pymongo
 import json
+import os
 
 
-SOURCE_DATABASE = ("mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc."
-                   "eu-west-2.docdb.amazonaws.com:27017/?directConnection=true")
-DESTINATION_QUEUE_URL = "https://sqs.eu-west-2.amazonaws.com/455762151948/update-typedb"
+DOCUMENT_DATABASE = os.environ["DOCUMENT_DATABASE"]
+DESTINATION_SQS_URL = os.environ["DESTINATION_SQS_URL"]
 
 
 def handler(event, context):
@@ -14,7 +14,7 @@ def handler(event, context):
 
     # Create a MongoDB client and open a connection to Amazon DocumentDB
     db_client = pymongo.MongoClient(
-        SOURCE_DATABASE,
+        DOCUMENT_DATABASE,
         tls=True,
         tlsCAFile="./rds-combined-ca-bundle.pem"
     )
@@ -38,7 +38,7 @@ def handler(event, context):
     sqs = boto3.client("sqs")
     print("Sending document to SQS")
     response = sqs.send_message(
-        QueueUrl=DESTINATION_QUEUE_URL,
+        QueueUrl=DESTINATION_SQS_URL,
         MessageBody=json.dumps(document)
     )
 
