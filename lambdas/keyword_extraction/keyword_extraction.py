@@ -1,150 +1,191 @@
+import io
+import os
+import re
+import zipfile
 import pymongo
 import boto3
 import wordninja
-from sklearn.feature_extraction.text import CountVectorizer
-import os
-import re
-import nltk
-from smart_open import open as smart_open
 import torch
-import io
-from nltk.tokenize import word_tokenize
-from bs4 import BeautifulSoup
+import nltk
 from nltk.stem import WordNetLemmatizer
-import zipfile
+from nltk.tokenize import word_tokenize
+from http import HTTPStatus
+from smart_open import open as smart_open
+from sklearn.feature_extraction.text import CountVectorizer
+from bs4 import BeautifulSoup
+from aws_lambda_powertools.logging.logger import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
 
 
-SOURCE_BUCKET = "beis-orp-dev-datalake"
+logger = Logger()
 
-print('Initiating WordNetLemmatizer')
-wnl = WordNetLemmatizer()
-print('Initiated WordNetLemmatizer')
-
-# Define new directory to tmp directory
-save_path = os.path.join('/tmp', 'nltk_data')
-os.makedirs(save_path, exist_ok=True)
-nltk.download('wordnet', download_dir=save_path)
-nltk.download('omw-1.4', download_dir=save_path)
-nltk.download('punkt', download_dir=save_path)
-
-# Unzip all resources
-with zipfile.ZipFile(os.path.join(save_path, "corpora", "wordnet.zip"), 'r') as zip_ref:
-    zip_ref.extractall(os.path.join(save_path, "corpora"))
-with zipfile.ZipFile(os.path.join(save_path, "corpora", "omw-1.4.zip"), 'r') as zip_ref:
-    zip_ref.extractall(os.path.join(save_path, "corpora"))
-with zipfile.ZipFile(os.path.join(save_path, "tokenizers", "punkt.zip"), 'r') as zip_ref:
-    zip_ref.extractall(os.path.join(save_path, "tokenizers"))
-
-print(os.listdir(save_path))
-
-stopwords = open("./stopwords.txt", "r")
-stopwords = stopwords.read()
-stopwords = [i for i in stopwords.split("\n")]
-stopwords.extend(["use", "uses", "used", "www", "gov",
-                  "uk", "guidance", "pubns", "page"])
+DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
+SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
+MODEL_BUCKET = os.environ['MODEL_BUCKET']
+NLTK_DATA_PATH = os.environ['NLTK_DATA_PATH']
+MODEL_PATH = os.environ['MODEL_PATH']
 
 
-def download_model(
-        s3_resource,
-        bucket='beis-orp-dev-clustering-models',
-        key='keybert.pt'):
+def initialisation(resource_path=NLTK_DATA_PATH, model_path=MODEL_PATH):
+    '''Downloads and unzips alls the resources needed to initialise the model'''
 
-    save_path = os.path.join('/tmp', 'modeldir')
-    os.makedirs(save_path, exist_ok=True)
-    s3_resource.Bucket(bucket).download_file(key, os.path.join(save_path, key))
-    # Load the model in
-    with smart_open(os.path.join(save_path, key), 'rb') as f:
+    # Create new directories in tmp directory
+    os.makedirs(resource_path, exist_ok=True)
+    os.makedirs(model_path, exist_ok=True)
+    nltk.download('wordnet', download_dir=resource_path)
+    nltk.download('omw-1.4', download_dir=resource_path)
+    nltk.download('punkt', download_dir=resource_path)
+
+    # Unzip all resources
+    with zipfile.ZipFile(os.path.join(resource_path, 'corpora', 'wordnet.zip'), 'r') as zip_ref:
+        zip_ref.extractall(os.path.join(resource_path, 'corpora'))
+    with zipfile.ZipFile(os.path.join(resource_path, 'corpora', 'omw-1.4.zip'), 'r') as zip_ref:
+        zip_ref.extractall(os.path.join(resource_path, 'corpora'))
+    with zipfile.ZipFile(os.path.join(resource_path, 'tokenizers', 'punkt.zip'), 'r') as zip_ref:
+        zip_ref.extractall(os.path.join(resource_path, 'tokenizers'))
+
+    logger.info('Completed initialisation')
+
+    return {'statusCode': HTTPStatus.ok}
+
+
+def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
+    '''Downloads the raw text from S3 ready for keyword extraction'''
+
+    document = s3_client.get_object(
+        Bucket=SOURCE_BUCKET,
+        Key=f'processed/{document_uid}.txt'
+    )['Body'].read().decode('utf-8')
+
+    logger.info('Downloaded text')
+
+    return document
+
+
+def download_model(s3_client,
+                   bucket=MODEL_BUCKET,
+                   model_path=MODEL_PATH,
+                   key='keybert.pt'):
+    '''Downloads the ML model for keyword extraction'''
+
+    s3_client.download_file(
+        bucket,
+        key,
+        os.path.join(model_path, key)
+    )
+
+    with smart_open(os.path.join(model_path, key), 'rb') as f:
         buffer = io.BytesIO(f.read())
         model = torch.load(buffer)
-        return model
+
+    logger.info('Downloaded model')
+
+    return model
 
 
-def pre_process_tokenization_function(
-        documents: str,
-        stop_words=stopwords,
-        wnl=wnl):
+def pre_process_tokenization_function(documents: str):
+    '''Not overly sure what this does'''
+    # TODO: Describe the function
 
     # Preprocess data after embeddings are created
     text = BeautifulSoup(documents).get_text()
-    # fetch alphabetic characters
-    text = re.sub("[^a-zA-Z]", " ", text)
-    # define stopwords
-    remove_stop_words = set(stop_words)
-    # lowercase
+    text = re.sub('[^a-zA-Z]', ' ', text)
+
+    # Define stopwords
+    stopwords = open('./stopwords.txt', 'r')
+    stopwords = stopwords.read()
+    stopwords = [i for i in stopwords.split('\n')]
+    stopwords.extend(['use', 'uses', 'used', 'www', 'gov',
+                      'uk', 'guidance', 'pubns', 'page'])
+    remove_stop_words = set(stopwords)
+
     text = text.lower()
-    # tokenize
+
+    # Tokenize
     word_tokens = word_tokenize(text)
     filtered_sentence = []
     for w in word_tokens:
         if w not in remove_stop_words:
             filtered_sentence.append(w)
+
     # Remove any small characters remaining
     filtered_sentence = [word for word in filtered_sentence if len(word) > 1]
+
     # Lemmatise text
+    wnl = WordNetLemmatizer()
     lemmatised_sentence = [wnl.lemmatize(word) for word in filtered_sentence]
+
     return lemmatised_sentence
 
 
-# Vectorizer model
-# prevents noise and improves representation of clusters
-vectorizer_model = CountVectorizer(
-    stop_words="english",
-    tokenizer=pre_process_tokenization_function)
-
-
 def extract_keywords(text, kw_model):
-    text = re.sub("Health and Safety Executive", "", text)
-    text = re.sub("Ofgem", "", text)
-    text = re.sub("Environmental Agency", "", text)
-    text = " ".join(wordninja.split(text))
+    '''Extracts the keywords from the downloaded text using the downloaded model'''
+
+    text = re.sub('Health and Safety Executive', '', text)
+    text = re.sub('Ofgem', '', text)
+    text = re.sub('Environmental Agency', '', text)
+    text = ' '.join(wordninja.split(text))
+
+    # Vectorizer: Prevents noise and improves representation of clusters
+    vectorizer_model = CountVectorizer(
+        stop_words='english',
+        tokenizer=pre_process_tokenization_function
+    )
+
     keywords = kw_model.extract_keywords(
-        text, vectorizer=vectorizer_model, top_n=10)
+        text,
+        vectorizer=vectorizer_model,
+        top_n=10
+    )
+
+    logger.info({'keywords': keywords})
+
     return keywords
 
 
-def handler(event, context):
+def mongo_connect_and_pull(document_uid,
+                           keywords,
+                           database=DOCUMENT_DATABASE,
+                           tlsCAFile='./rds-combined-ca-bundle.pem'):
+    '''Connects to the DocumentDB, finds the document matching our UUID and adds the keywords to it'''
 
-    print(f"Event received: {event}")
-    document_uid = event["document_uid"]
-
-    s3_client = boto3.client('s3')
-    s3_resource = boto3.resource('s3')
-
-    # Download text from Data Lake
-    doc_stream = s3_client.get_object(
-        Bucket=SOURCE_BUCKET,
-        Key=f"processed/{document_uid}.txt"
-    )['Body'].read().decode("utf-8")
-
-    # Classify Text
-    kw_model = download_model(s3_resource)
-    keywords = extract_keywords(doc_stream, kw_model)
-    subject_keywords = [i[0] for i in keywords]
-
-    print(f"Keywords predicted are: {keywords}")
-
-    # Connect to documentDB
     db_client = pymongo.MongoClient(
-        ("mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc."
-         "eu-west-2.docdb.amazonaws.com:27017/?directConnection=true"),
+        database,
         tls=True,
-        tlsCAFile="./rds-combined-ca-bundle.pem"
+        tlsCAFile=tlsCAFile
     )
-    print(db_client.list_database_names())
-    print("Connected to DocumentDB")
-
-    # Define document database
+    logger.info(db_client.list_database_names())
     db = db_client.bre_orp
     collection = db.documents
 
     # Insert document to DB
-    print(collection.find_one({"document_uid": document_uid}))
-    collection.find_one_and_update({"document_uid": document_uid}, {
-                                   "$set": {"subject_keywords": subject_keywords}})
+    logger.info({'document': collection.find_one(
+        {'document_uid': document_uid})})
+    collection.find_one_and_update({'document_uid': document_uid}, {
+                                   '$set': {'subject_keywords': keywords}})
     db_client.close()
-    print("Keywords updated in documentDB")
 
-    return {
-        "statusCode": 200,
-        "document_uid": document_uid
-    }
+    logger.info('Sent to DocumentDB')
+
+    return {'statusCode': HTTPStatus.ok}
+
+
+@logger.inject_lambda_context(log_event=True)
+def handler(event, context: LambdaContext):
+    logger.set_correlation_id(context.aws_request_id)
+
+    document_uid = event['document_uid']
+    logger.append_keys(document_uid=document_uid)
+
+    initialisation()
+
+    s3_client = boto3.client('s3')
+    document = download_text(s3_client, document_uid)
+    kw_model = download_model(s3_client)
+    keywords = extract_keywords(document, kw_model)
+    subject_keywords = [i[0] for i in keywords]
+
+    response = mongo_connect_and_pull(document, subject_keywords)
+    response['document_uid'] = document_uid
+
+    return response

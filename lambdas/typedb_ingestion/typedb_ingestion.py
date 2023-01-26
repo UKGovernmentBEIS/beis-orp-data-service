@@ -1,7 +1,7 @@
-import boto3
-import pymongo
 import json
 import os
+import boto3
+import pymongo
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
@@ -15,7 +15,7 @@ DESTINATION_SQS_URL = os.environ['DESTINATION_SQS_URL']
 def mongo_connect_and_pull(document_uid,
                            database=DOCUMENT_DATABASE,
                            tlsCAFile='./rds-combined-ca-bundle.pem'):
-    '''Connects to the Document database, finds the document matching our UUID and pulls it'''
+    '''Connects to the DocumentDB, finds the document matching our UUID and pulls it'''
 
     db_client = pymongo.MongoClient(
         database,
