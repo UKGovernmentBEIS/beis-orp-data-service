@@ -97,15 +97,16 @@ def extract_keywords(text, kw_model):
     text = re.sub("Ofgem", "", text)
     text = re.sub("Environmental Agency", "", text)
     text = " ".join(wordninja.split(text))
-    keywords = kw_model.extract_keywords(text, vectorizer=vectorizer_model, top_n=10)
+    keywords = kw_model.extract_keywords(
+        text, vectorizer=vectorizer_model, top_n=10)
     return keywords
 
 
 def handler(event, context):
 
     print(f"Event received: {event}")
-    document_uid = event["responsePayload"]["document_uid"]
-    object_key = event["responsePayload"]["object_key"]
+    document_uid = event["document_uid"]
+    object_key = event["object_key"]
 
     print(f"Object Key: {object_key}")
 

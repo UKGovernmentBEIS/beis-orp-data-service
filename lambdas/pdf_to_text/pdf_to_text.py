@@ -473,5 +473,6 @@ def handler(event, context):
 
     return {
         "statusCode": 200,
-        "document_uid": uuid
+        "document_uid": uuid,
+        "object_key": object_key
     }
