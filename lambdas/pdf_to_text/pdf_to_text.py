@@ -220,7 +220,8 @@ def extract_title_and_text_from_all_pages(doc_bytes_io):
                 text += figure_text
             elif isinstance(lt_obj, (LTTextBox, LTTextLine)):
                 # Ignore body text blocks
-                stripped_to_chars = re.sub(r"[ \t\n]", "", lt_obj.get_text().strip())
+                stripped_to_chars = re.sub(
+                    r"[ \t\n]", "", lt_obj.get_text().strip())
                 if len(stripped_to_chars) > MAX_CHARS * 2:
                     continue
 
@@ -398,8 +399,10 @@ def extract_summary(text, title):
 
 
 def handler(event, context):
-    source_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
-    object_key = event["Records"][0]["s3"]["object"]["key"]
+
+    print(f"Event received: {event}")
+    source_bucket_name = event["detail"]["bucket"]["name"]
+    object_key = event["detail"]["object"]["key"]
 
     s3_client = boto3.client("s3")
 
