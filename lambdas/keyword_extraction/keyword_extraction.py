@@ -106,9 +106,6 @@ def handler(event, context):
 
     print(f"Event received: {event}")
     document_uid = event["document_uid"]
-    object_key = event["object_key"]
-
-    print(f"Object Key: {object_key}")
 
     s3_client = boto3.client('s3')
     s3_resource = boto3.resource('s3')
@@ -116,7 +113,7 @@ def handler(event, context):
     # Download text from Data Lake
     doc_stream = s3_client.get_object(
         Bucket=SOURCE_BUCKET,
-        Key=object_key
+        Key=f"processed/{document_uid}.txt"
     )['Body'].read().decode("utf-8")
 
     # Classify Text
@@ -149,6 +146,5 @@ def handler(event, context):
 
     return {
         "statusCode": 200,
-        "document_uid": document_uid,
-        "object_key": object_key
+        "document_uid": document_uid
     }
