@@ -44,6 +44,7 @@ def initialisation(resource_path=NLTK_DATA_PATH, model_path=MODEL_PATH):
     with zipfile.ZipFile(os.path.join(resource_path, 'tokenizers', 'punkt.zip'), 'r') as zip_ref:
         zip_ref.extractall(os.path.join(resource_path, 'tokenizers'))
 
+    logger.info(os.listdir(resource_path))
     logger.info('Completed initialisation')
 
     return {'statusCode': HTTPStatus.OK}
