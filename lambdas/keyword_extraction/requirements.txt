@@ -7,3 +7,4 @@ wordninja==2.0.0
 torch==1.13.0
 smart_open==5.2.1
 beautifulsoup4==4.11.1
+word_forms==2.1.0

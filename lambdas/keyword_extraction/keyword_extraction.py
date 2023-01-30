@@ -93,13 +93,30 @@ vectorizer_model = CountVectorizer(
 
 
 def extract_keywords(text, kw_model):
+    # TODO: replace the hardcoded regs references
     text = re.sub("Health and Safety Executive", "", text)
     text = re.sub("Ofgem", "", text)
     text = re.sub("Environmental Agency", "", text)
     text = " ".join(wordninja.split(text))
-    keywords = kw_model.extract_keywords(text, vectorizer=vectorizer_model, top_n=10)
+    keywords = kw_model.extract_keywords(text, vectorizer=vectorizer_model, top_n=15)
     return keywords
 
+from word_forms.lemmatizer import lemmatize
+from collections import defaultdict
+
+def get_lemma(word):
+    try:
+        return lemmatize(word)
+    except ValueError as err:
+        if 'is not a real word' in err.args[0]: return word
+        else: raise ValueError(err)
+
+def get_relevant_keywords(x):
+    nounify = [(get_lemma(k), v) for k,v in x.items()]
+    kwds = defaultdict(list)
+    for k, v in nounify:
+        kwds[k].append(v)
+    return [(k, max(v) for k,v in kwds.items())][:10]
 
 def handler(event, context):
 
@@ -121,6 +138,8 @@ def handler(event, context):
     # Classify Text
     kw_model = download_model(s3_resource)
     keywords = extract_keywords(doc_stream, kw_model)
+    # lemmatise keywords
+    keywords = get_relevant_keywords(keywords)
     subject_keywords = [i[0] for i in keywords]
 
     print(f"Keywords predicted are: {keywords}")
