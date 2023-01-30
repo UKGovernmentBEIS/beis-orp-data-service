@@ -1,10 +1,11 @@
+aws_lambda_powertools==2.7.0
+beautifulsoup4==4.11.1
 boto3==1.21.32
 keybert==0.7.0
-nltk==3.7
+nltk==3.8.1
 pymongo==4.3.3
-scikit_learn==1.2.0
+scikit_learn==1.2.1
+smart_open==6.3.0
+torch==1.13.1
 wordninja==2.0.0
-torch==1.13.0
-smart_open==5.2.1
-beautifulsoup4==4.11.1
-word_forms==2.1.0
+word-forms==2.1.0

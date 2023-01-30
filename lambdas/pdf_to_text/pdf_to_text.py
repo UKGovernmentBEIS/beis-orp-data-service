@@ -31,15 +31,13 @@ regulator_name_list = [
 
 
 def make_parsing_state(*sequential, **named):
+    # Function that returns the index of the string passed to it
+    # TODO: Determine necessity and clean up
     enums = dict(zip(sequential, range(len(sequential))), **named)
     return type("ParsingState", (), enums)
 
 
 CHAR_PARSING_STATE = make_parsing_state("INIT_X", "INIT_D", "INSIDE_WORD")
-
-
-def is_close(a, b, relative_tolerance=TOLERANCE):
-    return abs(a - b) <= relative_tolerance * max(abs(a), abs(b))
 
 
 def update_largest_text(line, y0, size, largest_text):
@@ -57,7 +55,7 @@ def update_largest_text(line, y0, size, largest_text):
         largest_text["y0"] = y0
         largest_text["size"] = size
     # Title spans multiple lines
-    elif is_close(size, largest_text["size"]):
+    elif abs(size - largest_text["size"]) <= TOLERANCE * max(abs(size), abs(largest_text["size"])):
         largest_text["contents"] = largest_text["contents"] + line
         largest_text["y0"] = y0
 
@@ -220,7 +218,8 @@ def extract_title_and_text_from_all_pages(doc_bytes_io):
                 text += figure_text
             elif isinstance(lt_obj, (LTTextBox, LTTextLine)):
                 # Ignore body text blocks
-                stripped_to_chars = re.sub(r"[ \t\n]", "", lt_obj.get_text().strip())
+                stripped_to_chars = re.sub(
+                    r"[ \t\n]", "", lt_obj.get_text().strip())
                 if len(stripped_to_chars) > MAX_CHARS * 2:
                     continue
 
@@ -398,8 +397,10 @@ def extract_summary(text, title):
 
 
 def handler(event, context):
-    source_bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
-    object_key = event["Records"][0]["s3"]["object"]["key"]
+
+    print(f"Event received: {event}")
+    source_bucket_name = event["detail"]["bucket"]["name"]
+    object_key = event["detail"]["object"]["key"]
 
     s3_client = boto3.client("s3")
 
