@@ -26,28 +26,31 @@ NLTK_DATA_PATH = os.environ['NLTK_DATA_PATH']
 MODEL_PATH = os.environ['MODEL_PATH']
 
 
-def initialisation(resource_path=NLTK_DATA_PATH, model_path=MODEL_PATH):
-    '''Downloads and unzips alls the resources needed to initialise the model'''
+# def initialisation(resource_path=NLTK_DATA_PATH, model_path=MODEL_PATH):
+#     '''Downloads and unzips alls the resources needed to initialise the model'''
 
-    # Create new directories in tmp directory
-    os.makedirs(resource_path, exist_ok=True)
-    os.makedirs(model_path, exist_ok=True)
-    nltk.download('wordnet', download_dir=resource_path)
-    nltk.download('omw-1.4', download_dir=resource_path)
-    nltk.download('punkt', download_dir=resource_path)
+resource_path = NLTK_DATA_PATH
+model_path = MODEL_PATH
 
-    # Unzip all resources
-    with zipfile.ZipFile(os.path.join(resource_path, 'corpora', 'wordnet.zip'), 'r') as zip_ref:
-        zip_ref.extractall(os.path.join(resource_path, 'corpora'))
-    with zipfile.ZipFile(os.path.join(resource_path, 'corpora', 'omw-1.4.zip'), 'r') as zip_ref:
-        zip_ref.extractall(os.path.join(resource_path, 'corpora'))
-    with zipfile.ZipFile(os.path.join(resource_path, 'tokenizers', 'punkt.zip'), 'r') as zip_ref:
-        zip_ref.extractall(os.path.join(resource_path, 'tokenizers'))
+# Create new directories in tmp directory
+os.makedirs(resource_path, exist_ok=True)
+os.makedirs(model_path, exist_ok=True)
+nltk.download('wordnet', download_dir=resource_path)
+nltk.download('omw-1.4', download_dir=resource_path)
+nltk.download('punkt', download_dir=resource_path)
 
-    logger.info(os.listdir(resource_path))
-    logger.info('Completed initialisation')
+# Unzip all resources
+with zipfile.ZipFile(os.path.join(resource_path, 'corpora', 'wordnet.zip'), 'r') as zip_ref:
+    zip_ref.extractall(os.path.join(resource_path, 'corpora'))
+with zipfile.ZipFile(os.path.join(resource_path, 'corpora', 'omw-1.4.zip'), 'r') as zip_ref:
+    zip_ref.extractall(os.path.join(resource_path, 'corpora'))
+with zipfile.ZipFile(os.path.join(resource_path, 'tokenizers', 'punkt.zip'), 'r') as zip_ref:
+    zip_ref.extractall(os.path.join(resource_path, 'tokenizers'))
 
-    return {'statusCode': HTTPStatus.OK}
+logger.info(os.listdir(resource_path))
+logger.info('Completed initialisation')
+
+# return {'statusCode': HTTPStatus.OK}
 
 
 def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
@@ -119,6 +122,12 @@ def pre_process_tokenization_function(documents: str):
     return lemmatised_sentence
 
 
+vectorizer_model = CountVectorizer(
+    stop_words='english',
+    tokenizer=pre_process_tokenization_function
+)
+
+
 def extract_keywords(text, kw_model):
     '''Extracts the keywords from the downloaded text using the downloaded model'''
 
@@ -128,10 +137,10 @@ def extract_keywords(text, kw_model):
     text = ' '.join(wordninja.split(text))
 
     # Vectorizer: Prevents noise and improves representation of clusters
-    vectorizer_model = CountVectorizer(
-        stop_words='english',
-        tokenizer=pre_process_tokenization_function
-    )
+    # vectorizer_model = CountVectorizer(
+    #     stop_words='english',
+    #     tokenizer=pre_process_tokenization_function
+    # )
 
     keywords = kw_model.extract_keywords(
         text,
@@ -178,7 +187,7 @@ def handler(event, context: LambdaContext):
     document_uid = event['document_uid']
     logger.append_keys(document_uid=document_uid)
 
-    initialisation()
+    # initialisation()
 
     s3_client = boto3.client('s3')
     document = download_text(s3_client, document_uid)
