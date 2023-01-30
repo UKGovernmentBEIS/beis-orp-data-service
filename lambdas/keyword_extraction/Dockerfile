@@ -5,6 +5,7 @@ RUN yum -y install gcc-c++
 
 COPY requirements.txt  .
 RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
+# RUN python3 -m nltk.downloader punkt
 
 # Set environment variables
 ENV NUMBA_CACHE_DIR=/tmp/
