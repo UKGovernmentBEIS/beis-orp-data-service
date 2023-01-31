@@ -143,7 +143,7 @@ def extract_keywords(text, kw_model):
     return keywords
 
 
-def mongo_connect_and_pull(document_uid,
+def mongo_connect_and_push(document_uid,
                            keywords,
                            database=DOCUMENT_DATABASE,
                            tlsCAFile='./rds-combined-ca-bundle.pem'):
@@ -185,7 +185,7 @@ def handler(event, context: LambdaContext):
     keywords = extract_keywords(document, kw_model)
     subject_keywords = [i[0] for i in keywords]
 
-    response = mongo_connect_and_pull(document, subject_keywords)
+    response = mongo_connect_and_push(document, subject_keywords)
     response['document_uid'] = document_uid
 
     return response
