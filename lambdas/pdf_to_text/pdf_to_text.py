@@ -22,10 +22,9 @@ def download_text(s3_client, object_key, source_bucket):
     document = s3_client.get_object(
         Bucket=source_bucket,
         Key=object_key
-    )['Body'].read().decode('utf-8')
+    )['Body'].read()
 
-    doc_bytes = document.read()
-    doc_bytes_io = io.BytesIO(doc_bytes)
+    doc_bytes_io = io.BytesIO(document)
 
     logger.info('Downloaded text')
 
@@ -118,7 +117,6 @@ def mongo_connect_and_push(source_bucket,
         tls=True,
         tlsCAFile='./rds-combined-ca-bundle.pem'
     )
-    logger.info('Connected to DocumentDB')
 
     db = db_client.bre_orp
     collection = db.documents
@@ -133,7 +131,6 @@ def mongo_connect_and_push(source_bucket,
     # Insert document to DB if it doesn't already exist
     if not collection.find_one(doc):
         collection.insert_one(doc)
-        logger.info('Inserted document to DocumentDB')
     logger.info(f'Document inserted: {collection.find_one(doc)}')
 
     db_client.close()
@@ -160,7 +157,6 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
 def handler(event, context):
     logger.set_correlation_id(context.aws_request_id)
 
-    print(f'Event received: {event}')
     source_bucket = event['detail']['bucket']['name']
     object_key = event['detail']['object']['key']
     logger.info(
@@ -177,7 +173,7 @@ def handler(event, context):
     title = extract_title(doc_bytes_io)
     text = extract_text(doc_bytes_io)
     logger.info(f'Extracted title: {title}'
-                'UUID obtained is: {document_uid}')
+                f'UUID obtained is: {document_uid}')
 
     mongo_connect_and_push(source_bucket=source_bucket,
                            object_key=object_key, document_uid=document_uid, title=title)
