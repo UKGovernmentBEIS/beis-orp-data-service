@@ -164,10 +164,10 @@ def get_relevant_keywords(x):
     return [(k, max(v)) for k, v in kwds.items()][:10]
 
 
-def mongo_connect_and_pull(document_uid,
-                           keywords,
-                           database=DOCUMENT_DATABASE,
-                           tlsCAFile='./rds-combined-ca-bundle.pem'):
+def mongo_connect_and_update(document_uid,
+                             keywords,
+                             database=DOCUMENT_DATABASE,
+                             tlsCAFile='./rds-combined-ca-bundle.pem'):
     '''Connects to the DocumentDB, finds the document matching our UUID and adds the keywords to it'''
 
     db_client = pymongo.MongoClient(
@@ -208,7 +208,7 @@ def handler(event, context: LambdaContext):
     keywords = get_relevant_keywords(keywords)
     subject_keywords = [i[0] for i in keywords]
 
-    response = mongo_connect_and_pull(document, subject_keywords)
+    response = mongo_connect_and_update(document, subject_keywords)
     response['document_uid'] = document_uid
 
     return response
