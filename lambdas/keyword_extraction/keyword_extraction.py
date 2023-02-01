@@ -24,11 +24,11 @@ logger = Logger()
 DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
 MODEL_BUCKET = os.environ['MODEL_BUCKET']
-NLTK_DATA_PATH = os.environ['NLTK_DATA']
+NLTK_DATA = os.environ['NLTK_DATA']
 MODEL_PATH = os.environ['MODEL_PATH']
 
 
-def initialisation(resource_path=NLTK_DATA_PATH, model_path=MODEL_PATH):
+def initialisation(resource_path=NLTK_DATA, model_path=MODEL_PATH):
     '''Downloads and unzips alls the resources needed to initialise the model'''
 
     # Create new directories in tmp directory
