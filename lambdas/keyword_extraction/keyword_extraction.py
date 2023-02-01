@@ -1,3 +1,4 @@
+from word_forms_loc.lemmatizer import lemmatize
 import io
 import os
 import re
@@ -145,10 +146,10 @@ def extract_keywords(text, kw_model):
 
     return keywords
 
+
 logger.info("importing word_forms")
-from word_forms_loc.lemmatizer import lemmatize
-from collections import defaultdict
 logger.info("DONE!")
+
 
 def get_lemma(word):
     try:
