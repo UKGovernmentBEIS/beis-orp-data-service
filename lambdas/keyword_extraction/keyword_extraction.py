@@ -9,7 +9,9 @@ import torch
 import nltk
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
+from collections import defaultdict
 from http import HTTPStatus
+from word_forms.lemmatizer import lemmatize
 from smart_open import open as smart_open
 from sklearn.feature_extraction.text import CountVectorizer
 from bs4 import BeautifulSoup
@@ -143,22 +145,24 @@ def extract_keywords(text, kw_model):
 
     return keywords
 
-from word_forms.lemmatizer import lemmatize
-from collections import defaultdict
 
 def get_lemma(word):
     try:
         return lemmatize(word)
     except ValueError as err:
-        if 'is not a real word' in err.args[0]: return word
-        else: raise ValueError(err)
+        if 'is not a real word' in err.args[0]:
+            return word
+        else:
+            raise ValueError(err)
+
 
 def get_relevant_keywords(x):
-    nounify = [(get_lemma(k), v) for k,v in x.items()]
+    nounify = [(get_lemma(k), v) for k, v in x.items()]
     kwds = defaultdict(list)
     for k, v in nounify:
         kwds[k].append(v)
-    return [(k, max(v)) for k,v in kwds.items()][:10]
+    return [(k, max(v)) for k, v in kwds.items()][:10]
+
 
 def mongo_connect_and_pull(document_uid,
                            keywords,
