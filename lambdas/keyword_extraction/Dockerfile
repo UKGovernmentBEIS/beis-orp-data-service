@@ -16,8 +16,10 @@ ENV MODEL_PATH=/tmp/modeldir/
 ENV DOCUMENT_DATABASE=mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc.eu-west-2.docdb.amazonaws.com:27017/?directConnection=true
 
 # Copy function code
-COPY keyword_extraction.py ${LAMBDA_TASK_ROOT}
 ADD word_forms_loc.tar.gz ${LAMBDA_TASK_ROOT}
+RUN chown root:root -R ${LAMBDA_TASK_ROOT}/word_forms_loc
+RUN chmod 755 -R ${LAMBDA_TASK_ROOT}/word_forms_loc
+COPY keyword_extraction.py ${LAMBDA_TASK_ROOT}
 COPY stopwords.txt ${LAMBDA_TASK_ROOT}
 COPY rds-combined-ca-bundle.pem ${LAMBDA_TASK_ROOT}
 COPY nltk_data/ ./nltk_data ${LAMBDA_TASK_ROOT}

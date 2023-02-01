@@ -1,4 +1,3 @@
-from word_forms_loc.lemmatizer import lemmatize
 import io
 import os
 import re
@@ -12,8 +11,8 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from collections import defaultdict
 from http import HTTPStatus
-from word_forms.lemmatizer import lemmatize
 from smart_open import open as smart_open
+from word_forms_loc.lemmatizer import lemmatize
 from sklearn.feature_extraction.text import CountVectorizer
 from bs4 import BeautifulSoup
 from aws_lambda_powertools.logging.logger import Logger
@@ -145,10 +144,6 @@ def extract_keywords(text, kw_model):
     logger.info({'keywords': keywords})
 
     return keywords
-
-
-logger.info("importing word_forms")
-logger.info("DONE!")
 
 
 def get_lemma(word):
