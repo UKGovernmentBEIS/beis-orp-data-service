@@ -2,8 +2,10 @@ from odf import text, teletype
 from odf.opendocument import load
 import datefinder
 
-sample_ODF = load("/Users/thomas/Documents/BEIS/input_data/ODF/OpenDocument-v1.2-os.odt")
+sample_ODF = load(
+    "/Users/thomas/Documents/BEIS/input_data/ODF/OpenDocument-v1.2-os.odt")
 elements = sample_ODF.getElementsByType(text.P)
+
 
 def title_extraction(elements):
     """
@@ -17,6 +19,7 @@ def title_extraction(elements):
             title = teletype.extractText(element)
             return title
 
+
 def publishing_date_extraction(elements):
     """
     params: elements: odf.element.Element
@@ -25,14 +28,17 @@ def publishing_date_extraction(elements):
     for element in elements:
         if list(element.values())[0] == "Footer":
             text = teletype.extractText(element)
-            matches = datefinder.find_dates(text, strict=True) # Set strict to True to collect well formed dates
-            # If length of matches is greater than 1, return the last strict date format found
+            # Set strict to True to collect well formed dates
+            matches = datefinder.find_dates(text, strict=True)
+            # If length of matches is greater than 1, return the last strict date
+            # format found
             if len(matches) > 1:
                 return matches[-1]
             # Else return the date found
             else:
                 for match in matches:
                     return str(match)
+
 
 def text_extraction(elements):
     """
