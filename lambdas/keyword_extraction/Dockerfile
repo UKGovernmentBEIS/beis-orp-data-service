@@ -17,6 +17,7 @@ ENV DOCUMENT_DATABASE=mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.clu
 
 # Copy function code
 COPY keyword_extraction.py ${LAMBDA_TASK_ROOT}
+ADD word_forms_loc.tar.gz ${LAMBDA_TASK_ROOT}
 COPY stopwords.txt ${LAMBDA_TASK_ROOT}
 COPY rds-combined-ca-bundle.pem ${LAMBDA_TASK_ROOT}
 COPY nltk_data/ ./nltk_data ${LAMBDA_TASK_ROOT}

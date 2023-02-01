@@ -145,6 +145,10 @@ def extract_keywords(text, kw_model):
 
     return keywords
 
+logger.info("importing word_forms")
+from word_forms_loc.lemmatizer import lemmatize
+from collections import defaultdict
+logger.info("DONE!")
 
 def get_lemma(word):
     try:
@@ -197,7 +201,7 @@ def handler(event, context: LambdaContext):
 
     document_uid = event['document_uid']
     logger.append_keys(document_uid=document_uid)
-
+    logger.info("Started initialisation...")
     initialisation()
 
     s3_client = boto3.client('s3')
