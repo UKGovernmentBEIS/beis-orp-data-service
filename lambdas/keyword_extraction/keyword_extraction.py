@@ -46,14 +46,14 @@ def initialisation(resource_path=NLTK_DATA_PATH, model_path=MODEL_PATH):
 
     logger.info('Completed initialisation')
 
-    return {'statusCode': HTTPStatus.OK}
+    return None
 
 
 def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
     '''Downloads the raw text from S3 ready for keyword extraction'''
 
     document = s3_client.get_object(
-        Bucket=SOURCE_BUCKET,
+        Bucket=bucket,
         Key=f'processed/{document_uid}.txt'
     )['Body'].read().decode('utf-8')
 
@@ -84,8 +84,7 @@ def download_model(s3_client,
 
 
 def pre_process_tokenization_function(documents: str):
-    '''Not overly sure what this does'''
-    # TODO: Describe the function
+    '''Pre-processes the text ready for keyword extraction'''
 
     # Preprocess data after embeddings are created
     text = BeautifulSoup(documents).get_text()
@@ -137,7 +136,6 @@ def extract_keywords(text, kw_model):
         vectorizer=vectorizer_model,
         top_n=10
     )
-
     logger.info({'keywords': keywords})
 
     return keywords

@@ -5,6 +5,7 @@ import boto3
 import pikepdf
 import fitz
 import pymongo
+from http import HTTPStatus
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -86,7 +87,7 @@ def clean_text(text):
     text = text.replace('_x000c_', '')
     text = re.sub('\\s+', ' ', text)
     text = re.sub('<.*?>', '', text)
-    text = re.sub('\.{4,}', '.')
+    text = re.sub('\\.{4,}', '.')
 
     return text
 
@@ -115,7 +116,7 @@ def mongo_connect_and_push(source_bucket,
     db_client = pymongo.MongoClient(
         database,
         tls=True,
-        tlsCAFile='./rds-combined-ca-bundle.pem'
+        tlsCAFile=tlsCAFile
     )
 
     db = db_client.bre_orp
@@ -134,7 +135,7 @@ def mongo_connect_and_push(source_bucket,
     logger.info(f'Document inserted: {collection.find_one(doc)}')
 
     db_client.close()
-    return None
+    return {'mongoStatusCode': HTTPStatus.OK}
 
 
 def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUCKET):
@@ -154,7 +155,7 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
 
 
 @logger.inject_lambda_context(log_event=True)
-def handler(event, context):
+def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
     source_bucket = event['detail']['bucket']['name']
@@ -175,14 +176,11 @@ def handler(event, context):
     logger.info(f'Extracted title: {title}'
                 f'UUID obtained is: {document_uid}')
 
-    mongo_connect_and_push(source_bucket=source_bucket,
-                           object_key=object_key, document_uid=document_uid, title=title)
+    mongo_response = mongo_connect_and_push(source_bucket=source_bucket,
+                                            object_key=object_key, document_uid=document_uid, title=title)
+    s3_response = write_text(s3_client=s3_client, text=text,
+                             document_uid=document_uid)
+    handler_response = {**mongo_response, **s3_response}
+    handler_response['document_uid'] = document_uid
 
-    response = write_text(s3_client=s3_client, text=text,
-                          document_uid=document_uid)
-    logger.info(response)
-
-    return {
-        'statusCode': 200,
-        'document_uid': document_uid
-    }
+    return handler_response
