@@ -1,46 +1,61 @@
+import json
+import os
 import boto3
 import pymongo
-import json
+from aws_lambda_powertools.logging.logger import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
 
 
-SOURCE_DATABASE = ("mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc."
-                   "eu-west-2.docdb.amazonaws.com:27017/?directConnection=true")
-DESTINATION_QUEUE_URL = "https://sqs.eu-west-2.amazonaws.com/455762151948/update-typedb"
+logger = Logger()
+
+DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
+DESTINATION_SQS_URL = os.environ['DESTINATION_SQS_URL']
 
 
-def handler(event, context):
-    print(f"Event received: {event}")
-    document_uid = event["responsePayload"]["document_uid"]
+def mongo_connect_and_pull(document_uid,
+                           database=DOCUMENT_DATABASE,
+                           tlsCAFile='./rds-combined-ca-bundle.pem'):
+    '''Connects to the DocumentDB, finds the document matching our UUID and pulls it'''
 
-    # Create a MongoDB client and open a connection to Amazon DocumentDB
     db_client = pymongo.MongoClient(
-        SOURCE_DATABASE,
+        database,
         tls=True,
-        tlsCAFile="./rds-combined-ca-bundle.pem"
+        tlsCAFile=tlsCAFile
     )
-    print("Connected to DocumentDB")
-
+    logger.info('Succesfully Connected')
     db = db_client.bre_orp
     collection = db.documents
-    query = {
-        "document_uid": document_uid
-    }
 
-    # Find document matching the UUID
+    query = {'document_uid': document_uid}
     document = collection.find_one(query)
     del document['_id']
-
-    # Print the query result to the screen
-    print(f"Document found: {document}")
     db_client.close()
 
-    # Create an SQS client and send the document
-    sqs = boto3.client("sqs")
-    print("Sending document to SQS")
+    return document
+
+
+def sqs_connect_and_send(document, queue=DESTINATION_SQS_URL):
+    '''Create an SQS client and send the document'''
+
+    sqs = boto3.client('sqs')
     response = sqs.send_message(
-        QueueUrl=DESTINATION_QUEUE_URL,
+        QueueUrl=queue,
         MessageBody=json.dumps(document)
     )
 
-    print(response)
+    return response
+
+
+@logger.inject_lambda_context(log_event=True)
+def handler(event, context: LambdaContext):
+    logger.set_correlation_id(context.aws_request_id)
+
+    document_uid = event['document_uid']
+    logger.append_keys(document_uid=document_uid)
+
+    document = mongo_connect_and_pull(document_uid=document_uid)
+    logger.info({'document': document})
+    response = sqs_connect_and_send(document=document)
+    logger.info({'sqs_response': response})
+
     return response

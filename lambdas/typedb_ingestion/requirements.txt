@@ -1,2 +1,3 @@
-boto3==1.24.59
+aws_lambda_powertools==2.7.0
+boto3==1.21.32
 pymongo==4.3.3
