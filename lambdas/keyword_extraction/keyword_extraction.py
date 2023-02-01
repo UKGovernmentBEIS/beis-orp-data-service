@@ -9,7 +9,9 @@ import torch
 import nltk
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
+from collections import defaultdict
 from http import HTTPStatus
+from word_forms.lemmatizer import lemmatize
 from smart_open import open as smart_open
 from sklearn.feature_extraction.text import CountVectorizer
 from bs4 import BeautifulSoup
@@ -143,7 +145,7 @@ def extract_keywords(text, kw_model):
 
     return keywords
 
-logger.info("importing the devil")
+logger.info("importing word_forms")
 from word_forms_loc.lemmatizer import lemmatize
 from collections import defaultdict
 logger.info("DONE!")
@@ -152,20 +154,24 @@ def get_lemma(word):
     try:
         return lemmatize(word)
     except ValueError as err:
-        if 'is not a real word' in err.args[0]: return word
-        else: raise ValueError(err)
+        if 'is not a real word' in err.args[0]:
+            return word
+        else:
+            raise ValueError(err)
+
 
 def get_relevant_keywords(x):
-    nounify = [(get_lemma(k), v) for k,v in x.items()]
+    nounify = [(get_lemma(k), v) for k, v in x.items()]
     kwds = defaultdict(list)
     for k, v in nounify:
         kwds[k].append(v)
-    return [(k, max(v)) for k,v in kwds.items()][:10]
+    return [(k, max(v)) for k, v in kwds.items()][:10]
 
-def mongo_connect_and_pull(document_uid,
-                           keywords,
-                           database=DOCUMENT_DATABASE,
-                           tlsCAFile='./rds-combined-ca-bundle.pem'):
+
+def mongo_connect_and_update(document_uid,
+                             keywords,
+                             database=DOCUMENT_DATABASE,
+                             tlsCAFile='./rds-combined-ca-bundle.pem'):
     '''Connects to the DocumentDB, finds the document matching our UUID and adds the keywords to it'''
 
     db_client = pymongo.MongoClient(
@@ -206,7 +212,7 @@ def handler(event, context: LambdaContext):
     keywords = get_relevant_keywords(keywords)
     subject_keywords = [i[0] for i in keywords]
 
-    response = mongo_connect_and_pull(document, subject_keywords)
+    response = mongo_connect_and_update(document, subject_keywords)
     response['document_uid'] = document_uid
 
     return response
