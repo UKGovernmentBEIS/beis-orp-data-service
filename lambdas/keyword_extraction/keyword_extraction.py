@@ -157,7 +157,7 @@ def get_lemma(word):
 
 
 def get_relevant_keywords(x):
-    nounify = [(get_lemma(k), v) for k, v in x.items()]
+    nounify = [(get_lemma(k), v) for k, v in x]
     kwds = defaultdict(list)
     for k, v in nounify:
         kwds[k].append(v)
