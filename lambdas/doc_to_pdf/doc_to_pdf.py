@@ -1,8 +1,8 @@
 import io
 import os
-import re
+# import re
 import boto3
-from http import HTTPStatus
+# from http import HTTPStatus
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
@@ -62,9 +62,11 @@ def handler(event, context: LambdaContext):
     logger.info(
         f'New document in {source_bucket}: {object_key}')
 
+    # Download document and associated metadata
+    # Convert to PDF
+    # Write PDF and metadata back to bucket
     s3_client = boto3.client('s3')
-    doc_bytes_io = download_text(
-        s3_client=s3_client, object_key=object_key, source_bucket=source_bucket)
+
     doc_s3_metadata = get_s3_metadata(
         s3_client=s3_client, object_key=object_key, source_bucket=source_bucket)
     document_uid = doc_s3_metadata['uuid']
