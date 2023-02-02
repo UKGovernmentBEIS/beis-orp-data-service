@@ -143,7 +143,7 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
 
     response = s3_client.put_object(
         Body=text,
-        Bucket=DESTINATION_BUCKET,
+        Bucket=destination_bucket,
         Key=f'processed/{document_uid}.txt',
         Metadata={
             'uuid': document_uid
