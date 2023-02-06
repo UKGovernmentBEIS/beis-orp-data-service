@@ -206,6 +206,8 @@ def handler(event, context: LambdaContext):
     keywords = extract_keywords(document, kw_model)
     # lemmatise keywords
     keywords = get_relevant_keywords(keywords)
+    logger.info({'relevant keywords': keywords})
+    
     subject_keywords = [i[0] for i in keywords]
 
     response = mongo_connect_and_update(document, subject_keywords)
