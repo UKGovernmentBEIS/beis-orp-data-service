@@ -3,8 +3,14 @@ import numpy as np
 import re
 import pikepdf
 import nltk
+from logging import Logger
 from preprocess.preprocess_functions import preprocess
 from postprocess.postprocess_functions import postprocess_title
+import pymongo
+import boto3
+from aws_lambda_powertools.utilities.typing import LambdaContext
+
+logger = Logger()
 
 # Import pre-trained title extraction model
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM 
@@ -36,7 +42,7 @@ def use_automatic_title_extraction(title):
     title = re.sub(my_pattern, " ", title)
     # Heuristic: if the number of tokens in the title is less than 4
     # Then use automatic title extraction
-    if len(title.split(" ")) < 4:
+    if 35 < len(title.split(" ")) < 4:
         return True
     else:
         return False
@@ -54,10 +60,25 @@ def title_predictor(text):
     processed_title = postprocess_title(predicted_title)
     return processed_title
 
-def handler():
+def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
+    '''Downloads the raw text from S3 ready for keyword extraction'''
+
+    document = s3_client.get_object(
+        Bucket=bucket,
+        Key=f'processed/{document_uid}.txt'
+    )['Body'].read().decode('utf-8')
+
+    logger.info('Downloaded text')
+
+    return document
+
+def handler(event, context: LambdaContext):
+    s3_client = boto3.client('s3')
+    document_uid = event['document_uid']
     metadata_title = extract_title()
     if use_automatic_title_extraction(title):
-        title = title_predictor(DOCUMENT_TEXT)
+        text = download_text(s3_client, document_uid)
+        title = title_predictor(text)
         return title
     else:
         title = re.sub("Microsoft Word - ", "", metadata_title)
