@@ -7,13 +7,14 @@ COPY requirements.txt  .
 RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
 # Set environment variables
-# ENV NUMBA_CACHE_DIR=/tmp/
-# ENV TRANSFORMERS_CACHE=/tmp/
-# ENV NLTK_DATA=/tmp/nltk_data/
+ENV NUMBA_CACHE_DIR=/tmp/
+ENV TRANSFORMERS_CACHE=/tmp/
+ENV NLTK_DATA=/tmp/nltk_data/
 ENV SOURCE_BUCKET=beis-orp-dev-datalake
 ENV DOCUMENT_DATABASE=mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc.eu-west-2.docdb.amazonaws.com:27017/?directConnection=true
 
 # Copy function code
+COPY nltk_data/ ./nltk_data ${LAMBDA_TASK_ROOT}
 COPY summarisation_script.py ${LAMBDA_TASK_ROOT}
 COPY model_builder.py ${LAMBDA_TASK_ROOT}
 COPY ext_sum.py ${LAMBDA_TASK_ROOT}

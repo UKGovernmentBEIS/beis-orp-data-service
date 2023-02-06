@@ -1,6 +1,8 @@
 import os
+import nltk
 import torch
 import boto3
+import zipfile
 import pymongo
 from http import HTTPStatus
 from ext_sum import summarize
@@ -13,6 +15,23 @@ logger = Logger()
 
 DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
+NLTK_DATA_PATH = os.environ['NLTK_DATA']
+
+
+def initialisation(resource_path=NLTK_DATA_PATH):
+    '''Downloads and unzips alls the resources needed to initialise the model'''
+
+    # Create new directories in tmp directory
+    os.makedirs(resource_path, exist_ok=True)
+    nltk.download('punkt', download_dir=resource_path)
+
+    # Unzip all resources
+    with zipfile.ZipFile(os.path.join(resource_path, 'tokenizers', 'punkt.zip'), 'r') as zip_ref:
+        zip_ref.extractall(os.path.join(resource_path, 'tokenizers'))
+
+    logger.info('Completed initialisation')
+
+    return None
 
 
 def download_text(s3_client, document_uid, Bucket=SOURCE_BUCKET):
@@ -87,6 +106,8 @@ def handler(event, context: LambdaContext):
 
     s3_client = boto3.client('s3')
     document = download_text(s3_client, document_uid)
+
+    initialisation()
 
     logger.info("Loading model")
     model = load_model("mobilebert")

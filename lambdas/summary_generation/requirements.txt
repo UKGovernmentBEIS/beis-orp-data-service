@@ -10,7 +10,7 @@ pymongo==4.3.3
 requests==2.28.1
 tensorflow==2.11.0
 tokenizers==0.13.1
-torch==2.0.0.dev20230123
+torch==1.12.1
 torch_xla==1.0
 tqdm==4.64.0
 transformers==4.26.0
