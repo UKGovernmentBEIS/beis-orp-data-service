@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from MobileBert.modeling_mobilebert import MobileBertConfig, MobileBertModel
-from models.encoder import ExtTransformerEncoder
+from encoder import ExtTransformerEncoder
 
 class Bert(nn.Module):
     def __init__(self, bert_type="bertbase"):

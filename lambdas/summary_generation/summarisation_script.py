@@ -5,17 +5,24 @@ import boto3
 import zipfile
 import pymongo
 from http import HTTPStatus
-from ext_sum import summarize
-from model_builder import ExtSummarizer
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
-
 logger = Logger()
+
+
+
+# logger.info(MOBILEBERT)
+
+from ext_sum import summarize
+from model_builder import ExtSummarizer
+
+logger.info("Model configs loaded")
 
 DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
 NLTK_DATA_PATH = os.environ['NLTK_DATA']
+
 
 
 def initialisation(resource_path=NLTK_DATA_PATH):
