@@ -3,7 +3,7 @@ import os
 import boto3
 import pymongo
 import datefinder
-from odf import teletype
+from odf import text, teletype
 from http import HTTPStatus
 from odf.opendocument import load
 from aws_lambda_powertools.logging.logger import Logger
@@ -12,12 +12,13 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
+SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
 DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
 
 
 def download_text(s3_client, object_key, source_bucket):
-    '''Downloads the PDF from S3 ready for conversion and metadata extraction'''
+    '''Downloads the ODF from S3 ready for conversion and metadata extraction'''
 
     document = s3_client.get_object(
         Bucket=source_bucket,
@@ -42,6 +43,17 @@ def get_s3_metadata(s3_client, object_key, source_bucket):
     return metadata
 
 
+def return_elements(doc_bytes_io):
+    """
+    params: doc_bytes_io: doc bytes from s3 bucket
+    returns: elements: odf.element.Element object
+    """
+    odf = load(doc_bytes_io)
+    logger.info(odf)
+    elements = odf.getElementsByType(text.P)
+    return elements
+
+
 def title_extraction(elements):
     """
     params: elements: odf.element.Element
@@ -61,9 +73,10 @@ def publishing_date_extraction(elements):
     returns: match Str: date found in the footer of the document
     """
     for element in elements:
-        if list(element.values())[0] == "Footer":
+        el_attributes = element.attributes
+        if list(el_attributes.values())[0] == "Footer":
             text = teletype.extractText(element)
-            matches = datefinder.find_dates(text, strict=True) # Set strict to True to collect well formed dates
+            matches = [date for date in datefinder.find_dates(text, strict=True)] # Set strict to True to collect well formed dates
             # If length of matches is greater than 1, return the last strict date format found
             if len(matches) > 1:
                 return matches[-1]
@@ -90,7 +103,7 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
 
     response = s3_client.put_object(
         Body=text,
-        Bucket=DESTINATION_BUCKET,
+        Bucket=destination_bucket,
         Key=f'processed/{document_uid}.txt',
         Metadata={
             'uuid': document_uid
@@ -100,9 +113,11 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
 
     return response
 
+
 def mongo_connect_and_push(source_bucket,
                            object_key,
                            document_uid,
+                           date_published,
                            title,
                            database=DOCUMENT_DATABASE,
                            tlsCAFile='./rds-combined-ca-bundle.pem'):
@@ -121,6 +136,7 @@ def mongo_connect_and_push(source_bucket,
     doc = {
         'title': title,
         'document_uid': document_uid,
+        'date_published': date_published,
         'uri': f's3://{source_bucket}/{object_key}',
         'object_key': object_key
     }
@@ -138,6 +154,8 @@ def mongo_connect_and_push(source_bucket,
 def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
+    logger.info(event)
+
     source_bucket = event['detail']['bucket']['name']
     object_key = event['detail']['object']['key']
     logger.info(
@@ -145,24 +163,33 @@ def handler(event, context: LambdaContext):
 
     s3_client = boto3.client('s3')
     doc_bytes_io = download_text(
-        s3_client=s3_client, object_key=object_key, source_bucket=source_bucket)
+        s3_client=s3_client, object_key=object_key, source_bucket=SOURCE_BUCKET)
     doc_s3_metadata = get_s3_metadata(
-        s3_client=s3_client, object_key=object_key, source_bucket=source_bucket)
+        s3_client=s3_client, object_key=object_key, source_bucket=SOURCE_BUCKET)
     document_uid = doc_s3_metadata['uuid']
     logger.append_keys(document_uid=document_uid)
 
-    odf = load(doc_bytes_io)
-    elements = odf.getElementsByType(text.P)
+    # Load the ODF and extract elements
+    elements = return_elements(doc_bytes_io)
 
-    title = title_extraction(doc_bytes_io)
-    text = text_extraction(doc_bytes_io)
+    # Extract the title
+    title = title_extraction(elements)
+
+    # Extract the publishing date
+    date_published = publishing_date_extraction(elements)
+
+    # Extract the text
+    text = text_extraction(elements)
     logger.info(f'Extracted title: {title}'
+                f'Publishing date: {date_published}'
                 f'UUID obtained is: {document_uid}')
 
-    mongo_response = mongo_connect_and_push(source_bucket=source_bucket,
-                                            object_key=object_key, document_uid=document_uid, title=title)
+    mongo_response = mongo_connect_and_push(source_bucket=SOURCE_BUCKET,
+                                            object_key=object_key, document_uid=document_uid, 
+                                            date_published = date_published, title=title)
     s3_response = write_text(s3_client=s3_client, text=text,
                              document_uid=document_uid)
+
     handler_response = {**mongo_response, **s3_response}
     handler_response['document_uid'] = document_uid
 
