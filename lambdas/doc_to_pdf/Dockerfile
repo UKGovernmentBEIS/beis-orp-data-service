@@ -2,8 +2,7 @@ FROM public.ecr.aws/lambda/python:3.9
 
 # Install LibreOffice and dependencies
 RUN yum -y update
-ADD --chown=root:root lo-x86-64-rpm.tar.gz /tmp/libreoffice
-RUN chmod 755 -R /tmp/*
+ADD lo-x86-64-rpm.tar.gz /tmp/libreoffice
 RUN yum install -y /tmp/libreoffice/LibreOffice_7.4.5.1_Linux_x86-64_rpm/RPMS/*.rpm
 RUN yum install -y libXinerama.x86_64 cups-libs dbus-glib cairo java
 

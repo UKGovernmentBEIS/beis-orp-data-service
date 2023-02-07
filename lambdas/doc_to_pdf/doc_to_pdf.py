@@ -1,6 +1,7 @@
 import os
 import subprocess
 import boto3
+import re
 # from http import HTTPStatus
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -10,6 +11,7 @@ logger = Logger()
 
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
 SOFFICE_PATH = os.environ['SOFFICE_PATH']
+os.environ['HOME'] = '/tmp'
 
 
 def download_doc(s3_client, object_key, source_bucket, file_path):
@@ -38,8 +40,13 @@ def get_s3_metadata(s3_client, object_key, source_bucket):
 def convert_word_to_pdf(word_file_path, output_dir, soffice_path=SOFFICE_PATH):
     '''Calls LibreOffice to convert the document to PDF'''
 
-    response = subprocess.call([soffice_path, '--headless', '--convert-to',
-                                'pdf', '--outdir', output_dir, word_file_path])
+    response = subprocess.call([soffice_path,
+                                '--headless',
+                                '--convert-to',
+                                'pdf',
+                                '--outdir',
+                                output_dir,
+                                word_file_path])
     logger.info(response)
     return response
 
@@ -51,7 +58,7 @@ def upload_pdf(s3_client, object_key, metadata,
     response = s3_client.upload_file(
         Filename=f'/tmp/{object_key}',
         Bucket=destination_bucket,
-        Key=f'docs/{object_key}.pdf',
+        Key=f'docs/{object_key}',
         # Metadata=metadata
     )
     logger.info('Saved converted document back to S3')
@@ -69,6 +76,8 @@ def handler(event, context: LambdaContext):
         f'New document in {source_bucket}: {object_key}')
 
     s3_client = boto3.client('s3')
+
+    new_key = re.sub('\\.docx?', '.pdf', object_key)
 
     response = download_doc(
         s3_client=s3_client,
@@ -91,7 +100,7 @@ def handler(event, context: LambdaContext):
 
     upload_pdf(
         s3_client=s3_client,
-        object_key=object_key,
+        object_key=new_key,
         metadata=doc_s3_metadata)
 
     # handler_response = {**s3_response}
