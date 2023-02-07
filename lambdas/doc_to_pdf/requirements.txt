@@ -1,3 +1,2 @@
 aws_lambda_powertools==2.7.1
 boto3==1.21.32
-Brotli==1.0.9

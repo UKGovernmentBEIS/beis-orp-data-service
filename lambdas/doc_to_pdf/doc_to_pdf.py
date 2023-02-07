@@ -1,6 +1,3 @@
-import brotli
-import tarfile
-from io import BytesIO
 import os
 import subprocess
 import boto3
@@ -12,26 +9,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 logger = Logger()
 
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
-
-libre_office_install_dir = '/tmp/instdir'
-
-
-def load_libre_office():
-    os.makedirs(libre_office_install_dir, exist_ok=True)
-
-    buffer = BytesIO()
-    with open('/opt/lo.tar.br', 'rb') as brotli_file:
-        d = brotli.Decompressor()
-        while True:
-            chunk = brotli_file.read(1024)
-            buffer.write(d.process(chunk))
-            if len(chunk) < 1024:
-                break
-        buffer.seek(0)
-
-    with tarfile.open(fileobj=buffer) as tar:
-        tar.extractall('/tmp')
-    return f'{libre_office_install_dir}/program/soffice.bin'
+SOFFICE_PATH = os.environ['SOFFICE_PATH']
 
 
 def download_doc(s3_client, object_key, source_bucket, file_path):
@@ -57,21 +35,9 @@ def get_s3_metadata(s3_client, object_key, source_bucket):
     return metadata
 
 
-def convert_word_to_pdf(soffice_path, word_file_path, output_dir):
-    # conv_cmd = (f"{soffice_path} --headless --norestore --invisible --nodefault --nofirststartwizard --nolockcheck"
-    #             f" --nologo --convert-to pdf:writer_pdf_Export --outdir {output_dir} {word_file_path}")
-    # response = subprocess.run(
-    #     conv_cmd.split(),
-    #     stdout=subprocess.PIPE,
-    #     stderr=subprocess.PIPE)
-    # logger.info(response)
-    # if response.returncode != 0:
-    #     response = subprocess.run(
-    #         conv_cmd.split(),
-    #         stdout=subprocess.PIPE,
-    #         stderr=subprocess.PIPE)
-    #     if response.returncode != 0:
-    #         return False
+def convert_word_to_pdf(word_file_path, output_dir, soffice_path=SOFFICE_PATH):
+    '''Calls LibreOffice to convert the document to PDF'''
+
     response = subprocess.call([soffice_path, '--headless', '--convert-to',
                                 'pdf', '--outdir', output_dir, word_file_path])
     logger.info(response)
@@ -102,9 +68,6 @@ def handler(event, context: LambdaContext):
     logger.info(
         f'New document in {source_bucket}: {object_key}')
 
-    soffice_path = load_libre_office()
-    logger.info(soffice_path)
-
     s3_client = boto3.client('s3')
 
     response = download_doc(
@@ -119,11 +82,8 @@ def handler(event, context: LambdaContext):
         object_key=object_key,
         source_bucket=source_bucket)
     logger.info(doc_s3_metadata)
-    # document_uid = doc_s3_metadata['uuid']
-    # logger.append_keys(document_uid=document_uid)
 
     pdf_document = convert_word_to_pdf(
-        soffice_path=soffice_path,
         word_file_path=f'/tmp/{object_key}',
         output_dir='/tmp')
     logger.info(pdf_document)
