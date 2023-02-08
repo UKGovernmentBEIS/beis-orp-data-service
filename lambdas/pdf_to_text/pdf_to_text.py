@@ -53,7 +53,7 @@ def extract_title(doc_bytes_io):
     except KeyError:
         title = pdf.docinfo.get('/Title')
 
-    return title
+    return str(title)
 
 
 def extract_text(doc_bytes_io):

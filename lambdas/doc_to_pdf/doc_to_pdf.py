@@ -78,13 +78,14 @@ def handler(event, context: LambdaContext):
 
     s3_client = boto3.client('s3')
 
-    new_key = re.sub('\\.docx?', '.pdf', object_key)
+    raw_key = re.sub('(.*/)*', '', object_key)
+    new_key = re.sub('\\.docx?', '.pdf', raw_key)
 
     download_response = download_doc(
         s3_client=s3_client,
         object_key=object_key,
         source_bucket=source_bucket,
-        file_path=f'/tmp/{object_key}')
+        file_path=f'/tmp/{raw_key}')
     logger.info(download_response)
 
     doc_s3_metadata = get_s3_metadata(
@@ -92,11 +93,9 @@ def handler(event, context: LambdaContext):
         object_key=object_key,
         source_bucket=source_bucket)
     logger.info(doc_s3_metadata)
-    document_uid = doc_s3_metadata.get(
-        'uuid') if doc_s3_metadata.get('uuid') else None
 
     conversion_response = convert_word_to_pdf(
-        word_file_path=f'/tmp/{object_key}',
+        word_file_path=f'/tmp/{raw_key}',
         output_dir='/tmp')
     logger.info(conversion_response)
 
@@ -110,13 +109,12 @@ def handler(event, context: LambdaContext):
                         conversion_response, **upload_response}
 
     output = {
-        "detail": {
-            "object": {
-                "key": f'converted-docs/{new_key}',
-                'document_uid': document_uid
+        'detail': {
+            'object': {
+                'key': f'converted-docs/{new_key}'
             },
-            "bucket": {
-                "name": DESTINATION_BUCKET
+            'bucket': {
+                'name': DESTINATION_BUCKET
             }
         }
     }
