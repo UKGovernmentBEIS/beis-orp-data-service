@@ -1,19 +1,29 @@
-import pandas as pd
-import numpy as np    
+import os
 import re
-import pikepdf
 import nltk
+import boto3
+import pikepdf
+import pymongo
+import numpy as np   
+import pandas as pd 
 from logging import Logger
 from preprocess.preprocess_functions import preprocess
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM 
 from postprocess.postprocess_functions import postprocess_title
-import pymongo
-import boto3
 from aws_lambda_powertools.utilities.typing import LambdaContext
+
 
 logger = Logger()
 
+DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
+SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
+MODEL_BUCKET = os.environ['MODEL_BUCKET']
+NLTK_DATA_PATH = os.environ['NLTK_DATA']
+MODEL_PATH = os.environ['MODEL_PATH']
+
+
 # Import pre-trained title extraction model
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM 
+
 tokenizer = AutoTokenizer.from_pretrained("fabiochiu/t5-small-medium-title-generation")
 model = AutoModelForSeq2SeqLM.from_pretrained("fabiochiu/t5-small-medium-title-generation")
 
@@ -34,6 +44,9 @@ def extract_title(doc_bytes_io):
 
 # Heuristic-based function to decide on approach to title extraction
 def use_automatic_title_extraction(title):
+    """
+    params: title: metadata title extracted from the PDF
+    """
     # Remove punctuation
     title = re.sub(r"[^\w\s]", "", title).strip()
     # Remove Microsoft Word from titles
