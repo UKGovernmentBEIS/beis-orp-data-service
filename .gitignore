@@ -78,4 +78,4 @@ advent_of_code/
 .ipynb_checkpoints/
 
 # large files
-lambdas/doc_to_pdf/lo-x86-64-rpm.tar.gz
+**/lo-x86-64-rpm.tar.gz
