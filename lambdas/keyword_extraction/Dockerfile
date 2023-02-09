@@ -10,8 +10,6 @@ RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 ENV NUMBA_CACHE_DIR=/tmp/
 ENV TRANSFORMERS_CACHE=/tmp/
 ENV NLTK_DATA=/tmp/nltk_data/
-ENV SOURCE_BUCKET=beis-orp-dev-datalake
-ENV MODEL_BUCKET=beis-orp-dev-clustering-models
 ENV MODEL_PATH=/tmp/modeldir/
 
 # Copy function code
