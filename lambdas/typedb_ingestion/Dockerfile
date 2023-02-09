@@ -6,7 +6,6 @@ COPY requirements.txt  .
 RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
 # Setting environment variables
-ENV DOCUMENT_DATABASE=mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc.eu-west-2.docdb.amazonaws.com:27017/?directConnection=true
 ENV DESTINATION_SQS_URL=https://sqs.eu-west-2.amazonaws.com/455762151948/update-typedb
 
 # Copy function code and certificates

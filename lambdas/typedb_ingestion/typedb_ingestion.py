@@ -8,12 +8,16 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
+DDB_USER = os.environ['DDB_USER']
+DDB_PASSWORD = os.environ['DDB_PASSWORD']
+DDB_DOMAIN = os.environ['DDB_DOMAIN']
 DESTINATION_SQS_URL = os.environ['DESTINATION_SQS_URL']
+
+ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
 
 
 def mongo_connect_and_pull(document_uid,
-                           database=DOCUMENT_DATABASE,
+                           database,
                            tlsCAFile='./rds-combined-ca-bundle.pem'):
     '''Connects to the DocumentDB, finds the document matching our UUID and pulls it'''
 
@@ -53,7 +57,9 @@ def handler(event, context: LambdaContext):
     document_uid = event['document_uid']
     logger.append_keys(document_uid=document_uid)
 
-    document = mongo_connect_and_pull(document_uid=document_uid)
+    document = mongo_connect_and_pull(
+        document_uid=document_uid,
+        database=ddb_connection_uri)
     logger.info({'document': document})
     response = sqs_connect_and_send(document=document)
     logger.info({'sqs_response': response})

@@ -19,11 +19,15 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
+DDB_USER = os.environ['DDB_USER']
+DDB_PASSWORD = os.environ['DDB_PASSWORD']
+DDB_DOMAIN = os.environ['DDB_DOMAIN']
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
 MODEL_BUCKET = os.environ['MODEL_BUCKET']
 NLTK_DATA_PATH = os.environ['NLTK_DATA']
 MODEL_PATH = os.environ['MODEL_PATH']
+
+ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
 
 
 def initialisation(resource_path=NLTK_DATA_PATH, model_path=MODEL_PATH):
@@ -143,7 +147,7 @@ def extract_keywords(text, kw_model):
 
 def mongo_connect_and_push(document_uid,
                            keywords,
-                           database=DOCUMENT_DATABASE,
+                           database,
                            tlsCAFile='./rds-combined-ca-bundle.pem'):
     '''Connects to the DocumentDB, finds the document matching our UUID and adds the keywords to it'''
 
@@ -178,12 +182,15 @@ def handler(event, context: LambdaContext):
     initialisation()
 
     s3_client = boto3.client('s3')
-    document = download_text(s3_client, document_uid)
-    kw_model = download_model(s3_client)
-    keywords = extract_keywords(document, kw_model)
+    document = download_text(s3_client=s3_client, document_uid=document_uid)
+    kw_model = download_model(s3_client=s3_client)
+    keywords = extract_keywords(text=document, kw_model=kw_model)
     subject_keywords = [i[0] for i in keywords]
 
-    response = mongo_connect_and_push(document, subject_keywords)
+    response = mongo_connect_and_push(
+        document_uid=document_uid,
+        keywords=subject_keywords,
+        database=ddb_connection_uri)
     response['document_uid'] = document_uid
 
     return response

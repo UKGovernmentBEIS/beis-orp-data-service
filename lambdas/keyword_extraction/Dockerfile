@@ -13,7 +13,6 @@ ENV NLTK_DATA=/tmp/nltk_data/
 ENV SOURCE_BUCKET=beis-orp-dev-datalake
 ENV MODEL_BUCKET=beis-orp-dev-clustering-models
 ENV MODEL_PATH=/tmp/modeldir/
-ENV DOCUMENT_DATABASE=mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc.eu-west-2.docdb.amazonaws.com:27017/?directConnection=true
 
 # Copy function code
 COPY keyword_extraction.py ${LAMBDA_TASK_ROOT}
