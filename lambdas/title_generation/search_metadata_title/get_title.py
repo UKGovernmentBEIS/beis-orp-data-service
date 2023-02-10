@@ -1,5 +1,6 @@
 import numpy as np
 from tqdm import tqdm
+from typing import List
 from numpy.linalg import norm
 from sentence_transformers import SentenceTransformer
 
@@ -8,15 +9,26 @@ similarity_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
 
 # Shorten text for input to title extraction model
-def percentage_shortener(text, percentage = 0.1):
+def percentage_shortener(text : str, percentage = 0.1) -> str:
+    """
+    param: text: Str document text
+    param: percentage: float percentage of document to sample
+    returns: shortened_complete: shortened text
+        Shorten text for iteration of title over candidate titles 
+    """
     length = int(len(text)*percentage)
     shortened = " ".join(text.split(" ")[ : length])
     shortened_complete = shortened + text.replace(shortened, "").split(".")[0]
     return shortened_complete
 
 
-def rolling_padded_sentence(metadata_title, text, padding = 2):
-
+def rolling_padded_sentence(metadata_title : str, text : str, padding = 2) -> List:
+    """
+    param: metadata_title: Str title
+    param: text: Str document text
+    param: padding: int padding around candidate titles
+    returns: candidate_titles: List of titles to iterate the metadata title over
+    """
     text = percentage_shortener(text)
     candidate_titles = []
     padded_title_length = len(metadata_title.split(" ")) + padding
@@ -26,6 +38,7 @@ def rolling_padded_sentence(metadata_title, text, padding = 2):
         candidate_title = tokenized_text[starting_idx : starting_idx + padded_title_length]
         candidate_titles.append(" ".join(candidate_title))
 
+    # Capping the candidate title list at 1000
     if len(candidate_titles) > 1000:
         return candidate_titles[0 : 1000]
 
@@ -34,7 +47,13 @@ def rolling_padded_sentence(metadata_title, text, padding = 2):
 
 
 # Define function to get similarity scores
-def get_similarity_scores(title, candidate_titles):
+def get_similarity_scores(title : str, candidate_titles : List) -> float:
+    """
+    param: title: Str title
+    param: candidate_titles: List of candidate titles
+    returns: score: highest similarity score of metadata title over list of candidate titles
+        Makes use of a pretrained model to compare embeddings of the title and candidate title
+    """
     similarity_scores = []
 
     for sent in tqdm(candidate_titles):
@@ -50,43 +69,16 @@ def get_similarity_scores(title, candidate_titles):
     return score
 
 
-# def refine_returned_title(max_idx, title, candidate_titles):
-
-#     # Where title is at the start
-#     if max_idx == 0:
-#         longer_candidate_title = candidate_titles[max_idx].split(" ") + [candidate_titles[max_idx + 1].split(" ")[-1]]
-
-#     # Where title is at the end
-#     elif max_idx == len(candidate_titles) - 1:
-#         longer_candidate_title = [candidate_titles[max_idx - 1].split(" ")[-1] ]+ candidate_titles[max_idx].split(" ")
-
-#     # Where title is in the middle
-#     else:
-#         longer_candidate_title = [candidate_titles[max_idx - 1].split(" ")[-1]] + candidate_titles[max_idx].split(" ") + [candidate_titles[max_idx + 1].split(" ")[-1]]
-
-#     length_of_longer_candidate_title = len(longer_candidate_title)
-
-#     candidate_title_permutations = []
-
-#     for starting_idx, word in enumerate(longer_candidate_title):
-#         for idx in range(starting_idx + 1, length_of_longer_candidate_title - starting_idx):
-#             candidate_title = longer_candidate_title[starting_idx : idx]
-#             candidate_title_permutations.append(" ".join(candidate_title))
-
-#     max_idx, score = get_similarity_scores(title.lower(), [t.lower() for t in candidate_title_permutations])
-
-#     returned_title = candidate_title_permutations[max_idx]
-
-#     return returned_title, score
-
-
-def identify_metadata_title_in_text(metadata_title, text):
+def identify_metadata_title_in_text(metadata_title : str, text : str) -> float:
+    """
+    param: metadata_title: Str title
+    param: text: Str document text
+    returns: score: float highest score
+        Function that brings all predefined functions together
+    """
 
     candidate_titles = rolling_padded_sentence(metadata_title = metadata_title, text = text)
-
     score = get_similarity_scores(metadata_title, candidate_titles)
-
-    # title, score = refine_returned_title(initial_candidate_title_idx, metadata_title, candidate_titles)
 
     return score
 
