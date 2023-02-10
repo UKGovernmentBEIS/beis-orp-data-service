@@ -11,13 +11,14 @@ ENV NUMBA_CACHE_DIR=/tmp/
 ENV TRANSFORMERS_CACHE=/tmp/
 ENV NLTK_DATA=/tmp/nltk_data/
 ENV SOURCE_BUCKET=beis-orp-dev-datalake
-ENV MODEL_BUCKET=beis-orp-dev-clustering-models
-ENV MODEL_PATH=/tmp/modeldir/
 ENV DOCUMENT_DATABASE=mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.cluster-cau6o2mf7iuc.eu-west-2.docdb.amazonaws.com:27017/?directConnection=true
 
+# Add preprocess and postprocess folders
+ADD postprocess ${LAMBDA_TASK_ROOT}/postprocess 
+ADD preprocess ${LAMBDA_TASK_ROOT}/preprocess 
+
 # Copy function code
-COPY keyword_extraction.py ${LAMBDA_TASK_ROOT}
-COPY stopwords.txt ${LAMBDA_TASK_ROOT}
+COPY title_extraction.py ${LAMBDA_TASK_ROOT}
 COPY rds-combined-ca-bundle.pem ${LAMBDA_TASK_ROOT}
 COPY nltk_data/ ./nltk_data ${LAMBDA_TASK_ROOT}
 
