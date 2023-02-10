@@ -16,6 +16,7 @@ ENV DOCUMENT_DATABASE=mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.clu
 # Add preprocess and postprocess folders
 ADD postprocess ${LAMBDA_TASK_ROOT}/postprocess 
 ADD preprocess ${LAMBDA_TASK_ROOT}/preprocess 
+ADD search_metadata_title ${LAMBDA_TASK_ROOT}/search_metadata_title 
 
 # Copy function code
 COPY title_extraction.py ${LAMBDA_TASK_ROOT}
