@@ -7,12 +7,13 @@ import pymongo
 import numpy as np   
 import pandas as pd 
 from logging import Logger
+from http import HTTPStatus
 from nltk.corpus import stopwords
 from preprocess.preprocess_functions import preprocess
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM 
 from postprocess.postprocess_functions import postprocess_title
 from aws_lambda_powertools.utilities.typing import LambdaContext
-
+from search_metadata_title.get_title import identify_metadata_title_in_text
 
 logger = Logger()
 
@@ -23,6 +24,7 @@ NLTK_DATA_PATH = os.environ['NLTK_DATA']
 MODEL_PATH = os.environ['MODEL_PATH']
 
 my_pattern = re.compile(r'\s+')
+
 
 # Extract title from metadata of document
 def extract_title(doc_bytes_io):
@@ -37,29 +39,34 @@ def extract_title(doc_bytes_io):
 
     return title
 
-# Heuristic-based function to decide on approach to title extraction
-def use_automatic_title_extraction(title):
-    """
-    params: title: metadata title extracted from the PDF
-    """
-    # Remove stopwords
-    title = " ".join([word for word in title.strip().split(" ") if word not in stopwords.words("english")])
-    # Remove punctuation
-    title = re.sub(r"[^\w\s]", "", title).strip()
-    # Remove Microsoft Word from titles
-    title = re.sub("Microsoft Word", "", title)
-    # Remove excess white space
-    title = re.sub(my_pattern, " ", title)
-    # Heuristic: if the number of tokens in the title is less than 4 or greater than 35
-    # Then use automatic title extraction
-    title_length = len(title.split(" "))
-    if (title_length > 35) or (title_length < 4):
-        return True
-    else:
-        return False
+
+# # Heuristic-based function to decide on approach to title extraction
+# def use_automatic_title_extraction(title):
+#     """
+#     params: title: metadata title extracted from the PDF
+#     """
+#     # Remove stopwords
+#     title = " ".join([word for word in title.strip().split(" ") if word not in stopwords.words("english")])
+#     # Remove punctuation
+#     title = re.sub(r"[^\w\s]", "", title).strip()
+#     # Remove Microsoft Word from titles
+#     title = re.sub("Microsoft Word", "", title)
+#     # Remove excess white space
+#     title = re.sub(my_pattern, " ", title)
+#     # Heuristic: if the number of tokens in the title is less than 4 or greater than 35
+#     # Then use automatic title extraction
+#     title_length = len(title.split(" "))
+#     if (title_length > 35) or (title_length < 4):
+#         return True
+#     else:
+#         return False
+
 
 # Define predictor function
 def title_predictor(text, tokenizer, model):
+
+    tokenizer = AutoTokenizer.from_pretrained("fabiochiu/t5-small-medium-title-generation")
+    model = AutoModelForSeq2SeqLM.from_pretrained("fabiochiu/t5-small-medium-title-generation")
 
     # Preprocess the text
     text = preprocess(text)
@@ -73,6 +80,28 @@ def title_predictor(text, tokenizer, model):
     processed_title = postprocess_title(predicted_title)
     return processed_title
 
+
+def get_title(title, text, threshold):
+
+    # Remove junk
+    title = re.sub("Microsoft Word - ", "", title)
+    # Remove excess whitespace
+    title = re.sub(my_pattern, " ", title)
+
+    # Immediately filter out long metadata titles
+    if len(str(title).split(" ")) > 40:
+        title = title_predictor(text)
+
+    else:
+        title, score = identify_metadata_title_in_text(title, text)
+        if score > threshold:
+            return title
+            
+        else:
+            title = title_predictor(text)
+            return title
+
+
 def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
     '''Downloads the raw text from S3 ready for keyword extraction'''
 
@@ -85,22 +114,46 @@ def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
 
     return document
 
+
+def mongo_connect_and_push(document_uid,
+                           title,
+                           database=DOCUMENT_DATABASE,
+                           tlsCAFile='./rds-combined-ca-bundle.pem'):
+    '''Connects to the DocumentDB, finds the document matching our UUID and adds the title to it'''
+
+    db_client = pymongo.MongoClient(
+        database,
+        tls=True,
+        tlsCAFile=tlsCAFile
+    )
+    logger.info(db_client.list_database_names())
+    db = db_client.bre_orp
+    collection = db.documents
+
+    # Insert document to DB
+    logger.info({'document': collection.find_one(
+        {'document_uid': document_uid})})
+    collection.find_one_and_update({'document_uid': document_uid}, {
+                                   '$set': {'title': title}})
+    db_client.close()
+
+    logger.info('Sent to DocumentDB')
+
+    return {'statusCode': HTTPStatus.OK}
+
+
 def handler(event, context: LambdaContext):
+    logger.set_correlation_id(context.aws_request_id)
 
     s3_client = boto3.client('s3')
+
     document_uid = event['document_uid']
     metadata_title = extract_title()
 
-    if use_automatic_title_extraction(title):
+    text = download_text(s3_client, document_uid)
+    title = get_title(metadata_title, text, 80)
 
-        # Import pre-trained title extraction model
-        tokenizer = AutoTokenizer.from_pretrained("fabiochiu/t5-small-medium-title-generation")
-        model = AutoModelForSeq2SeqLM.from_pretrained("fabiochiu/t5-small-medium-title-generation")
-        text = download_text(s3_client, document_uid)
-        title = title_predictor(text, tokenizer, model)
-        return title
+    response = mongo_connect_and_push(document_uid, title)
+    response['document_uid'] = document_uid
 
-    else:
-        title = re.sub("Microsoft Word - ", "", metadata_title)
-        title = re.sub(my_pattern, " ", title)
-        return title
+    return response
