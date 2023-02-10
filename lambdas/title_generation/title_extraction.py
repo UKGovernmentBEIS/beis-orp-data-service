@@ -83,18 +83,29 @@ def title_predictor(text, tokenizer, model):
 
 def get_title(title, text, threshold):
 
+    junk = ["Microsoft Word - ", ".Doc", ".doc"]
+
     # Remove junk
-    title = re.sub("Microsoft Word - ", "", title)
+    for j in junk:
+        title = re.sub(j, "", str(title))
+
     # Remove excess whitespace
     title = re.sub(my_pattern, " ", title)
 
     # Immediately filter out long metadata titles
-    if len(str(title).split(" ")) > 40:
+    if (len(title.split(" ")) > 40):
         title = title_predictor(text)
+        return title
 
     else:
-        title, score = identify_metadata_title_in_text(title, text)
-        if score > threshold:
+        score = identify_metadata_title_in_text(title, text)
+
+        # If score is greater than 95% and title is longer than 2 tokens
+        if score >= 95 and (len(title.split(" ")) > 2):
+            title = title_predictor(text)
+            return title
+
+        elif (score > threshold) and (len(title.split(" ")) > 3):
             return title
             
         else:
@@ -151,7 +162,7 @@ def handler(event, context: LambdaContext):
     metadata_title = extract_title()
 
     text = download_text(s3_client, document_uid)
-    title = get_title(metadata_title, text, 80)
+    title = get_title(metadata_title, text, 85)
 
     response = mongo_connect_and_push(document_uid, title)
     response['document_uid'] = document_uid

@@ -44,53 +44,50 @@ def get_similarity_scores(title, candidate_titles):
         cosine = np.dot(embeddings[0],embeddings[1])/(norm(embeddings[0])*norm(embeddings[1]))  
         similarity_scores.append(cosine*100)
 
-    # Index of max(similarity_score)
-    max_idx = similarity_scores.index(max(similarity_scores))
-
     # Get score of match
     score = max(similarity_scores)
 
-    return max_idx, score
+    return score
 
 
-def refine_returned_title(max_idx, title, candidate_titles):
+# def refine_returned_title(max_idx, title, candidate_titles):
 
-    # Where title is at the start
-    if max_idx == 0:
-        longer_candidate_title = candidate_titles[max_idx].split(" ") + [candidate_titles[max_idx + 1].split(" ")[-1]]
+#     # Where title is at the start
+#     if max_idx == 0:
+#         longer_candidate_title = candidate_titles[max_idx].split(" ") + [candidate_titles[max_idx + 1].split(" ")[-1]]
 
-    # Where title is at the end
-    elif max_idx == len(candidate_titles) - 1:
-        longer_candidate_title = [candidate_titles[max_idx - 1].split(" ")[-1] ]+ candidate_titles[max_idx].split(" ")
+#     # Where title is at the end
+#     elif max_idx == len(candidate_titles) - 1:
+#         longer_candidate_title = [candidate_titles[max_idx - 1].split(" ")[-1] ]+ candidate_titles[max_idx].split(" ")
 
-    # Where title is in the middle
-    else:
-        longer_candidate_title = [candidate_titles[max_idx - 1].split(" ")[-1]] + candidate_titles[max_idx].split(" ") + [candidate_titles[max_idx + 1].split(" ")[-1]]
+#     # Where title is in the middle
+#     else:
+#         longer_candidate_title = [candidate_titles[max_idx - 1].split(" ")[-1]] + candidate_titles[max_idx].split(" ") + [candidate_titles[max_idx + 1].split(" ")[-1]]
 
-    length_of_longer_candidate_title = len(longer_candidate_title)
+#     length_of_longer_candidate_title = len(longer_candidate_title)
 
-    candidate_title_permutations = []
+#     candidate_title_permutations = []
 
-    for starting_idx, word in enumerate(longer_candidate_title):
-        for idx in range(starting_idx + 1, length_of_longer_candidate_title - starting_idx):
-            candidate_title = longer_candidate_title[starting_idx : idx]
-            candidate_title_permutations.append(" ".join(candidate_title))
+#     for starting_idx, word in enumerate(longer_candidate_title):
+#         for idx in range(starting_idx + 1, length_of_longer_candidate_title - starting_idx):
+#             candidate_title = longer_candidate_title[starting_idx : idx]
+#             candidate_title_permutations.append(" ".join(candidate_title))
 
-    max_idx, score = get_similarity_scores(title.lower(), [t.lower() for t in candidate_title_permutations])
+#     max_idx, score = get_similarity_scores(title.lower(), [t.lower() for t in candidate_title_permutations])
 
-    returned_title = candidate_title_permutations[max_idx]
+#     returned_title = candidate_title_permutations[max_idx]
 
-    return returned_title, score
+#     return returned_title, score
 
 
 def identify_metadata_title_in_text(metadata_title, text):
 
     candidate_titles = rolling_padded_sentence(metadata_title = metadata_title, text = text)
 
-    initial_candidate_title_idx, initial_candidate_title_score = get_similarity_scores(metadata_title, candidate_titles)
+    score = get_similarity_scores(metadata_title, candidate_titles)
 
-    title, score = refine_returned_title(initial_candidate_title_idx, metadata_title, candidate_titles)
+    # title, score = refine_returned_title(initial_candidate_title_idx, metadata_title, candidate_titles)
 
-    return title, score
+    return score
 
 
