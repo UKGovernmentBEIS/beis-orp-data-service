@@ -40,30 +40,13 @@ def extract_title(doc_bytes_io):
     return title
 
 
-# # Heuristic-based function to decide on approach to title extraction
-# def use_automatic_title_extraction(title):
-#     """
-#     params: title: metadata title extracted from the PDF
-#     """
-#     # Remove stopwords
-#     title = " ".join([word for word in title.strip().split(" ") if word not in stopwords.words("english")])
-#     # Remove punctuation
-#     title = re.sub(r"[^\w\s]", "", title).strip()
-#     # Remove Microsoft Word from titles
-#     title = re.sub("Microsoft Word", "", title)
-#     # Remove excess white space
-#     title = re.sub(my_pattern, " ", title)
-#     # Heuristic: if the number of tokens in the title is less than 4 or greater than 35
-#     # Then use automatic title extraction
-#     title_length = len(title.split(" "))
-#     if (title_length > 35) or (title_length < 4):
-#         return True
-#     else:
-#         return False
-
-
 # Define predictor function
-def title_predictor(text, tokenizer, model):
+def title_predictor(text : str) -> str:
+    """
+    param: text: Str document text
+    returns: processed_title: Str cleaned predicted title from text from pretrained model
+        Function to predict a title from the document text using a pretrained model
+    """
 
     tokenizer = AutoTokenizer.from_pretrained("fabiochiu/t5-small-medium-title-generation")
     model = AutoModelForSeq2SeqLM.from_pretrained("fabiochiu/t5-small-medium-title-generation")
@@ -81,8 +64,17 @@ def title_predictor(text, tokenizer, model):
     return processed_title
 
 
-def get_title(title, text, threshold):
-
+def get_title(title : str, 
+                text : str, 
+                threshold : str) -> str:
+    """
+    param: title: Str metadata title extracted from document
+    param: text: Str document text
+    param: threshold: int similarity score threshold
+    returns: processed_title: Str cleaned predicted title from text from pretrained model
+        Function that uses heuristics based on title length to either generate a title or
+        use the metadata title
+    """
     junk = ["Microsoft Word - ", ".Doc", ".doc"]
 
     # Remove junk
@@ -97,6 +89,7 @@ def get_title(title, text, threshold):
         title = title_predictor(text)
         return title
 
+    # If title is reasonable length either use the metadata title or predict a title
     else:
         score = identify_metadata_title_in_text(title, text)
 
