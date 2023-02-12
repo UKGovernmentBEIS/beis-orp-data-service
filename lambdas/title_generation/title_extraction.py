@@ -13,6 +13,7 @@ from preprocess.preprocess_functions import preprocess
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM 
 from postprocess.postprocess_functions import postprocess_title
 from aws_lambda_powertools.utilities.typing import LambdaContext
+from preprocess.preprocess_functions import removing_regulator_names
 from search_metadata_title.get_title import identify_metadata_title_in_text
 
 logger = Logger()
@@ -81,6 +82,9 @@ def get_title(title : str,
     for j in junk:
         title = re.sub(j, "", str(title))
 
+    # Remove regulator names
+    title = removing_regulator_names(title)
+
     # Remove excess whitespace
     title = re.sub(my_pattern, " ", title)
 
@@ -89,16 +93,17 @@ def get_title(title : str,
         title = title_predictor(text)
         return title
 
-    # If title is reasonable length either use the metadata title or predict a title
     else:
         score = identify_metadata_title_in_text(title, text)
 
-        # If score is greater than 95% and title is longer than 2 tokens
-        if score >= 95 and (len(title.split(" ")) > 2):
+        # If score is greater than 95% and title is less than / equal to 2 tokens
+        length_of_no_punctuation_title = len(re.sub(r'[^\w\s]',' ', title).split(" "))
+
+        if score >= 95 and (length_of_no_punctuation_title <= 2):
             title = title_predictor(text)
             return title
 
-        elif (score > threshold) and (len(title.split(" ")) > 3):
+        elif (score > threshold) and (length_of_no_punctuation_title >= 3):
             return title
             
         else:

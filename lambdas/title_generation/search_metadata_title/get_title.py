@@ -1,11 +1,11 @@
-import numpy as np
+import re
+import spacy
 from tqdm import tqdm
 from typing import List
-from numpy.linalg import norm
-from sentence_transformers import SentenceTransformer
+from preprocess.preprocess_functions import removing_regulator_names
 
 
-similarity_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+nlp = spacy.load("en_core_web_lg")
 
 
 # Shorten text for input to title extraction model
@@ -16,6 +16,7 @@ def percentage_shortener(text : str, percentage = 0.1) -> str:
     returns: shortened_complete: shortened text
         Shorten text for iteration of title over candidate titles 
     """
+    text = removing_regulator_names(text)
     length = int(len(text)*percentage)
     shortened = " ".join(text.split(" ")[ : length])
     shortened_complete = shortened + text.replace(shortened, "").split(".")[0]
@@ -56,12 +57,12 @@ def get_similarity_scores(title : str, candidate_titles : List) -> float:
     """
     similarity_scores = []
 
-    for sent in tqdm(candidate_titles):
-        embeddings = similarity_model.encode( [ title.lower(), sent.lower() ] )
+    title = nlp(re.sub(r'[^\w\s]', '', title.lower()))
 
-        # compute cosine similarity
-        cosine = np.dot(embeddings[0],embeddings[1])/(norm(embeddings[0])*norm(embeddings[1]))  
-        similarity_scores.append(cosine*100)
+    for sent in tqdm(candidate_titles):
+
+        score = title.similarity(nlp(re.sub(r'[^\w\s]', '', sent.lower())))
+        similarity_scores.append(score*100)
 
     # Get score of match
     score = max(similarity_scores)

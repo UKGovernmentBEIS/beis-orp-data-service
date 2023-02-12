@@ -1,11 +1,11 @@
-aws_lambda_powertools==2.7.1
+aws_lambda_powertools==2.8.0
 boto3==1.21.32
 nltk==3.7
 numpy==1.21.5
 pandas==1.4.2
 pikepdf==7.0.0
 pymongo==4.3.3
-sentence_transformers==2.2.2
+spacy==3.5.0
 tqdm==4.64.0
 transformers==4.26.1
 wordninja==2.0.0
