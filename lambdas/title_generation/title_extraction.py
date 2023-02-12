@@ -2,14 +2,18 @@ import os
 import re
 import nltk
 import boto3
+import spacy
 import pikepdf
 import pymongo
+import zipfile
 import numpy as np   
 import pandas as pd 
-from logging import Logger
+from io import BytesIO
 from http import HTTPStatus
+from spacy.cli import download
 from nltk.corpus import stopwords
 from preprocess.preprocess_functions import preprocess
+from aws_lambda_powertools.logging.logger import Logger
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM 
 from postprocess.postprocess_functions import postprocess_title
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -18,13 +22,28 @@ from search_metadata_title.get_title import identify_metadata_title_in_text
 
 logger = Logger()
 
+
 DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
-SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
-MODEL_BUCKET = os.environ['MODEL_BUCKET']
-NLTK_DATA_PATH = os.environ['NLTK_DATA']
 MODEL_PATH = os.environ['MODEL_PATH']
+SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
+NLTK_DATA_PATH = os.environ['NLTK_DATA']
 
 my_pattern = re.compile(r'\s+')
+
+def initialisation(resource_path=NLTK_DATA_PATH):
+    '''Downloads and unzips alls the resources needed to initialise the model'''
+
+    # Create new directories in tmp directory
+    os.makedirs(resource_path, exist_ok=True)
+    nltk.download('punkt', download_dir=resource_path)
+
+    # Unzip all resources
+    with zipfile.ZipFile(os.path.join(resource_path, 'tokenizers', 'punkt.zip'), 'r') as zip_ref:
+        zip_ref.extractall(os.path.join(resource_path, 'tokenizers'))
+
+    logger.info('Completed initialisation')
+
+    return None
 
 
 # Extract title from metadata of document
@@ -114,14 +133,20 @@ def get_title(title : str,
 def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
     '''Downloads the raw text from S3 ready for keyword extraction'''
 
-    document = s3_client.get_object(
+    pdf = BytesIO(s3_client.get_object(
+        Bucket=bucket,
+        Key=f'raw/{document_uid}.pdf'
+    )['Body'].read())
+
+    text = s3_client.get_object(
         Bucket=bucket,
         Key=f'processed/{document_uid}.txt'
+
     )['Body'].read().decode('utf-8')
 
     logger.info('Downloaded text')
 
-    return document
+    return pdf, text
 
 
 def mongo_connect_and_push(document_uid,
@@ -152,15 +177,25 @@ def mongo_connect_and_push(document_uid,
 
 
 def handler(event, context: LambdaContext):
-    logger.set_correlation_id(context.aws_request_id)
+
+    initialisation()
 
     s3_client = boto3.client('s3')
 
-    document_uid = event['document_uid']
-    metadata_title = extract_title()
+    logger.set_correlation_id(context.aws_request_id)
 
-    text = download_text(s3_client, document_uid)
+    # Get document id
+    document_uid = event['document_uid']
+
+    # Download raw pdf and extracted text
+    pdf, text = download_text(s3_client, document_uid)
+
+    # Get metadata title
+    metadata_title = extract_title(pdf)
+
     title = get_title(metadata_title, text, 85)
+
+    logger.info(f"Document title is: {title}")
 
     response = mongo_connect_and_push(document_uid, title)
     response['document_uid'] = document_uid

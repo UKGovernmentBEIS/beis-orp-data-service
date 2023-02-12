@@ -1,11 +1,44 @@
 import re
+import os
+import boto3
 import spacy
+import zipfile
 from tqdm import tqdm
 from typing import List
 from preprocess.preprocess_functions import removing_regulator_names
 
 
-nlp = spacy.load("en_core_web_lg")
+MODEL_BUCKET = os.environ['MODEL_BUCKET']
+MODEL_PATH = os.environ['MODEL_PATH']
+
+my_pattern = re.compile(r'\s+')
+
+s3_client = boto3.client('s3')
+
+# def download_model(s3_client,
+#                    bucket=MODEL_BUCKET,
+#                    model_path=MODEL_PATH,
+#                    key='en_core_web_lg.zip'):
+#     '''Downloads the Spacy model from s3'''
+
+#     # Make directory
+#     os.makedirs(model_path, exist_ok=True)
+
+#     s3_client.download_file(
+#         bucket,
+#         key,
+#         os.path.join(model_path, key)
+#     )
+
+#     # Unzip all resources
+#     with zipfile.ZipFile(os.path.join(model_path, key), 'r') as zip_ref:
+#         zip_ref.extractall(os.path.join(model_path))
+
+#     # spacy.util.get_data_path(os.path.join(MODEL_PATH, "en_core_web_lg"))
+
+#     nlp = spacy.load(os.path.join(MODEL_PATH, "en_core_web_lg"))
+
+#     return nlp
 
 
 # Shorten text for input to title extraction model
@@ -23,7 +56,7 @@ def percentage_shortener(text : str, percentage = 0.1) -> str:
     return shortened_complete
 
 
-def rolling_padded_sentence(metadata_title : str, text : str, padding = 2) -> List:
+def rolling_padded_sentence(metadata_title : str, text : str, padding = 0) -> List:
     """
     param: metadata_title: Str title
     param: text: Str document text
@@ -56,6 +89,10 @@ def get_similarity_scores(title : str, candidate_titles : List) -> float:
         Makes use of a pretrained model to compare embeddings of the title and candidate title
     """
     similarity_scores = []
+
+    # nlp = download_model(s3_client)
+
+    nlp = spacy.load("en_core_web_lg")
 
     title = nlp(re.sub(r'[^\w\s]', '', title.lower()))
 
