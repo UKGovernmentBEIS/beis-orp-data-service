@@ -14,34 +14,32 @@ logger = Logger()
 
 DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
+DESTINATION_BUCKET = SOURCE_BUCKET
 
 
-URL = "https://www.hse.gov.uk/simple-health-safety/gettinghelp/index.htm"
-
-HSE_URL = "https://www.hse.gov.uk/simple-health-safety/gettinghelp/index.htm"
-
-EA_URL = "https://www.gov.uk/check-flooding"
-
-req = requests.get(HSE_URL)
-
+# TO DO:
+# CHANGE DOWNLOAD_HTML FUNCTION AS S3 BUCKET WILL NOT BE USED
 def download_html(s3_client, document_uid, bucket=SOURCE_BUCKET):
     '''Downloads the raw text from S3 ready for keyword extraction'''
 
-    html = s3_client.get_object(
+    url = s3_client.get_object(
         Bucket=bucket,
-        Key=f'raw/{document_uid}.html'
+        Key=f'raw/{document_uid}'
     )['Body'].read()
 
-    logger.info('Downloaded text')
+    req = requests.get(url)
 
-    return html
+    logger.info('Downloaded html')
+
+    return req
 
 
-def get_title_text(req):
+def get_title_text(URL):
     """
     params: req: request URL
     returns: title, text: Str
     """
+    req = requests.get(URL)
     soup = BeautifulSoup(req.text, "html.parser")
 
     title = str(soup.head.title.get_text())
@@ -98,6 +96,22 @@ def mongo_connect_and_push(document_uid,
     return {'statusCode': HTTPStatus.OK}
 
 
+def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUCKET):
+    '''Write the extracted text to a .txt file in the staging bucket'''
+
+    response = s3_client.put_object(
+        Body=text,
+        Bucket=destination_bucket,
+        Key=f'processed/{document_uid}.txt',
+        Metadata={
+            'uuid': document_uid
+        }
+    )
+    logger.info('Saved text to data lake')
+
+    return 
+
+
 def handler(event, context: LambdaContext):
 
     s3_client = boto3.client('s3')
@@ -106,31 +120,20 @@ def handler(event, context: LambdaContext):
 
     # Get document id
     document_uid = event['document_uid']
-
     # Download raw pdf and extracted text
-    html = download_html(s3_client, document_uid)
-
+    URL = download_html(s3_client, document_uid)
     # Get metadata title
-    title, text = get_title_text(html)
-
+    title, text = get_title_text(URL)
+    # Get publishing date
     date_published = get_publication_modification_date(URL)
 
     logger.info(f"Document title is: {title}")
 
-    response = mongo_connect_and_push(document_uid, title, text, date_published)
-    response['document_uid'] = document_uid
+    mongo_response = mongo_connect_and_push(document_uid, title, text, date_published)
+    s3_response = write_text(s3_client, text=text, document_uid=document_uid)
 
-    return response
+    handler_response = {**mongo_response, **s3_response}
+    handler_response['document_uid'] = document_uid
 
+    return handler_response
 
-# Get title and text
-title, text = get_title_text(req)
-
-# Get publication dates
-publication_date, modification_date = get_publication_modification_date(URL)
-
-
-print(f"Title: {title}")
-print(f"Publication Date: {publication_date}")
-print(f"Modification Date: {modification_date}")
-print(f"Text: {text}")
