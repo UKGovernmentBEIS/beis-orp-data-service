@@ -1,1 +1,2 @@
 typedb-client==2.12.1
+inflect==6.0.2
