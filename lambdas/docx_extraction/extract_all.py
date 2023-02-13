@@ -14,6 +14,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 logger = Logger()
 
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
+DESTINATION_BUCKET = SOURCE_BUCKET
 ddb_connection_uri = os.environ['DOCUMENT_DATABASE']
 
 
@@ -90,7 +91,6 @@ def getMetaData(doc):
 
 def mongo_connect_and_push(document_uid,
                            title,
-                           text,
                            date_published,
                            database,
                            tlsCAFile='./rds-combined-ca-bundle.pem'):
@@ -110,13 +110,28 @@ def mongo_connect_and_push(document_uid,
         {'document_uid': document_uid})})
     collection.find_one_and_update({'document_uid': document_uid}, {
                                     '$set': {'title': title},
-                                    '$set': {'text': text},
                                     '$set': {'date_published': date_published}})
     db_client.close()
 
     logger.info('Sent to DocumentDB')
 
     return {'statusCode': HTTPStatus.OK}
+
+
+def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUCKET):
+    '''Write the extracted text to a .txt file in the staging bucket'''
+
+    response = s3_client.put_object(
+        Body=text,
+        Bucket=destination_bucket,
+        Key=f'processed/{document_uid}.txt',
+        Metadata={
+            'uuid': document_uid
+        }
+    )
+    logger.info('Saved text to data lake')
+
+    return 
 
 
 @logger.inject_lambda_context(log_event=True)
@@ -136,15 +151,15 @@ def handler(event, context: LambdaContext):
     title = metadata["title"]
     date_published = metadata["created"]
 
-    # Get text
+    # Get and push text to destination bucket
     text = get_docx_text(docx_file)
+    write_text(s3_client, text, document_uid)
 
     logger.info(f"All data extracted. E.g. Title extracted: {title}")
 
     response = mongo_connect_and_push(
         document_uid=document_uid,
         title=title,
-        text=text,
         date_published=date_published,
         database=ddb_connection_uri)
 
