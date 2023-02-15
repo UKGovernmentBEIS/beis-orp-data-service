@@ -198,7 +198,7 @@ def handler(event, context: LambdaContext):
     document_uid = event['document_uid']
     logger.append_keys(document_uid=document_uid)
     logger.info("Started initialisation...")
-    initialisation()
+    # initialisation()
 
     s3_client = boto3.client('s3')
     document = download_text(s3_client, document_uid)
