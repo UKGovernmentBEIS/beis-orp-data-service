@@ -1,0 +1,4 @@
+aws_lambda_powertools==2.8.0
+boto3==1.21.32
+python-docx==0.8.11
+pymongo==4.3.3
