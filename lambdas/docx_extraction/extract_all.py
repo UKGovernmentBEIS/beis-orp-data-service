@@ -138,12 +138,13 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
 def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
-    document_uid = event['document_uid']
-    logger.append_keys(document_uid=document_uid)
+    source_bucket = event['detail']['bucket']['name']
+    object_key = event['detail']['object']['key']
 
     s3_client = boto3.client('s3')
 
-    docx_file = download_text(s3_client, document_uid=document_uid)
+    docx_file = download_text(s3_client, document_uid=object_key, bucket=source_bucket)
+
     doc = docx.Document(docx_file)
     metadata = getMetaData(doc)
 
@@ -153,16 +154,16 @@ def handler(event, context: LambdaContext):
 
     # Get and push text to destination bucket
     text = get_docx_text(docx_file)
-    write_text(s3_client, text, document_uid)
+    write_text(s3_client, text, object_key)
 
     logger.info(f"All data extracted. E.g. Title extracted: {title}")
 
     response = mongo_connect_and_push(
-        document_uid=document_uid,
+        document_uid=object_key,
         title=title,
         date_published=date_published,
         database=ddb_connection_uri)
 
-    response['document_uid'] = document_uid
+    response['document_uid'] = object_key
 
     return response
