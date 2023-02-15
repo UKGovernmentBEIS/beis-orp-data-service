@@ -27,17 +27,28 @@ ROW = WORD_NAMESPACE + 'tr'
 CELL = WORD_NAMESPACE + 'tc'
 
 
-def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
+def download_text(s3_client, object_key, bucket=SOURCE_BUCKET):
     '''Downloads the raw text from S3 ready for keyword extraction'''
 
     document = io.BytesIO(s3_client.get_object(
         Bucket=bucket,
-        Key=f'raw/{document_uid}.docx'
+        Key=object_key,
     )['Body'].read())
 
     logger.info('Downloaded text')
 
     return document
+
+
+def get_s3_metadata(s3_client, object_key, source_bucket):
+    '''Gets the S3 metadata attached to the document'''
+
+    metadata = s3_client.head_object(
+        Bucket=source_bucket,
+        Key=object_key
+    )['Metadata']
+
+    return metadata
 
 
 def get_docx_text(path):
@@ -109,8 +120,8 @@ def mongo_connect_and_push(document_uid,
     logger.info({'document': collection.find_one(
         {'document_uid': document_uid})})
     collection.find_one_and_update({'document_uid': document_uid}, {
-                                    '$set': {'title': title},
-                                    '$set': {'date_published': date_published}})
+        '$set': {'title': title},
+        '$set': {'date_published': date_published}})
     db_client.close()
 
     logger.info('Sent to DocumentDB')
@@ -131,7 +142,7 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
     )
     logger.info('Saved text to data lake')
 
-    return 
+    return response
 
 
 @logger.inject_lambda_context(log_event=True)
@@ -142,8 +153,16 @@ def handler(event, context: LambdaContext):
     object_key = event['detail']['object']['key']
 
     s3_client = boto3.client('s3')
+    doc_s3_metadata = get_s3_metadata(
+        s3_client=s3_client, object_key=object_key, source_bucket=source_bucket)
 
-    docx_file = download_text(s3_client, document_uid=object_key, bucket=source_bucket)
+    # Raise an error if there is no UUID in the document's S3 metadata
+    assert doc_s3_metadata.get('uuid'), 'Document must have a UUID attached'
+    document_uid = doc_s3_metadata['uuid']
+    logger.append_keys(document_uid=document_uid)
+
+    docx_file = download_text(
+        s3_client, object_key, bucket=source_bucket)
 
     doc = docx.Document(docx_file)
     metadata = getMetaData(doc)
