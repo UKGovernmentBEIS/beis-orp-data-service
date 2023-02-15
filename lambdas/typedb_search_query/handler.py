@@ -12,8 +12,8 @@ import os
 from typedb.client import TransactionType, SessionType, TypeDB
 from datetime import datetime
 from itertools import groupby
-# from word_forms_loc.word_forms_loc import get_word_forms
-# from word_forms_loc.lemmatizer import lemmatize
+from word_forms_loc.word_forms_loc import get_word_forms
+from word_forms_loc.lemmatizer import lemmatize
 
 search_keys = {"id", "keyword", "title", "data_published",
                "regulator_id", "status", "regulatory_topic", "document_type"}
@@ -42,10 +42,13 @@ def validate_env_variable(env_var_name):
         raise Exception(f"Please, provide environment variable {env_var_name}")
     return env_variable
 
-def format_datetime(date): return datetime.strftime(date, "%Y-%m-%dT%H:%M:%S") #TODO remove this tabun
+def format_datetime(date): return datetime.strftime(date, "%Y-%m-%dT%H:%M:%S") 
 
 def get_select_dict(results: dict, selc: list): return {k: (format_datetime(
     v) if type(v) == datetime else v)for k, v in results.items() if k in selc}
+
+def remap(d:dict, mapd:dict):
+    return {mapd.get(k, k):v for k,v in d.items()}
 
 def getUniqueResult(results):
     res = [(i.get_type().get_label().name(), i.get_value())
@@ -67,19 +70,19 @@ def matchquery(query, session, group=True):
 
 
 def get_lemma(word):
-    return word
-    # try:
-    #     return lemmatize(word)
-    # except ValueError as err:
-    #     if 'is not a real word' in err.args[0]:
-    #         return word
-    #     else:
-    #         raise ValueError(err)
+    # return word
+    try:
+        return lemmatize(word)
+    except ValueError as err:
+        if 'is not a real word' in err.args[0]:
+            return word
+        else:
+            raise ValueError(err)
 
 def lemma2noun(lemma):
-    return lemma
-    # nn = list(get_word_forms(lemma).get('n', []))
-    # return sorted(nn, key=len)[0] if nn else lemma
+    # return lemma
+    nn = list(get_word_forms(lemma).get('n', []))
+    return sorted(nn, key=len)[0] if nn else lemma
    
 ############################################
 # LAMBDA HANDLER
@@ -107,6 +110,10 @@ def query_builder(event):
             query += ''.join(
                 [f', has keyword "{get_lemma(kw.strip().lower())}"' for kw in event['keyword'].split(' ')])
 
+        if event.get('document_type'):
+            query += ', has document_type $document_type'
+            subq += f"; $document_type like \"{'|'.join([i for i in event['document_type']])}\""
+
         # compound filters
         if event.get('date_published'):
             st, ed = event["date_published"]
@@ -128,7 +135,9 @@ def query_builder(event):
 
 def search_module(event, session):
     keyset = set(event.keys()) & search_keys
-    page = int(event.get('page', 0))*RET_SIZE
+    page_size = int(event.get('page_size', RET_SIZE))
+    page = int(event.get('page', 0)) * page_size
+
     if len(keyset) == 0:
         return {
             "status_code": 400,
@@ -157,20 +166,20 @@ def search_module(event, session):
             ans = [dict(getUniqueResult(a.concept_maps()))
                    for a in matchquery(query, session)]
 
-            doc['keyword'] = set([lemma2noun(kw) for kw in doc.get('keyword', [])])
-            doc['legislative_origins'] = list(
-                filter(None, [get_select_dict(a, leg_vals) for a in ans]))
+            doc['keyword'] = list(set([lemma2noun(kw) for kw in doc.get('keyword', [])]))
+            legmap = {'leg_type':'type', 'leg_division':'division'}
+            doc['legislative_origins'] = list(filter(None, [remap(get_select_dict(a, leg_vals), legmap) for a in ans]))
             doc['regulator_id'] = list(
                 filter(None, [a.get('regulator_id') for a in ans]))[0]
 
         docs = [get_select_dict(doc, return_vals) for doc in res]
-        out = {
+
+        return {
             "status_code": 200,
             "status_description": "OK",
             "total_search_results": num_ret,
             "documents": docs
         }
-        return out
 
 def lambda_handler(ev, context):
     LOGGER.info("Received event: " + json.dumps(ev, indent=2))

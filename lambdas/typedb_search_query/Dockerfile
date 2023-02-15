@@ -5,12 +5,13 @@ FROM public.ecr.aws/lambda/python:3.9
 COPY requirements.txt  .
 RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
+ENV NLTK_DATA=./nltk_data
 # Copy function code and certificates
 ADD word_forms_loc.tar.gz ${LAMBDA_TASK_ROOT}
 RUN chown root:root -R ${LAMBDA_TASK_ROOT}/word_forms_loc
 RUN chmod 755 -R ${LAMBDA_TASK_ROOT}/word_forms_loc
 COPY handler.py ${LAMBDA_TASK_ROOT}
-# COPY rds-combined-ca-bundle.pem ${LAMBDA_TASK_ROOT}
+COPY nltk_data ./nltk_data 
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
 CMD [ "handler.lambda_handler" ]
