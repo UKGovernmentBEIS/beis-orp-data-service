@@ -25,8 +25,8 @@ ADD search_metadata_title ${LAMBDA_TASK_ROOT}/search_metadata_title
 # Copy function code
 COPY title_extraction.py ${LAMBDA_TASK_ROOT}
 COPY rds-combined-ca-bundle.pem ${LAMBDA_TASK_ROOT}
-COPY nltk_data/ ./nltk_data ${LAMBDA_TASK_ROOT}
-COPY preprocess/regulator_name_list.txt ./preprocess/regulator_name_list.txt  ${LAMBDA_TASK_ROOT}
+COPY nltk_data/ ${LAMBDA_TASK_ROOT}/nltk_data 
+COPY preprocess/regulator_name_list.txt ${LAMBDA_TASK_ROOT}/preprocess/regulator_name_list.txt
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
 CMD [ "title_extraction.handler" ]

@@ -1,5 +1,3 @@
-import nltk
-# nltk.download('punkt')
 from typing import List
 from nltk.corpus import stopwords
 

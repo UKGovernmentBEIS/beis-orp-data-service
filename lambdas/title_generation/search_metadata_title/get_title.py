@@ -2,7 +2,6 @@ import re
 import os
 import boto3
 import spacy
-import zipfile
 from tqdm import tqdm
 from typing import List
 from preprocess.preprocess_functions import removing_regulator_names
@@ -14,31 +13,6 @@ MODEL_PATH = os.environ['MODEL_PATH']
 my_pattern = re.compile(r'\s+')
 
 s3_client = boto3.client('s3')
-
-# def download_model(s3_client,
-#                    bucket=MODEL_BUCKET,
-#                    model_path=MODEL_PATH,
-#                    key='en_core_web_lg.zip'):
-#     '''Downloads the Spacy model from s3'''
-
-#     # Make directory
-#     os.makedirs(model_path, exist_ok=True)
-
-#     s3_client.download_file(
-#         bucket,
-#         key,
-#         os.path.join(model_path, key)
-#     )
-
-#     # Unzip all resources
-#     with zipfile.ZipFile(os.path.join(model_path, key), 'r') as zip_ref:
-#         zip_ref.extractall(os.path.join(model_path))
-
-#     # spacy.util.get_data_path(os.path.join(MODEL_PATH, "en_core_web_lg"))
-
-#     nlp = spacy.load(os.path.join(MODEL_PATH, "en_core_web_lg"))
-
-#     return nlp
 
 
 # Shorten text for input to title extraction model

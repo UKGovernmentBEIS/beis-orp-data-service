@@ -2,16 +2,10 @@ import os
 import re
 import nltk
 import boto3
-import spacy
 import pikepdf
 import pymongo
-import zipfile
-import numpy as np   
-import pandas as pd 
 from io import BytesIO
 from http import HTTPStatus
-from spacy.cli import download
-from nltk.corpus import stopwords
 from preprocess.preprocess_functions import preprocess
 from aws_lambda_powertools.logging.logger import Logger
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM 
@@ -29,21 +23,6 @@ SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
 NLTK_DATA_PATH = os.environ['NLTK_DATA']
 
 my_pattern = re.compile(r'\s+')
-
-def initialisation(resource_path=NLTK_DATA_PATH):
-    '''Downloads and unzips alls the resources needed to initialise the model'''
-
-    # Create new directories in tmp directory
-    os.makedirs(resource_path, exist_ok=True)
-    nltk.download('punkt', download_dir=resource_path)
-
-    # Unzip all resources
-    with zipfile.ZipFile(os.path.join(resource_path, 'tokenizers', 'punkt.zip'), 'r') as zip_ref:
-        zip_ref.extractall(os.path.join(resource_path, 'tokenizers'))
-
-    logger.info('Completed initialisation')
-
-    return None
 
 
 # Extract title from metadata of document
@@ -177,8 +156,6 @@ def mongo_connect_and_push(document_uid,
 
 
 def handler(event, context: LambdaContext):
-
-    initialisation()
 
     s3_client = boto3.client('s3')
 
