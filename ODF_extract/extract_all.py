@@ -7,6 +7,9 @@ import zipfile
 import xml.dom.minidom
 import lxml.etree as etree
 import xml.etree.ElementTree as ET
+from bs4 import BeautifulSoup
+import re
+from htmldate import find_date
 
 path1 = "/Users/thomas/Documents/BEIS/input_data/ODF/OpenDocument-v1.2-os.odt"
 path2 = "/Users/thomas/Documents/BEIS/input_data/ODF/Consultation technically competent manager attendance consultation document.odt"
@@ -49,18 +52,6 @@ def publishing_date_extraction(path):
                     return str(match)
 
 
-def text_extraction(elements):
-    """
-    params: elements: odf.element.Element
-    returns: texts Str: all text in the document
-    """
-    text_list = []
-    for element in elements:
-        text = teletype.extractText(element)
-        text_list.append(text)
-    return "\n".join(text_list)
-
-
 def convert2xml(path, output):
 
     myfile = zipfile.ZipFile(path)
@@ -78,14 +69,22 @@ def convert2xml(path, output):
     return ET.tostring(element, encoding='unicode')
 
 
-from bs4 import BeautifulSoup
-import re
-
 def xml2text(xml):
     soup = BeautifulSoup(xml, "lxml")   
     pageText = soup.findAll(text=True)
     text = str(" ".join(pageText)).replace("\n", "")
     return re.sub("\s+", " ", text)
+
+
+import lxml.html
+from lxml import etree
+ 
+def xml2html(xml):
+    dom = ET.parse(xml)
+    xslt = ET.parse(xml)
+    transform = ET.XSLT(xslt)
+    newdom = transform(dom)
+    return ET.tostring(newdom, pretty_print=True)
 
 
 def date_extraction(path):
@@ -121,3 +120,4 @@ if __name__ == "__main__":
     text = xml2text(xml)
     fd = open("/Users/thomas/Documents/BEIS/repo/beis-orp-data-service/ODF_extract/" + "text_output.txt",'w')
     fd.write(str(text))
+
