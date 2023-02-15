@@ -8,27 +8,34 @@ import xml.dom.minidom
 import lxml.etree as etree
 import xml.etree.ElementTree as ET
 
-path = "/Users/thomas/Documents/BEIS/input_data/ODF/OpenDocument-v1.2-os.odt"
-sample_ODF = load(path)
-elements = sample_ODF.getElementsByType(text.P)
+path1 = "/Users/thomas/Documents/BEIS/input_data/ODF/OpenDocument-v1.2-os.odt"
+path2 = "/Users/thomas/Documents/BEIS/input_data/ODF/Consultation technically competent manager attendance consultation document.odt"
 
-def title_extraction(elements):
+
+def title_extraction(path):
     """
     params: elements: odf.element.Element
     returns: title Str: the title of the document where the attribute value
         is equal to "Title"
     """
+    ODF = load(path)
+    elements = ODF.getElementsByType(text.P)
+    titles = []
     for element in elements:
         el_attributes = element.attributes
-        if list(el_attributes.values())[0] == "Title":
+        if "title" in str(list(el_attributes.values())[0]).lower() and "sub" not in str(list(el_attributes.values())[0]).lower():
             title = teletype.extractText(element)
-            return title
+            titles.append(title)
+    return titles[0]
 
-def publishing_date_extraction(elements):
+
+def publishing_date_extraction(path):
     """
     params: elements: odf.element.Element
     returns: match Str: date found in the footer of the document
     """
+    ODF = load(path)
+    elements = ODF.getElementsByType(text.P)
     for element in elements:
         if list(element.values())[0] == "Footer":
             text = teletype.extractText(element)
@@ -41,19 +48,20 @@ def publishing_date_extraction(elements):
                 for match in matches:
                     return str(match)
 
+
 def text_extraction(elements):
     """
     params: elements: odf.element.Element
     returns: texts Str: all text in the document
     """
-    texts = []
+    text_list = []
     for element in elements:
         text = teletype.extractText(element)
-        texts.append(text)
-    return "\n".join(texts)
+        text_list.append(text)
+    return "\n".join(text_list)
 
 
-def convert2xml(path):
+def convert2xml(path, output):
 
     myfile = zipfile.ZipFile(path)
 
@@ -61,12 +69,55 @@ def convert2xml(path):
 
     for s in listoffiles:
         if s.orig_filename == 'content.xml':
-                fd = open("/Users/thomas/Documents/BEIS/repo/beis-orp-data-service/ODF_extract/output.xml",'w')
+                fd = open("/Users/thomas/Documents/BEIS/repo/beis-orp-data-service/ODF_extract/" + output,'w')
                 bh = myfile.read(s.orig_filename)
-                # x = etree.parse(bh)
-                # fd.write(etree.tostring(x, pretty_print = True, encoding='unicode'))
-                # fd.close()
                 element = ET.XML(bh)
                 ET.indent(element)
                 fd.write(ET.tostring(element, encoding='unicode'))
 
+    return ET.tostring(element, encoding='unicode')
+
+
+from bs4 import BeautifulSoup
+import re
+
+def xml2text(xml):
+    soup = BeautifulSoup(xml, "lxml")   
+    pageText = soup.findAll(text=True)
+    text = str(" ".join(pageText)).replace("\n", "")
+    return re.sub("\s+", " ", text)
+
+
+def date_extraction(path):
+    """
+
+    """
+    ODF = load(path)
+    elements = ODF.getElementsByType(text.P)
+    dates = []
+    for element in elements:
+        el_attributes = element.attributes
+        if "subtitle" in str(list(el_attributes.values())[0]).lower():
+            date = str(teletype.extractText(element))
+            dates.append(date)
+    print(" ".join(dates))
+    matches = datefinder.find_dates(" ".join(dates))
+    date_matches = [str(date) for date in matches]
+    return date_matches[0]
+
+
+if __name__ == "__main__":
+    # convert2xml(path1, "output.xml")
+    # print(date_extraction(path2))
+    # print(title_extraction(path2))
+
+    # ODF = load(path2)
+    # elements = ODF.getElementsByType(text.P)
+    # text = text_extraction(elements)
+    # fd = open("/Users/thomas/Documents/BEIS/repo/beis-orp-data-service/ODF_extract/" + "text_output.txt",'w')
+    # fd.write(str(text))
+
+    xml = convert2xml(path2, "EAoutput.xml")
+    text = xml2text(xml)
+    fd = open("/Users/thomas/Documents/BEIS/repo/beis-orp-data-service/ODF_extract/" + "text_output.txt",'w')
+    fd.write(str(text))

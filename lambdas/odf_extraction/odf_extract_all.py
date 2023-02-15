@@ -3,6 +3,10 @@ import os
 import boto3
 import pymongo
 import datefinder
+from bs4 import BeautifulSoup
+import re
+import xml.etree.ElementTree as ET
+import zipfile
 from odf import text, teletype
 from http import HTTPStatus
 from odf.opendocument import load
@@ -86,16 +90,26 @@ def publishing_date_extraction(elements):
                     return str(match)
 
 
-def text_extraction(elements):
-    """
-    params: elements: odf.element.Element
-    returns: texts Str: all text in the document
-    """
-    texts = []
-    for element in elements:
-        text = teletype.extractText(element)
-        texts.append(text)
-    return "\n".join(texts)
+def convert2xml(odf):
+
+    myfile = zipfile.ZipFile(odf)
+
+    listoffiles = myfile.infolist()
+
+    for s in listoffiles:
+        if s.orig_filename == 'content.xml':
+                bh = myfile.read(s.orig_filename)
+                element = ET.XML(bh)
+                ET.indent(element)
+
+    return ET.tostring(element, encoding='unicode')
+
+
+def xml2text(xml):
+    soup = BeautifulSoup(xml, "lxml")   
+    pageText = soup.findAll(text=True)
+    text = str(" ".join(pageText)).replace("\n", "")
+    return re.sub("\s+", " ", text)
 
 
 def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUCKET):
@@ -179,7 +193,9 @@ def handler(event, context: LambdaContext):
     date_published = publishing_date_extraction(elements)
 
     # Extract the text
-    text = text_extraction(elements)
+    xml = convert2xml(doc_bytes_io)
+    text = xml2text(xml)
+
     logger.info(f'Extracted title: {title}'
                 f'Publishing date: {date_published}'
                 f'UUID obtained is: {document_uid}')

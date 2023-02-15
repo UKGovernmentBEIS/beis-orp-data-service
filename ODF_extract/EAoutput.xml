@@ -1,0 +1,1800 @@
+<ns0:document-content xmlns:ns0="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:ns1="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:ns2="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:ns3="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:ns4="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:ns5="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:ns6="http://www.w3.org/1999/xlink" ns0:version="1.2">
+  <ns0:font-face-decls>
+    <ns1:font-face ns1:name="Arial" ns2:font-family="Arial" ns1:font-family-generic="swiss" ns1:font-pitch="variable" ns2:panose-1="2 11 6 4 2 2 2 2 2 4" />
+    <ns1:font-face ns1:name="Times New Roman" ns2:font-family="Times New Roman" ns1:font-family-generic="roman" ns1:font-pitch="variable" ns2:panose-1="2 2 6 3 5 4 5 2 3 4" />
+    <ns1:font-face ns1:name="Tahoma" ns2:font-family="Tahoma" ns1:font-family-generic="swiss" ns1:font-pitch="variable" ns2:panose-1="2 11 6 4 3 5 4 4 2 4" />
+    <ns1:font-face ns1:name="MS Mincho" ns2:font-family="MS Mincho" ns1:font-family-generic="modern" ns1:font-pitch="fixed" ns2:panose-1="2 2 6 9 4 2 5 8 3 4" />
+    <ns1:font-face ns1:name="MS Gothic" ns2:font-family="MS Gothic" ns1:font-family-generic="modern" ns1:font-pitch="fixed" ns2:panose-1="2 11 6 9 7 2 5 8 2 4" />
+    <ns1:font-face ns1:name="Calibri" ns2:font-family="Calibri" ns1:font-family-generic="swiss" ns1:font-pitch="variable" ns2:panose-1="2 15 5 2 2 2 4 3 2 4" />
+    <ns1:font-face ns1:name="Courier New" ns2:font-family="Courier New" ns1:font-family-generic="modern" ns1:font-pitch="fixed" ns2:panose-1="2 7 3 9 2 2 5 2 4 4" />
+    <ns1:font-face ns1:name="Wingdings" ns1:font-charset="x-symbol" ns2:font-family="Wingdings" ns1:font-family-generic="system" ns1:font-pitch="variable" ns2:panose-1="5 0 0 0 0 0 0 0 0 0" />
+    <ns1:font-face ns1:name="Symbol" ns1:font-charset="x-symbol" ns2:font-family="Symbol" ns1:font-family-generic="roman" ns1:font-pitch="variable" ns2:panose-1="5 5 1 2 1 7 6 2 5 7" />
+    <ns1:font-face ns1:name="Calibri Light" ns2:font-family="Calibri Light" ns1:font-family-generic="swiss" ns1:font-pitch="variable" ns2:panose-1="2 15 3 2 2 2 4 3 2 4" />
+  </ns0:font-face-decls>
+  <ns0:automatic-styles>
+    <ns1:style ns1:name="P1" ns1:parent-style-name="Normal" ns1:master-page-name="MPF0" ns1:family="paragraph">
+      <ns1:paragraph-properties ns3:break-before="page" />
+    </ns1:style>
+    <ns1:style ns1:name="T3" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="P4" ns1:parent-style-name="Introductiontextgreen" ns1:family="paragraph">
+      <ns1:paragraph-properties ns3:break-before="page" />
+    </ns1:style>
+    <ns1:style ns1:name="P5" ns1:parent-style-name="Introductiontextgreen" ns1:family="paragraph">
+      <ns1:paragraph-properties ns3:margin-bottom="0.5in" />
+    </ns1:style>
+    <ns1:style ns1:name="S1" ns1:family="section">
+      <ns1:section-properties ns3:margin-left="0in" ns3:margin-right="0in" ns1:writing-mode="lr-tb">
+        <ns1:columns ns3:column-count="2" ns3:column-gap="0.1909in" />
+      </ns1:section-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P6" ns1:parent-style-name="Maintextblack" ns1:family="paragraph">
+      <ns1:paragraph-properties ns3:break-before="column" />
+    </ns1:style>
+    <ns1:style ns1:name="S2" ns1:family="section">
+      <ns1:section-properties ns3:margin-left="0in" ns3:margin-right="0in" ns1:writing-mode="lr-tb" />
+    </ns1:style>
+    <ns1:style ns1:name="P7" ns1:parent-style-name="Normal" ns1:family="paragraph">
+      <ns1:paragraph-properties ns3:margin-bottom="0in" />
+    </ns1:style>
+    <ns1:style ns1:name="P8" ns1:parent-style-name="Mainheading" ns1:family="paragraph">
+      <ns1:paragraph-properties ns3:break-before="page" />
+    </ns1:style>
+    <ns1:style ns1:name="T9" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T10" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T11" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T12" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="P13" ns1:parent-style-name="TOC1" ns1:family="paragraph">
+      <ns1:paragraph-properties ns3:break-before="page" />
+    </ns1:style>
+    <ns1:style ns1:name="T14" ns1:parent-style-name="Hyperlink" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="P15" ns1:parent-style-name="TOC2" ns1:family="paragraph">
+      <ns1:paragraph-properties>
+        <ns1:tab-stops>
+          <ns1:tab-stop ns1:type="right" ns1:leader-style="dotted" ns1:leader-text="." ns1:position="6.5284in" />
+        </ns1:tab-stops>
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P16" ns1:parent-style-name="TOC2" ns1:family="paragraph">
+      <ns1:paragraph-properties>
+        <ns1:tab-stops>
+          <ns1:tab-stop ns1:type="right" ns1:leader-style="dotted" ns1:leader-text="." ns1:position="6.5284in" />
+        </ns1:tab-stops>
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P17" ns1:parent-style-name="TOC2" ns1:family="paragraph">
+      <ns1:paragraph-properties>
+        <ns1:tab-stops>
+          <ns1:tab-stop ns1:type="right" ns1:leader-style="dotted" ns1:leader-text="." ns1:position="6.5284in" />
+        </ns1:tab-stops>
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P18" ns1:parent-style-name="TOC2" ns1:family="paragraph">
+      <ns1:paragraph-properties>
+        <ns1:tab-stops>
+          <ns1:tab-stop ns1:type="right" ns1:leader-style="dotted" ns1:leader-text="." ns1:position="6.5284in" />
+        </ns1:tab-stops>
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P19" ns1:parent-style-name="TOC2" ns1:family="paragraph">
+      <ns1:paragraph-properties>
+        <ns1:tab-stops>
+          <ns1:tab-stop ns1:type="right" ns1:leader-style="dotted" ns1:leader-text="." ns1:position="6.5284in" />
+        </ns1:tab-stops>
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P20" ns1:parent-style-name="TOC2" ns1:family="paragraph">
+      <ns1:paragraph-properties>
+        <ns1:tab-stops>
+          <ns1:tab-stop ns1:type="right" ns1:leader-style="dotted" ns1:leader-text="." ns1:position="6.5284in" />
+        </ns1:tab-stops>
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P21" ns1:parent-style-name="TOC2" ns1:family="paragraph">
+      <ns1:paragraph-properties>
+        <ns1:tab-stops>
+          <ns1:tab-stop ns1:type="right" ns1:leader-style="dotted" ns1:leader-text="." ns1:position="6.5284in" />
+        </ns1:tab-stops>
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P22" ns1:parent-style-name="TOC2" ns1:family="paragraph">
+      <ns1:paragraph-properties>
+        <ns1:tab-stops>
+          <ns1:tab-stop ns1:type="right" ns1:leader-style="dotted" ns1:leader-text="." ns1:position="6.5284in" />
+        </ns1:tab-stops>
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P23" ns1:parent-style-name="TOC2" ns1:family="paragraph">
+      <ns1:paragraph-properties>
+        <ns1:tab-stops>
+          <ns1:tab-stop ns1:type="right" ns1:leader-style="dotted" ns1:leader-text="." ns1:position="6.5284in" />
+        </ns1:tab-stops>
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P24" ns1:parent-style-name="TOC2" ns1:family="paragraph">
+      <ns1:paragraph-properties>
+        <ns1:tab-stops>
+          <ns1:tab-stop ns1:type="right" ns1:leader-style="dotted" ns1:leader-text="." ns1:position="6.5284in" />
+        </ns1:tab-stops>
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P25" ns1:parent-style-name="TOC2" ns1:family="paragraph">
+      <ns1:paragraph-properties>
+        <ns1:tab-stops>
+          <ns1:tab-stop ns1:type="right" ns1:leader-style="dotted" ns1:leader-text="." ns1:position="6.5284in" />
+        </ns1:tab-stops>
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P26" ns1:parent-style-name="TOC2" ns1:family="paragraph">
+      <ns1:paragraph-properties>
+        <ns1:tab-stops>
+          <ns1:tab-stop ns1:type="right" ns1:leader-style="dotted" ns1:leader-text="." ns1:position="6.5284in" />
+        </ns1:tab-stops>
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P27" ns1:parent-style-name="TOC2" ns1:family="paragraph">
+      <ns1:paragraph-properties>
+        <ns1:tab-stops>
+          <ns1:tab-stop ns1:type="right" ns1:leader-style="dotted" ns1:leader-text="." ns1:position="6.5284in" />
+        </ns1:tab-stops>
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P28" ns1:parent-style-name="TOC2" ns1:family="paragraph">
+      <ns1:paragraph-properties>
+        <ns1:tab-stops>
+          <ns1:tab-stop ns1:type="right" ns1:leader-style="dotted" ns1:leader-text="." ns1:position="6.5284in" />
+        </ns1:tab-stops>
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P29" ns1:parent-style-name="TOC2" ns1:family="paragraph">
+      <ns1:paragraph-properties>
+        <ns1:tab-stops>
+          <ns1:tab-stop ns1:type="right" ns1:leader-style="dotted" ns1:leader-text="." ns1:position="6.5284in" />
+        </ns1:tab-stops>
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P30" ns1:parent-style-name="TOC2" ns1:family="paragraph">
+      <ns1:paragraph-properties>
+        <ns1:tab-stops>
+          <ns1:tab-stop ns1:type="right" ns1:leader-style="dotted" ns1:leader-text="." ns1:position="6.5284in" />
+        </ns1:tab-stops>
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P31" ns1:parent-style-name="TOC2" ns1:family="paragraph">
+      <ns1:paragraph-properties>
+        <ns1:tab-stops>
+          <ns1:tab-stop ns1:type="right" ns1:leader-style="dotted" ns1:leader-text="." ns1:position="6.5284in" />
+        </ns1:tab-stops>
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P32" ns1:parent-style-name="TOC2" ns1:family="paragraph">
+      <ns1:paragraph-properties>
+        <ns1:tab-stops>
+          <ns1:tab-stop ns1:type="right" ns1:leader-style="dotted" ns1:leader-text="." ns1:position="6.5284in" />
+        </ns1:tab-stops>
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P33" ns1:parent-style-name="TOC2" ns1:family="paragraph">
+      <ns1:paragraph-properties>
+        <ns1:tab-stops>
+          <ns1:tab-stop ns1:type="right" ns1:leader-style="dotted" ns1:leader-text="." ns1:position="6.5284in" />
+        </ns1:tab-stops>
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="P34" ns1:parent-style-name="Normal" ns1:family="paragraph">
+      <ns1:paragraph-properties ns3:break-before="page" />
+    </ns1:style>
+    <ns1:style ns1:name="P35" ns1:parent-style-name="Mainheading" ns1:family="paragraph">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="P36" ns1:parent-style-name="Normal" ns1:family="paragraph">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T37" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T38" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T39" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T40" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T41" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T42" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T43" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T44" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns3:font-style="italic" ns1:font-style-asian="italic" />
+    </ns1:style>
+    <ns1:style ns1:name="T45" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns3:font-style="italic" ns1:font-style-asian="italic" />
+    </ns1:style>
+    <ns1:style ns1:name="T46" ns1:parent-style-name="Boldtextblack" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="bold" ns1:font-weight-asian="bold" />
+    </ns1:style>
+    <ns1:style ns1:name="T47" ns1:parent-style-name="Boldtextblack" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="bold" ns1:font-weight-asian="bold" />
+    </ns1:style>
+    <ns1:style ns1:name="T48" ns1:parent-style-name="Boldtextblack" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="bold" ns1:font-weight-asian="bold" />
+    </ns1:style>
+    <ns1:style ns1:name="T49" ns1:parent-style-name="Boldtextblack" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="bold" ns1:font-weight-asian="bold" />
+    </ns1:style>
+    <ns1:style ns1:name="T50" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T51" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T52" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T53" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T54" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T55" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T56" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T57" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T58" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T59" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T60" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T61" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="P62" ns1:parent-style-name="Normal" ns1:family="paragraph">
+      <ns1:paragraph-properties ns3:break-before="page" ns3:margin-bottom="0in" />
+    </ns1:style>
+    <ns1:style ns1:name="T63" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T64" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T65" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T66" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T67" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T68" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T69" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T70" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns3:language="en" ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T71" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns3:language="en" ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T72" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns3:language="en" ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T73" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns3:language="en" ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T74" ns1:parent-style-name="Boldtextblack" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="bold" ns1:font-weight-asian="bold" />
+    </ns1:style>
+    <ns1:style ns1:name="P75" ns1:parent-style-name="Roundbullet" ns1:family="paragraph">
+      <ns1:paragraph-properties ns3:margin-left="0.25in" ns3:text-indent="-0.25in">
+        <ns1:tab-stops />
+      </ns1:paragraph-properties>
+    </ns1:style>
+    <ns1:style ns1:name="T76" ns1:parent-style-name="Boldtextblack" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="bold" ns1:font-weight-asian="bold" />
+    </ns1:style>
+    <ns1:style ns1:name="T77" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="T78" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns1:language-asian="en" ns1:country-asian="GB" />
+    </ns1:style>
+    <ns1:style ns1:name="P79" ns1:parent-style-name="Normal" ns1:family="paragraph">
+      <ns1:paragraph-properties ns3:margin-bottom="0in" />
+    </ns1:style>
+    <ns1:style ns1:name="P80" ns1:parent-style-name="Secondheading" ns1:family="paragraph">
+      <ns1:paragraph-properties ns3:break-before="page" />
+    </ns1:style>
+    <ns1:style ns1:name="T81" ns1:parent-style-name="Boldtextgreen" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="bold" ns1:font-weight-asian="bold" />
+    </ns1:style>
+    <ns1:style ns1:name="T82" ns1:parent-style-name="Boldtextgreen" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="bold" ns1:font-weight-asian="bold" />
+    </ns1:style>
+    <ns1:style ns1:name="T83" ns1:parent-style-name="Boldtextgreen" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="bold" ns1:font-weight-asian="bold" />
+    </ns1:style>
+    <ns1:style ns1:name="T84" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="normal" ns1:font-weight-asian="normal" ns3:font-size="12pt" ns1:font-size-asian="12pt" />
+    </ns1:style>
+    <ns1:style ns1:name="T85" ns1:parent-style-name="Boldtextgreen" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="bold" ns1:font-weight-asian="bold" />
+    </ns1:style>
+    <ns1:style ns1:name="T86" ns1:parent-style-name="Boldtextgreen" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="bold" ns1:font-weight-asian="bold" />
+    </ns1:style>
+    <ns1:style ns1:name="T87" ns1:parent-style-name="Boldtextgreen" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="bold" ns1:font-weight-asian="bold" />
+    </ns1:style>
+    <ns1:style ns1:name="T88" ns1:parent-style-name="Boldtextgreen" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="bold" ns1:font-weight-asian="bold" />
+    </ns1:style>
+    <ns1:style ns1:name="T89" ns1:parent-style-name="Boldtextgreen" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="bold" ns1:font-weight-asian="bold" />
+    </ns1:style>
+    <ns1:style ns1:name="T90" ns1:parent-style-name="Boldtextgreen" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="bold" ns1:font-weight-asian="bold" />
+    </ns1:style>
+    <ns1:style ns1:name="T91" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="normal" ns1:font-weight-asian="normal" ns3:font-size="12pt" ns1:font-size-asian="12pt" />
+    </ns1:style>
+    <ns1:style ns1:name="T92" ns1:parent-style-name="Boldtextgreen" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="bold" ns1:font-weight-asian="bold" />
+    </ns1:style>
+    <ns1:style ns1:name="T93" ns1:parent-style-name="Boldtextgreen" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="bold" ns1:font-weight-asian="bold" />
+    </ns1:style>
+    <ns1:style ns1:name="T94" ns1:parent-style-name="DefaultParagraphFont" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="normal" ns1:font-weight-asian="normal" ns3:font-size="12pt" ns1:font-size-asian="12pt" />
+    </ns1:style>
+    <ns1:style ns1:name="T95" ns1:parent-style-name="Boldtextgreen" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="bold" ns1:font-weight-asian="bold" />
+    </ns1:style>
+    <ns1:style ns1:name="T96" ns1:parent-style-name="Boldtextgreen" ns1:family="text">
+      <ns1:text-properties ns3:font-weight="bold" ns1:font-weight-asian="bold" />
+    </ns1:style>
+    <ns1:style ns1:family="graphic" ns1:name="a1" ns1:parent-style-name="Graphics">
+      <ns1:graphic-properties ns3:border="0.01042in none" ns3:background-color="transparent" />
+    </ns1:style>
+  </ns0:automatic-styles>
+  <ns0:body>
+    <ns0:text ns4:use-soft-page-breaks="true">
+      <ns4:p ns4:style-name="P1">
+        <ns4:span ns4:style-name="T3">
+          <ns5:frame ns5:style-name="a1" ns5:name="Picture 2" ns4:anchor-type="as-char" ns2:x="0in" ns2:y="0in" ns2:width="6.28611in" ns2:height="4.72917in" ns1:rel-width="scale" ns1:rel-height="scale">
+            <ns5:image ns6:href="media/image2.jpeg" ns6:type="simple" ns6:show="embed" ns6:actuate="onLoad" />
+            <ns2:title>Front cover image</ns2:title>
+            <ns2:desc>A close up view of the Environment Agency logo.</ns2:desc>
+          </ns5:frame>
+        </ns4:span>
+      </ns4:p>
+      <ns4:p ns4:style-name="Normal" />
+      <ns4:h ns4:style-name="Reporttitlemidgreen" ns4:outline-level="1">
+        <ns4:bookmark-start ns4:name="_Toc18942383" />
+        <ns4:bookmark-start ns4:name="_Toc19525860" />
+        <ns4:bookmark-start ns4:name="_Toc19711858" />
+        <ns4:bookmark-start ns4:name="_Toc19713139" />
+        <ns4:bookmark-start ns4:name="_Toc23340862" />
+        <ns4:bookmark-start ns4:name="_Toc23342483" />
+        <ns4:bookmark-start ns4:name="_Toc23343523" />
+        <ns4:bookmark-start ns4:name="_Toc44317462" />
+        <ns4:bookmark-start ns4:name="_Toc67657343" />
+        <ns4:bookmark-start ns4:name="_Toc74073926" />Environmental permit competence requirements: changes to technically competent manager attendance<ns4:bookmark-end ns4:name="_Toc18942383" />
+        <ns4:bookmark-end ns4:name="_Toc19525860" />
+        <ns4:bookmark-end ns4:name="_Toc19711858" />
+        <ns4:bookmark-end ns4:name="_Toc19713139" />
+        <ns4:bookmark-end ns4:name="_Toc23340862" />
+        <ns4:bookmark-end ns4:name="_Toc23342483" />
+        <ns4:bookmark-end ns4:name="_Toc23343523" />
+        <ns4:bookmark-end ns4:name="_Toc44317462" />
+        <ns4:bookmark-end ns4:name="_Toc67657343" />
+        <ns4:bookmark-end ns4:name="_Toc74073926" />
+      </ns4:h>
+      <ns4:p ns4:style-name="Reportsubtitle">June 2021</ns4:p>
+      <ns4:soft-page-break />
+      <ns4:p ns4:style-name="P4">We are the Environment Agency. We protect and improve the environment.</ns4:p>
+      <ns4:p ns4:style-name="Introductiontextgreen">We help people and wildlife adapt to climate change and reduce its impacts, including flooding, drought, sea level rise and coastal erosion.<ns4:s />
+      </ns4:p>
+      <ns4:p ns4:style-name="Introductiontextgreen">We improve the quality of our water, land and air by tackling pollution. We work with businesses to help them comply with environmental regulations. A healthy and diverse environment enhances people's lives and contributes to economic growth.</ns4:p>
+      <ns4:p ns4:style-name="P5">We cannot do this alone. We work as part of the Defra group (Department for Environment, Food and Rural Affairs), with the rest of government, local councils, businesses, civil society groups and local communities to create a better place for people and wildlife.</ns4:p>
+      <ns4:section ns4:name="Sect1" ns4:style-name="S1">
+        <ns4:p ns4:style-name="Normal">Published by:</ns4:p>
+        <ns4:p ns4:style-name="Normal">Environment Agency<ns4:line-break />Horizon House, Deanery Road,<ns4:line-break />Bristol BS1 5AH</ns4:p>
+        <ns4:p ns4:style-name="Normal">
+          <ns4:a ns0:title="URL for Environment Agency website" ns6:href="http://www.gov.uk/environment-agency" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">www.gov.uk/environment-agency</ns4:span>
+          </ns4:a>
+        </ns4:p>
+        <ns4:p ns4:style-name="P6">© Environment Agency 2021</ns4:p>
+        <ns4:p ns4:style-name="Normal">All rights reserved. This document may be reproduced with prior permission of the Environment Agency.</ns4:p>
+        <ns4:p ns4:style-name="Normal">Further copies of this report are available from our publications catalogue:<ns4:s />
+          <ns4:a ns0:title="Publications catalogue on GOV.UK" ns6:href="http://www.gov.uk/government/publications" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">http://www.gov.uk/government/publications</ns4:span>
+          </ns4:a>
+          <ns4:s />or our National Customer Contact Centre: 03708 506 506</ns4:p>
+        <ns4:p ns4:style-name="Normal">Email:<ns4:s />
+          <ns4:a ns6:href="mailto:enquiries@environment-agency.gov.uk" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">enquiries@environment-agency.gov.uk</ns4:span>
+          </ns4:a>
+        </ns4:p>
+      </ns4:section>
+      <ns4:section ns4:name="Sect2" ns4:style-name="S2">
+        <ns4:p ns4:style-name="P7">
+          <ns4:bookmark-start ns4:name="_Toc473641177" />
+        </ns4:p>
+        <ns4:h ns4:style-name="P8" ns4:outline-level="2">
+          <ns4:bookmark-start ns4:name="_Toc67657344" />
+          <ns4:bookmark-start ns4:name="_Toc74073927" />
+          <ns4:bookmark-end ns4:name="_Toc473641177" />
+          <ns4:soft-page-break />Summary<ns4:bookmark-end ns4:name="_Toc67657344" />
+          <ns4:bookmark-end ns4:name="_Toc74073927" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">Operators who are applying for an environmental permit for a waste operation must be members of (and comply with) a government approved technical competency scheme. Most existing waste environmental permit holders must also comply with a government approved technical competency scheme through the conditions in their permits.</ns4:p>
+        <ns4:p ns4:style-name="Normal">We<ns4:s />require operators who demonstrate competence through the Chartered Institution of Wastes Management (CIWM) and Waste Management Industry Training and Advisory Board (WAMITAB) scheme<ns4:s />to<ns4:s />nominate a technically competent manager (TCM) who attends the permitted site for a required amount of time each week. This is called the attendance requirement.</ns4:p>
+        <ns4:p ns4:style-name="Normal">The attendance requirement is currently based on 20% of operational hours for standard rules permits, or for bespoke permits the<ns4:s />
+          <ns4:a ns6:href="https://www.gov.uk/government/publications/opra-for-epr-operational-risk-appraisal" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">Operation</ns4:span>
+            <ns4:span ns4:style-name="Hyperlink">al<ns4:s />
+            </ns4:span>
+            <ns4:span ns4:style-name="Hyperlink">risk appraisal</ns4:span>
+            <ns4:span ns4:style-name="Hyperlink">
+              <ns4:s />(OPRA)</ns4:span>
+            <ns4:span ns4:style-name="Hyperlink">
+              <ns4:s />guidance</ns4:span>
+          </ns4:a>. However, the OPRA guidance has been withdrawn, except for the sections on attendance requirements for TCMs. We want your views on proposed options and changes to the attendance requirements.</ns4:p>
+        <ns4:p ns4:style-name="Normal">
+          <ns4:span ns4:style-name="T9">The Growth Duty requires us and other national regulators to<ns4:s />
+          </ns4:span>take into account<ns4:s />
+          <ns4:span ns4:style-name="T10">promoting economic growth, alongside our other statutory duties. As part of this duty we will assess the financial impacts of the options<ns4:s />
+          </ns4:span>and changes we have<ns4:s />
+          <ns4:span ns4:style-name="T11">presented in this consultation. You can help<ns4:s />
+          </ns4:span>inform our decisions<ns4:s />
+          <ns4:span ns4:style-name="T12">by responding to the questions.<ns4:s />
+          </ns4:span>
+        </ns4:p>
+        <ns4:p ns4:style-name="TOC1">We will consider all the responses we receive and publish a consultation response on GOV.UK. <ns4:s />Your responses will also help shape a second consultation, which will outline further details of the agreed options and other associated changes.</ns4:p>
+        <ns4:p ns4:style-name="P13">
+          <ns4:bookmark-start ns4:name="_Toc473641179" />
+        </ns4:p>
+        <ns4:table-of-content ns4:name="_TOC12">
+          <ns4:table-of-content-source ns4:outline-level="3" ns4:use-outline-level="true" ns4:use-index-marks="false" ns4:use-index-source-styles="true" ns4:index-scope="document">
+            <ns4:table-of-content-entry-template ns4:outline-level="1" ns4:style-name="TOC1">
+              <ns4:index-entry-link-start />
+              <ns4:index-entry-text />
+              <ns4:index-entry-tab-stop ns1:leader-char="." ns1:type="right" />
+              <ns4:index-entry-page-number />
+              <ns4:index-entry-link-end />
+            </ns4:table-of-content-entry-template>
+            <ns4:table-of-content-entry-template ns4:outline-level="2" ns4:style-name="TOC2">
+              <ns4:index-entry-link-start />
+              <ns4:index-entry-text />
+              <ns4:index-entry-tab-stop ns1:leader-char="." ns1:type="right" />
+              <ns4:index-entry-page-number />
+              <ns4:index-entry-link-end />
+            </ns4:table-of-content-entry-template>
+            <ns4:table-of-content-entry-template ns4:outline-level="3" ns4:style-name="TOC3">
+              <ns4:index-entry-link-start />
+              <ns4:index-entry-text />
+              <ns4:index-entry-tab-stop ns1:leader-char="." ns1:type="right" />
+              <ns4:index-entry-page-number />
+              <ns4:index-entry-link-end />
+            </ns4:table-of-content-entry-template>
+            <ns4:index-source-styles ns4:outline-level="1">
+              <ns4:index-source-style ns4:style-name="Mainheading" />
+              <ns4:index-source-style ns4:style-name="Numberedheading" />
+            </ns4:index-source-styles>
+            <ns4:index-source-styles ns4:outline-level="2">
+              <ns4:index-source-style ns4:style-name="Secondheading" />
+              <ns4:index-source-style ns4:style-name="Numberedsecondheading" />
+            </ns4:index-source-styles>
+            <ns4:index-source-styles ns4:outline-level="3">
+              <ns4:index-source-style ns4:style-name="Thirdheading" />
+            </ns4:index-source-styles>
+          </ns4:table-of-content-source>
+          <ns4:index-body>
+            <ns4:p ns4:style-name="TOC1" />
+            <ns4:p ns4:style-name="TOC1">
+              <ns4:a ns6:href="#_Toc74073927" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Summary</ns4:span>
+                <ns4:tab />3</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="TOC1">
+              <ns4:a ns6:href="#_Toc74073928" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">About this consultation</ns4:span>
+                <ns4:tab />5</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="TOC1">
+              <ns4:a ns6:href="#_Toc74073929" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">What we are consulting on</ns4:span>
+                <ns4:tab />5</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="TOC1">
+              <ns4:a ns6:href="#_Toc74073930" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="T14">What the impacts are for you</ns4:span>
+                <ns4:tab />5</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="TOC1">
+              <ns4:a ns6:href="#_Toc74073931" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">How the current attendance requirement works</ns4:span>
+                <ns4:tab />5</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="TOC1">
+              <ns4:a ns6:href="#_Toc74073932" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Why we need to revise attendance requirements</ns4:span>
+                <ns4:tab />6</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="TOC1">
+              <ns4:a ns6:href="#_Toc74073933" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Future options for attendance requirements</ns4:span>
+                <ns4:tab />6</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="P15">
+              <ns4:a ns6:href="#_Toc74073934" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Option 1: Attendance linked to charge bands</ns4:span>
+                <ns4:tab />6</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="P16">
+              <ns4:a ns6:href="#_Toc74073935" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Option 2: Standard baseline attendance for all waste facilities</ns4:span>
+                <ns4:tab />7</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="P17">
+              <ns4:a ns6:href="#_Toc74073936" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Option 3: Tailored baseline attendance for waste operations and waste installations</ns4:span>
+                <ns4:tab />7</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="TOC1">
+              <ns4:a ns6:href="#_Toc74073937" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Attendance caps, 24 hour operations, closed landfills, mobile treatment activities and other rules</ns4:span>
+                <ns4:tab />7</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="P18">
+              <ns4:a ns6:href="#_Toc74073938" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Attendance caps</ns4:span>
+                <ns4:tab />7</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="P19">
+              <ns4:a ns6:href="#_Toc74073939" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">24 hour operations</ns4:span>
+                <ns4:tab />7</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="P20">
+              <ns4:a ns6:href="#_Toc74073940" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Sites with multiple facilities</ns4:span>
+                <ns4:tab />8</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="P21">
+              <ns4:a ns6:href="#_Toc74073941" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Permit transfers</ns4:span>
+                <ns4:tab />9</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="P22">
+              <ns4:a ns6:href="#_Toc74073942" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Mothballed operations</ns4:span>
+                <ns4:tab />9</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="P23">
+              <ns4:a ns6:href="#_Toc74073943" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Closed landfill attendance requirements</ns4:span>
+                <ns4:tab />10</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="P24">
+              <ns4:a ns6:href="#_Toc74073944" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Mobile plant attendance requirements</ns4:span>
+                <ns4:tab />10</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="P25">
+              <ns4:a ns6:href="#_Toc74073945" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Landspreading mobile plant attendance requirements</ns4:span>
+                <ns4:tab />11</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="P26">
+              <ns4:a ns6:href="#_Toc74073946" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Land remediation mobile plant attendance requirements</ns4:span>
+                <ns4:tab />11</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="P27">
+              <ns4:a ns6:href="#_Toc74073947" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Other mobile plant attendance requirements</ns4:span>
+                <ns4:tab />12</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="TOC1">
+              <ns4:a ns6:href="#_Toc74073948" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Attendance requirements during grace periods</ns4:span>
+                <ns4:tab />12</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="TOC1">
+              <ns4:a ns6:href="#_Toc74073949" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Adjustment for normal operations and increased attendance for poor performers</ns4:span>
+                <ns4:tab />13</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="TOC1">
+              <ns4:a ns6:href="#_Toc74073950" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Implementation</ns4:span>
+                <ns4:tab />13</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="TOC1">
+              <ns4:a ns6:href="#_Toc74073951" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Consultation questions</ns4:span>
+                <ns4:tab />14</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="P28">
+              <ns4:a ns6:href="#_Toc74073952" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Section 1 - about you</ns4:span>
+                <ns4:tab />14</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="P29">
+              <ns4:a ns6:href="#_Toc74073953" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Section 2 - your views</ns4:span>
+                <ns4:tab />14</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="TOC1">
+              <ns4:a ns6:href="#_Toc74073954" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Responding to this consultation</ns4:span>
+                <ns4:tab />15</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="P30">
+              <ns4:a ns6:href="#_Toc74073955" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">How to respond</ns4:span>
+                <ns4:tab />15</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="P31">
+              <ns4:a ns6:href="#_Toc74073956" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">How we will use your information</ns4:span>
+                <ns4:tab />16</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="P32">
+              <ns4:a ns6:href="#_Toc74073957" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Privacy note</ns4:span>
+                <ns4:tab />16</ns4:a>
+            </ns4:p>
+            <ns4:p ns4:style-name="P33">
+              <ns4:a ns6:href="#_Toc74073958" ns0:target-frame-name="_top" ns6:show="replace">
+                <ns4:span ns4:style-name="Hyperlink">Consultation principles</ns4:span>
+                <ns4:tab />17</ns4:a>
+            </ns4:p>
+          </ns4:index-body>
+        </ns4:table-of-content>
+        <ns4:p ns4:style-name="P34" />
+        <ns4:h ns4:style-name="Mainheading" ns4:outline-level="2">
+          <ns4:bookmark-start ns4:name="_Toc67657345" />
+          <ns4:bookmark-start ns4:name="_Toc74073928" />About this consultation<ns4:bookmark-end ns4:name="_Toc67657345" />
+          <ns4:bookmark-end ns4:name="_Toc74073928" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">This document explains:</ns4:p>
+        <ns4:p ns4:style-name="Normal">• how the current technical competence attendance requirements work</ns4:p>
+        <ns4:p ns4:style-name="Normal">• options for proposed changes to the attendance requirements</ns4:p>
+        <ns4:p ns4:style-name="Normal">• other proposed changes to the attendance requirements</ns4:p>
+        <ns4:p ns4:style-name="Normal">• implementation timescales</ns4:p>
+        <ns4:p ns4:style-name="Normal">It also sets out questions which ask for your views on specific points.</ns4:p>
+        <ns4:p ns4:style-name="Normal">We will consider your answers and comments. We'll use them to revise future attendance requirements - we'll consult on these<ns4:s />revisions, if required,<ns4:s />before we adopt them.</ns4:p>
+        <ns4:h ns4:style-name="Mainheading" ns4:outline-level="2">
+          <ns4:bookmark-start ns4:name="_Toc67657346" />
+          <ns4:bookmark-start ns4:name="_Toc74073929" />What we are consulting on<ns4:bookmark-end ns4:name="_Toc67657346" />
+          <ns4:bookmark-end ns4:name="_Toc74073929" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">We would like your views on:</ns4:p>
+        <ns4:list ns4:style-name="LFO1" ns4:continue-numbering="true">
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">proposed options for changes to the attendance requirements for technically competent managers</ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">other rules associated with the attendance requirements<ns4:s />
+            </ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">implementation timescales</ns4:p>
+          </ns4:list-item>
+        </ns4:list>
+        <ns4:h ns4:style-name="P35" ns4:outline-level="2">
+          <ns4:bookmark-start ns4:name="_Toc67657347" />
+          <ns4:bookmark-start ns4:name="_Toc74073930" />What<ns4:s />
+          <ns4:bookmark-end ns4:name="_Toc67657347" />the impacts are for you<ns4:bookmark-end ns4:name="_Toc74073930" />
+          <ns4:s />
+        </ns4:h>
+        <ns4:p ns4:style-name="P36">We think this consultation will be of particular interest to:<ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">
+          <ns4:span ns4:style-name="Boldtextblack">Waste operators, trade associations and businesses</ns4:span>
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">T<ns4:span ns4:style-name="T37">his is your opportunity to ensure that revisions to the<ns4:s />
+          </ns4:span>attendance requirements<ns4:span ns4:style-name="T38">
+            <ns4:s />work for you and your industry</ns4:span>, and protect the environment and human health.<ns4:s />
+          <ns4:span ns4:style-name="T39">We would like any suggestions you may have on the options</ns4:span>
+          <ns4:s />
+          <ns4:span ns4:style-name="T40">an</ns4:span>d<ns4:span ns4:style-name="T41">
+            <ns4:s />proposed changes.</ns4:span>
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">
+          <ns4:span ns4:style-name="Boldtextblack">Technical competence scheme providers, other regulators, the public, community groups and non-governmental organisations with an interest in environmental issues</ns4:span>
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">T<ns4:span ns4:style-name="T42">his is your opportunity to ensure that the<ns4:s />
+          </ns4:span>proposed changes work for the approved technical competence schemes, and protect<ns4:span ns4:style-name="T43">
+            <ns4:s />the environment and human health.</ns4:span>
+        </ns4:p>
+        <ns4:h ns4:style-name="Mainheading" ns4:outline-level="2">
+          <ns4:bookmark-start ns4:name="_Toc67657348" />
+          <ns4:bookmark-start ns4:name="_Toc74073931" />How the current attendance requirement works<ns4:bookmark-end ns4:name="_Toc67657348" />
+          <ns4:bookmark-end ns4:name="_Toc74073931" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">Operators who demonstrate technical competence through the scheme run jointly by the Chartered Institution of Wastes Management (CIWM) and Waste Management Industry Training and Advisory Board (WAMITAB), are required to nominate a TCM on site for a specified amount of time a week.</ns4:p>
+        <ns4:p ns4:style-name="Normal">
+          <ns4:a ns6:href="https://wamitab.org.uk/wp-content/uploads/2020/06/CIWM-WAMITAB-Operator-Competence-Scheme-Version-9-Final.pdf" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">The WAMITAB/CIWM Operator Competence Scheme (Version 9, May 2020)</ns4:span>
+          </ns4:a>
+          <ns4:s />states<ns4:s />
+          <ns4:span ns4:style-name="T44">'Any permitted waste management facility participating in this scheme to demonstrate operator competence is required to have at least one confirmed Technically Competent Person<ns4:s />
+          </ns4:span>
+          <ns4:soft-page-break />
+          <ns4:span ns4:style-name="T45">available on site for the appropriate amount of time each week as stated in the latest Environment Agency or Natural Resources Wales guidance'.</ns4:span>
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">Some operators are part of this scheme if one of the following applies:</ns4:p>
+        <ns4:list ns4:style-name="LFO1" ns4:continue-numbering="true">
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">we<ns4:s />assessed you as technically competent before qualifications for your activity existed</ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">you were ‘deemed’ competent when the Waste Management Licensing Regulations 1994 (now superseded by the Environmental Permitting Regulations) came into force because you were already managing a waste site <ns4:s />
+            </ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">our<ns4:s />assessment, or the ‘deemed’ competency, are still valid and you can be named as the technically competent person for that same activity on new applications</ns4:p>
+          </ns4:list-item>
+        </ns4:list>
+        <ns4:p ns4:style-name="Normal">Your TCM(s) must be on site for the required time each week. You can find details of how the attendance requirement is currently calculated, and other rules associated with TCM attendance, in our guidance on<ns4:s />
+          <ns4:a ns6:href="https://www.gov.uk/guidance/legal-operator-and-competence-requirements-environmental-permits#how-much-time-your-technically-competent-manager-must-be-on-site" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">how much time your technically competent manager must be on site.</ns4:span>
+          </ns4:a>
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">The requirements for how much time TCM(s) need to be on site does not currently apply to the<ns4:s />
+          <ns4:a ns6:href="https://www.euskills.co.uk/about/our-industries/waste-management/competence-management-system/" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">ESA/EU Skills approved operator competence scheme</ns4:span>
+          </ns4:a>. However, we expect key site personnel to be on site at similar levels of attendance to TCM(s) operating under the WAMITAB/CIWM Operator Competence Scheme. This should be demonstrated through the operator's management system.</ns4:p>
+        <ns4:h ns4:style-name="Mainheading" ns4:outline-level="2">
+          <ns4:bookmark-start ns4:name="_Toc67657349" />
+          <ns4:bookmark-start ns4:name="_Toc74073932" />Why we need to revise attendance requirements<ns4:bookmark-end ns4:name="_Toc67657349" />
+          <ns4:bookmark-end ns4:name="_Toc74073932" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">We have considered and ruled out the option of continuing with the current TCM attendance requirements. We<ns4:s />want<ns4:s />to simplify the requirements for both industry and regulators and provide greater clarity of what the requirements are. OPRA is no longer used to calculate permitting charges, therefore OPRA profiles are not produced to support new permit applications. <ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">We need to make changes to attendance requirements so that poor performers receive additional supervision by TCMs to rectify non-compliances and reduce risk.</ns4:p>
+        <ns4:h ns4:style-name="Mainheading" ns4:outline-level="2">
+          <ns4:bookmark-start ns4:name="_Toc67657350" />
+          <ns4:bookmark-start ns4:name="_Toc74073933" />Future options for attendance requirements<ns4:bookmark-end ns4:name="_Toc67657350" />
+          <ns4:bookmark-end ns4:name="_Toc74073933" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">The following 3 options are for TCM attendance at sites that are performing at the expected level (Compliance Classification Scheme (CCS) bands A and B), as explained in our policy paper on<ns4:s />
+          <ns4:a ns6:href="https://www.gov.uk/government/publications/assessing-and-scoring-environmental-permit-compliance/assessing-and-scoring-environmental-permit-compliance" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">assessing and scoring environmental permit compliance.</ns4:span>
+          </ns4:a>
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">The percentage of operational hours' attendance for the preferred option will be subject to further consultation, if required,<ns4:s />before we adopt it.</ns4:p>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc67657351" />
+          <ns4:bookmark-start ns4:name="_Toc74073934" />Option 1: Attendance linked to charge bands<ns4:bookmark-end ns4:name="_Toc67657351" />
+          <ns4:bookmark-end ns4:name="_Toc74073934" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">Option 1 proposes a link between the annual subsistence fee<ns4:s />
+          <ns4:a ns6:href="https://www.gov.uk/government/publications/environmental-permitting-charging-scheme-2019" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">charging bands</ns4:span>
+          </ns4:a>
+          <ns4:s />(tables 2.16 and 2.17) and the TCM attendance requirement at waste facilities, except for closed landfills and mobile plant. The charging bands are calculated on the basis of risk and the regulatory effort needed for effective regulation.</ns4:p>
+        <ns4:soft-page-break />
+        <ns4:p ns4:style-name="Normal">The Environmental Permitting charging scheme groups waste operations and waste installations by sector. Those requiring more regulatory effort pay a higher subsistence charge. This correlation between the subsistence charge category considers waste throughputs and complexity. This feeds into the attendance requirements for Option 1. <ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">Option 1 is similar to the current OPRA attendance requirements which includes the complexity of the site operations and emissions (including waste inputs). However Option 1 is simpler and more transparent compared to the existing requirements. Calculating the attendance requirement will only involve cross referencing to the charges tables. The attendance requirement would be subject to additional adjustments as outlined in the<ns4:s />
+          <ns4:a ns0:title="[adjustment for normal operations and increased attendance for poor performers]" ns6:href="#Adjustment" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">adjustment for normal operations and increased attendance for poor performers</ns4:span>
+          </ns4:a>
+          <ns4:s />section.</ns4:p>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc67657352" />
+          <ns4:bookmark-start ns4:name="_Toc74073935" />Option 2: Standard baseline attendance for all waste facilities<ns4:bookmark-end ns4:name="_Toc67657352" />
+          <ns4:bookmark-end ns4:name="_Toc74073935" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">Option 2 proposes a baseline percentage of operational hours attendance for all relevant waste operations (waste installations and waste operations), except for closed landfills and mobile plant. <ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">This is the simplest option presented in this consultation. Depending on the proposed baseline attendance requirement, this option could lead to a proportion of waste installation sites with reduced attendance hours. For the majority of waste operations there would either be no change or an increase in attendance hours. <ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">This agreed baseline would be subject to the additional adjustments as outlined in the<ns4:s />
+          <ns4:a ns0:title="[adjustment for normal operations and increased attendance for poor performers]" ns6:href="#Adjustment" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">adjustment for normal operations and increased attendance for poor performers</ns4:span>
+          </ns4:a>
+          <ns4:s />section.</ns4:p>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc67657353" />
+          <ns4:bookmark-start ns4:name="_Toc74073936" />Option 3: Tailored baseline attendance for waste operations and waste installations<ns4:bookmark-end ns4:name="_Toc67657353" />
+          <ns4:bookmark-end ns4:name="_Toc74073936" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">Option 3 proposes different baseline operational hours' attendance requirements for waste operations and waste installations, except for closed landfills and mobile plant. Waste installations tend to be larger and more complex, with greater waste inputs and treatment capacities than waste operations. Therefore this option includes a baseline for installations which will be higher. <ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">This is another simple method of calculating the attendance requirement. <ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">The agreed baselines would be subject to the additional adjustments as outlined in the<ns4:s />
+          <ns4:a ns0:title="[adjustment for normal operations and increased attendance for poor performers]" ns6:href="#Adjustment" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">adjustment for normal operations and increased attendance for poor performers</ns4:span>
+          </ns4:a>
+          <ns4:s />section. <ns4:s />
+        </ns4:p>
+        <ns4:h ns4:style-name="Mainheading" ns4:outline-level="2">
+          <ns4:bookmark-start ns4:name="_Toc67657354" />
+          <ns4:bookmark-start ns4:name="_Toc74073937" />
+          <ns4:span ns4:style-name="T46">Attendance caps, 24 hour operations, closed landfills</ns4:span>
+          <ns4:span ns4:style-name="T47">,<ns4:s />
+          </ns4:span>
+          <ns4:span ns4:style-name="T48">mobile treatment activities</ns4:span>
+          <ns4:bookmark-end ns4:name="_Toc67657354" />
+          <ns4:span ns4:style-name="T49">
+            <ns4:s />and other rules</ns4:span>
+          <ns4:bookmark-end ns4:name="_Toc74073937" />
+        </ns4:h>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc67657355" />
+          <ns4:bookmark-start ns4:name="_Toc74073938" />Attendance caps<ns4:bookmark-end ns4:name="_Toc67657355" />
+          <ns4:bookmark-end ns4:name="_Toc74073938" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">We are not proposing any change to the existing attendance cap of 48 hours per week, but we welcome views on the attendance cap through this consultation.</ns4:p>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc67657356" />
+          <ns4:bookmark-start ns4:name="_Toc74073939" />24 hour operations<ns4:bookmark-end ns4:name="_Toc67657356" />
+          <ns4:bookmark-end ns4:name="_Toc74073939" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">We propose additional guidance for permitted sites that operate 24 hours a day. If a 24-hour process is operated, for example an anaerobic digestion facility, it may be feasible for operators to calculate TCM attendance based on typical operational hours (for example those stated in your planning permission for the receipt of waste) rather than the 24 hours<ns4:s />
+          <ns4:soft-page-break />a day treatment process. In the case of anaerobic digestion, this would be providing the operator has remote or telemetric systems to raise an alarm, with appropriate personnel on call, if an incident occurred during unmanned hours. These procedures must be explained in the operator's management system. </ns4:p>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc67657357" />
+          <ns4:bookmark-start ns4:name="_Toc74073940" />Sites with multiple facilities<ns4:bookmark-end ns4:name="_Toc67657357" />
+          <ns4:bookmark-end ns4:name="_Toc74073940" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">Some operators have multiple separately permitted facilities or singular permits, where the permit authorises multiple facilities on the same site.</ns4:p>
+        <ns4:p ns4:style-name="Normal">We want to acknowledge this in the attendance requirements and provide consistency in the method of attendance calculation. This would be irrespective of operators having separate permits or singular permits with multiple facilities on the same site.</ns4:p>
+        <ns4:p ns4:style-name="Normal">Our approach would be consistent for any identifiable site with multiple permits, or singular permits with multiple facilities. By identifiable site we mean a site with shared facilities such as a weighbridge, offices and the same entrance and exit, all within the same land boundary. This approach is irrespective of permit boundaries and adjacent permits.</ns4:p>
+        <ns4:p ns4:style-name="Normal">Some sites with multiple facilities may include facilities that are operationally very different. In our current<ns4:s />
+          <ns4:a ns6:href="https://www.gov.uk/government/publications/environmental-permitting-charging-scheme-2019" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">charging scheme</ns4:span>
+          </ns4:a>
+          <ns4:s />we group different waste transfer and treatment activities into sectors as follows:</ns4:p>
+        <ns4:p ns4:style-name="Normal">
+          <ns4:span ns4:style-name="Boldtextblack">Table 2.16</ns4:span>
+        </ns4:p>
+        <ns4:list ns4:style-name="LFO1" ns4:continue-numbering="true">
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">
+              <ns4:span ns4:style-name="T50">Hazardous<ns4:s />
+              </ns4:span>w<ns4:span ns4:style-name="T51">aste<ns4:s />
+              </ns4:span>t<ns4:span ns4:style-name="T52">ransfer and<ns4:s />
+              </ns4:span>t<ns4:span ns4:style-name="T53">reatment</ns4:span>
+            </ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">
+              <ns4:span ns4:style-name="T54">Non-hazardous and inert waste</ns4:span>
+            </ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">
+              <ns4:span ns4:style-name="T55">Biowaste<ns4:s />
+              </ns4:span>t<ns4:span ns4:style-name="T56">reatment<ns4:s />
+              </ns4:span>
+            </ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">
+              <ns4:span ns4:style-name="T57">Metal<ns4:s />
+              </ns4:span>r<ns4:span ns4:style-name="T58">ecycling<ns4:s />
+              </ns4:span>
+            </ns4:p>
+          </ns4:list-item>
+        </ns4:list>
+        <ns4:p ns4:style-name="Normal">
+          <ns4:span ns4:style-name="Boldtextblack">Table 2.17</ns4:span>
+        </ns4:p>
+        <ns4:list ns4:style-name="LFO1" ns4:continue-numbering="true">
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">
+              <ns4:span ns4:style-name="T59">Landfill and<ns4:s />
+              </ns4:span>d<ns4:span ns4:style-name="T60">eposit for<ns4:s />
+              </ns4:span>r<ns4:span ns4:style-name="T61">ecovery<ns4:s />
+              </ns4:span>
+            </ns4:p>
+          </ns4:list-item>
+        </ns4:list>
+        <ns4:p ns4:style-name="Normal">To ensure environmental compliance, each of these sectors require specialist skills, qualifications and training. For sites with multiple facilities, we propose an attendance calculation based on the addition of the highest attendance requirement for each individual sector.<ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">For example, an operator with 2 separately permitted facilities on one site (1 composting facility and 1 anaerobic digestion facility, both of which are in the biowaste treatment sector) would calculate the attendance requirement based on the highest of these facilities, because they're within the same sector.</ns4:p>
+        <ns4:p ns4:style-name="Normal">For an operator with one permit with 2 facilities on one site (1 household waste recycling centre and 1 landfill), we would base the calculation on the sum of both of these facilities, as they're in different sectors.<ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">We will include a reduction in the overall attendance requirement to account for time savings in having 2 or more activities on the same site. The proposals above are on the basis that the TCM(s) have the right qualifications. Each facility will need an adequate amount of attendance, and the attendance requirement would be proportionately reduced. We will present the details of these proposals in a second consultation, if required.</ns4:p>
+        <ns4:p ns4:style-name="P62" />
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc67657358" />
+          <ns4:bookmark-start ns4:name="_Toc74073941" />Permit transfers<ns4:bookmark-end ns4:name="_Toc67657358" />
+          <ns4:bookmark-end ns4:name="_Toc74073941" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">Our current guidance says:<ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Pullquotegreen">'In the first 6 months after you start operating or carrying out a new permitted activity, your manager’s attendance requirement depends on the environmental risk posed by your site. After the first 6 months of operations, if it feels you have a satisfactory management system in place, the Environment Agency will agree with you what your continuing attendance requirements will be'.</ns4:p>
+        <ns4:p ns4:style-name="Normal">There are some situations where we have agreed reduced TCM attendance with existing permitted operators. Following any permit transfer, we propose the TCM attendance requirements for the new operator must revert back to those required by the guidance until the new operator can demonstrate:</ns4:p>
+        <ns4:list ns4:style-name="LFO1" ns4:continue-numbering="true">
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">they have a satisfactory management system in place</ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">the site is in CCS compliance band A or B</ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">the site is not subject to amenity (for example noise, odour or dust) complaints</ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">the site has not had any pollution incidents in the previous 6 months</ns4:p>
+          </ns4:list-item>
+        </ns4:list>
+        <ns4:p ns4:style-name="Normal">There is no grace period for technical competence for permit transfers and we consider it appropriate for new operators of existing permitted sites to have the TCM present whilst the new operator is establishing their activities on their new site.<ns4:s />
+        </ns4:p>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc67657359" />
+          <ns4:bookmark-start ns4:name="_Toc74073942" />Mothballed operations<ns4:bookmark-end ns4:name="_Toc67657359" />
+          <ns4:bookmark-end ns4:name="_Toc74073942" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">Sometimes, site based permitted operations become entirely mothballed for a prolonged period. If a permitted site is entirely mothballed we would expect it to: <ns4:s />
+        </ns4:p>
+        <ns4:list ns4:style-name="LFO1" ns4:continue-numbering="true">
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">stop accepting waste</ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">have no waste on site</ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">be secure</ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">have potential pollution risks removed, such as oil and chemicals</ns4:p>
+          </ns4:list-item>
+        </ns4:list>
+        <ns4:p ns4:style-name="Normal">If an entire site is mothballed, TCMs do not need to attend because the site is not operational. However, operators should periodically inspect their sites to check security measures remain in place and no adverse environmental effects are being caused.</ns4:p>
+        <ns4:p ns4:style-name="Normal">Where a site has multiple separately permitted facilities and / or singular permits where the permit authorises multiple facilities and one of these facilities is mothballed, the mothballed facility can be discounted from the TCM attendance calculation for that site. The attendance calculation would be based on the remaining facilities. This continues to be the case until the mothballed regulated facility is back in operation.<ns4:s />
+        </ns4:p>
+        <ns4:soft-page-break />
+        <ns4:p ns4:style-name="Normal">In the context of TCM attendance, we would only consider a permitted facility to be mothballed if it was non-operational for more than a month. We would not consider a site mothballed, if, for example, it was shut down for a short time for routine maintenance.<ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">The mothballing would need to be planned and intentional, for example as a result of a business decision.</ns4:p>
+        <ns4:p ns4:style-name="Normal">You must keep records of the dates of mothballing for our inspection, for example in a site diary.</ns4:p>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc67657360" />
+          <ns4:bookmark-start ns4:name="_Toc74073943" />Closed landfill attendance requirements<ns4:bookmark-end ns4:name="_Toc67657360" />
+          <ns4:bookmark-end ns4:name="_Toc74073943" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">We<ns4:s />accept that having TCM(s) attend a closed landfill for significant periods of time is not always a sensible use of manpower. For closed landfills, where the permit requires a TCM, they must maintain an overview of site operations, environmental management, monitoring and maintenance to ensure compliance with the site’s permit conditions. This should include periodic attendance at sites to carry out duties such as post closure inspections, checks on extraction and monitoring infrastructure and site security.<ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">We<ns4:s />will agree what the TCM attendance requirements are once the landfill site is definitively closed or in aftercare.</ns4:p>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc67657361" />
+          <ns4:bookmark-start ns4:name="_Toc74073944" />Mobile plant attendance requirements<ns4:bookmark-end ns4:name="_Toc67657361" />
+          <ns4:bookmark-end ns4:name="_Toc74073944" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">Most existing waste environmental permit holders, including mobile plant operators, must comply with a government approved technical competence scheme through the conditions in their permits. However, our approach to TCM attendance for mobile plant has differences for practical reasons, including:</ns4:p>
+        <ns4:list ns4:style-name="LFO1" ns4:continue-numbering="true">
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">Mobile plant permits can be deployed in different locations and in varying numbers within England. Permit operator head office locations, location of deployments and location of TCMs are often removed from each other, making attendance more difficult.</ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">Mobile plant deployments are time limited (otherwise you need a site based permit).</ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">Some deployments (particularly for landspreading) are seasonal, with greater numbers of deployments in the summer and less in the winter.</ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">Some mobile plant activities are 'static', for example the storage of waste pending a spreading operation. Some in situ land remediation activities are served by automated and telemetry systems.</ns4:p>
+          </ns4:list-item>
+        </ns4:list>
+        <ns4:p ns4:style-name="Normal">We propose new attendance requirements for mobile plant, including introducing provision for Nominated Competent Persons (NCPs) for all mobile plant permitted activities.<ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">NCPs perform a role that is under the overall control of the TCM. They are only required where it would be physically impossible to supervise mobile plant deployments, for example because of numbers of deployments or distance from the base of the TCM.</ns4:p>
+        <ns4:p ns4:style-name="Normal">Operator's management systems must show how the TCM has overall management of NCPs.<ns4:s />
+          <ns4:span ns4:style-name="T63">NCP</ns4:span>s<ns4:s />
+          <ns4:span ns4:style-name="T64">need to demonstrate they have sufficient training in</ns4:span>:<ns4:span ns4:style-name="T65">
+            <ns4:s />
+          </ns4:span>
+        </ns4:p>
+        <ns4:list ns4:style-name="LFO1" ns4:continue-numbering="true">
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">
+              <ns4:s />
+              <ns4:span ns4:style-name="T66">waste management legislation</ns4:span>
+              <ns4:s />
+            </ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">
+              <ns4:s />relevant technical guidance<ns4:span ns4:style-name="T67">
+                <ns4:s />
+              </ns4:span>
+            </ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">
+              <ns4:s />
+              <ns4:span ns4:style-name="T68">operator</ns4:span>'<ns4:span ns4:style-name="T69">s management systems, environmental permit conditions</ns4:span>
+              <ns4:s />and deployment documentation</ns4:p>
+          </ns4:list-item>
+        </ns4:list>
+        <ns4:p ns4:style-name="Normal">The NCP must be able to contact the TCM and be able to act as a first responder in an environmental incident.</ns4:p>
+        <ns4:soft-page-break />
+        <ns4:p ns4:style-name="Normal">NCPs do not replace the requirement for TCMs. NCPs will help facilitate supervision and help to spread knowledge about environmental compliance over a greater number of staff.</ns4:p>
+        <ns4:p ns4:style-name="Normal">Further details on the training requirement for NCPs is provided in the<ns4:s />
+          <ns4:a ns0:title="[Landspreading mobile plant attendance requirements]" ns6:href="#Landspreading" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">landspreading</ns4:span>
+          </ns4:a>,<ns4:s />
+          <ns4:a ns0:title="[Land remediation mobile plant attendance requirements]" ns6:href="#LandRemediation" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">land remediation</ns4:span>
+          </ns4:a>
+          <ns4:s />and<ns4:s />
+          <ns4:a ns0:title="[other mobile plant attendance requirements]" ns6:href="#Other" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">other mobile plant</ns4:span>
+          </ns4:a>
+          <ns4:s />attendance requirements below.</ns4:p>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc67657362" />
+          <ns4:bookmark-start ns4:name="Landspreading" />
+          <ns4:bookmark-start ns4:name="_Toc74073945" />Landspreading mobile plant attendance requirements<ns4:bookmark-end ns4:name="_Toc67657362" />
+          <ns4:bookmark-end ns4:name="Landspreading" />
+          <ns4:bookmark-end ns4:name="_Toc74073945" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">For mobile plant landspreading operations, in addition to TCM(s) there are already provisions for NCPs.</ns4:p>
+        <ns4:p ns4:style-name="Normal">Details on the current TCM requirements for mobile plant for landspreading is found in '<ns4:a ns6:href="https://www.gov.uk/government/uploads/system/uploads/attachment_data/file/290130/LIT_5492_40c081.pdf" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">How to comply with your landspreading permit</ns4:span>
+          </ns4:a>
+          <ns4:span ns4:style-name="Hyperlink">'.</ns4:span>
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">At present our landspreading guidance is not specific on the training that the NCP needs to perform their duties. The guidance states the NCP will need to demonstrate that they have had sufficient training in:<ns4:s />
+        </ns4:p>
+        <ns4:list ns4:style-name="LFO1" ns4:continue-numbering="true">
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">waste management legislation and its requirements<ns4:s />
+            </ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">environmental risk assessment<ns4:s />
+            </ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">environmental protection measures<ns4:s />
+            </ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">the operator’s management procedures<ns4:s />
+            </ns4:p>
+          </ns4:list-item>
+        </ns4:list>
+        <ns4:p ns4:style-name="Normal">We propose as a minimum that all NCPs must obtain an Environmental Permitting Operators Certificate (<ns4:a ns6:href="https://www.ciwm.co.uk/ciwm/training/environmental_permitting_operators_certificate_at_ciwm.aspx?hkey=95e241b6-a82d-4a99-aae0-a0f49b65d10b" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">EPOC</ns4:span>
+          </ns4:a>) from CIWM and successfully complete a<ns4:s />
+          <ns4:a ns6:href="https://wamitab.org.uk/competence/continuing-competence/" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">continuing competence test</ns4:span>
+          </ns4:a>
+          <ns4:s />every 2 years. NCPs could also demonstrate suitable training by obtaining the 4 critical units of the relevant landspreading WAMITAB award and by successfully completing a<ns4:s />
+          <ns4:a ns6:href="https://wamitab.org.uk/competence/continuing-competence/" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">continuing competence test</ns4:span>
+          </ns4:a>
+          <ns4:s />every 2 years.</ns4:p>
+        <ns4:p ns4:style-name="Normal">The above training will allow the NCP to develop knowledge in identifying<ns4:span ns4:style-name="T70">
+            <ns4:s />potential environmental impacts from waste</ns4:span>
+          <ns4:s />management<ns4:span ns4:style-name="T71">
+            <ns4:s />and how<ns4:s />
+          </ns4:span>to<ns4:s />
+          <ns4:span ns4:style-name="T72">avoid or reduce the risk</ns4:span>. They will be able to<ns4:s />
+          <ns4:span ns4:style-name="T73">understand key environmental legislation and identify their responsibilities and appropriate actions to comply with the environmental permit</ns4:span>
+          <ns4:s />conditions.</ns4:p>
+        <ns4:p ns4:style-name="Normal">
+          <ns4:bookmark-start ns4:name="_Toc30522075" />The TCM must still be available to visit a deployment site during storage of wastes, prior to spreading and immediately after spreading (but prior to incorporation) if requested by an Environment Agency officer (for example if pollution incidents are reported which warrant investigation).<ns4:bookmark-end ns4:name="_Toc30522075" />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">We welcome views on these proposals and will provide further detail in a future consultation, if required.</ns4:p>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc67657363" />
+          <ns4:bookmark-start ns4:name="_Toc74073946" />
+          <ns4:bookmark-start ns4:name="LandRemediation" />Land remediation mobile plant attendance requirements<ns4:bookmark-end ns4:name="_Toc67657363" />
+          <ns4:bookmark-end ns4:name="_Toc74073946" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">
+          <ns4:bookmark-end ns4:name="LandRemediation" />For remediation of land mobile plant activities the TCM attendance requirement referred to in our<ns4:s />
+          <ns4:a ns6:href="https://www.gov.uk/government/publications/deployment-form-for-land-and-groundwater-remediation" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">mobile plant deployment application form</ns4:span>
+          </ns4:a>
+          <ns4:s />is a minimum of 1 hour a week. We will make it clear in our guidance that the minimum 1 hour a week attendance requirement is not the default position. In reality, attending a site for 1 hour a week serves limited practical purpose when considering travel time and the duties a TCM is expected to undertake. <ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">We therefore propose to agree a bespoke attendance requirement at the deployment form application stage. We will consider the scale of the remediation activity, in situ and ex situ remediation and the complexity of the treatment activity. We would expect TCM attendance to be weighted towards site establishment, commissioning, decommissioning and demobilisation.</ns4:p>
+        <ns4:soft-page-break />
+        <ns4:p ns4:style-name="Normal">The current deployment form requests information about which treatment methods could be operated unsupervised. It requires a justification as to why this is the case. This might include treatment processes where automated and telemetric systems are in use. The option for unsupervised treatment methods can be agreed with<ns4:s />us<ns4:s />on a case by case basis. We will continue to consider reduced TCM attendance where land remediation activities are undertaken and where telemetry systems in conjunction with CCTV can be used to monitor these operations.</ns4:p>
+        <ns4:p ns4:style-name="Normal">We propose adopting a similar NCP approach for land remediation mobile plant as for landspreading mobile plant.<ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">An NCP would be a suitably trained and qualified site manager. Training for NCPs would include the Environmental Permitting Operators Certificate (EPOC) and successful completion of a<ns4:s />
+          <ns4:a ns6:href="https://wamitab.org.uk/competence/continuing-competence/" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">continuing competence test</ns4:span>
+          </ns4:a>
+          <ns4:s />every 2 years. NCPs could also demonstrate suitable training by obtaining the 4 critical units of the relevant land remediation WAMITAB award and by successfully completing a<ns4:s />
+          <ns4:a ns6:href="https://wamitab.org.uk/competence/continuing-competence/" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">continuing competence test</ns4:span>
+          </ns4:a>
+          <ns4:s />every 2 years.</ns4:p>
+        <ns4:p ns4:style-name="Normal">The above would allow the NCP to identify potential environmental impacts from waste management, and how to avoid or reduce the risk. They would be able to understand important environmental legislation and identify their responsibilities and actions to comply with the environmental permitting regulations.</ns4:p>
+        <ns4:p ns4:style-name="Normal">The Society for Remediation Practitioners (RemSoc) are considering the training options for NCPs. We will provide further details of training for NCPs for land remediation mobile plant in a second consultation, if required.</ns4:p>
+        <ns4:p ns4:style-name="Normal">We welcome views on these proposals. We'll provide more detail, if required,<ns4:s />in a future consultation.<ns4:s />
+        </ns4:p>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc67657364" />
+          <ns4:bookmark-start ns4:name="_Toc74073947" />
+          <ns4:bookmark-start ns4:name="Other" />Other mobile plant attendance requirements<ns4:bookmark-end ns4:name="_Toc67657364" />
+          <ns4:bookmark-end ns4:name="_Toc74073947" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">
+          <ns4:bookmark-end ns4:name="Other" />Non landspreading mobile plant activities include treating waste to produce soil, soil substitutes and aggregate, and niche operations such as dismantling aircraft. At present the attendance requirements for these activities are the same as any other site based permit. <ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">To achieve consistency across all mobile plant treatment activities and in addition to the requirement for a TCM, we propose adopting the NCP approach. The NCP could be a suitably trained and qualified site operative. We propose as a minimum that all NCPs must obtain an Environmental Permitting Operators Certificate (<ns4:a ns6:href="https://www.ciwm.co.uk/ciwm/training/environmental_permitting_operators_certificate_at_ciwm.aspx?hkey=95e241b6-a82d-4a99-aae0-a0f49b65d10b" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">EPOC</ns4:span>
+          </ns4:a>) from CIWM and successfully complete a<ns4:s />
+          <ns4:a ns6:href="https://wamitab.org.uk/competence/continuing-competence/" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">continuing competence test</ns4:span>
+          </ns4:a>
+          <ns4:s />every 2 years. NCPs could also demonstrate suitable training by obtaining the 4 critical units of the relevant WAMITAB award and by successfully completing a<ns4:s />
+          <ns4:a ns6:href="https://wamitab.org.uk/competence/continuing-competence/" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">continuing competence test</ns4:span>
+          </ns4:a>
+          <ns4:s />every 2 years.</ns4:p>
+        <ns4:p ns4:style-name="Normal">The above will allow the NCP to identify, avoid or reduce the risk of environmental impacts from waste management. They will be able to understand environmental legislation and identify their responsibilities and appropriate actions to comply with environmental permitting regulations.</ns4:p>
+        <ns4:p ns4:style-name="Normal">We welcome views on these proposals. We'll provide more detail, if required,<ns4:s />in a future consultation.</ns4:p>
+        <ns4:h ns4:style-name="Mainheading" ns4:outline-level="2">
+          <ns4:bookmark-start ns4:name="_Toc74073948" />Attendance requirements during grace periods<ns4:bookmark-end ns4:name="_Toc74073948" />
+        </ns4:h>
+        <ns4:soft-page-break />
+        <ns4:p ns4:style-name="Normal">We propose making our guidance clear that during grace periods, as detailed within the<ns4:s />
+          <ns4:a ns6:href="https://wamitab.org.uk/wp-content/uploads/2020/06/CIWM-WAMITAB-Operator-Competence-Scheme-Version-9-Final.pdfhttps:/wamitab.org.uk/wp-content/uploads/2018/09/CIWM-WAMITAB-Operator-Competence-Scheme-Version-9-Final.pdf" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">WAMITAB/CIWM Operator Competence Scheme</ns4:span>
+          </ns4:a>
+          <ns4:span ns4:style-name="Hyperlink">,<ns4:s />
+          </ns4:span>the nominated TCM working towards their full award will need to be present on site for the hours as required by our published guidance. There will be no agreement to a reduction in TCM attendance during the grace period.</ns4:p>
+        <ns4:h ns4:style-name="Mainheading" ns4:outline-level="2">
+          <ns4:bookmark-start ns4:name="_Toc67657365" />
+          <ns4:bookmark-start ns4:name="_Toc74073949" />
+          <ns4:bookmark-start ns4:name="Adjustment" />
+          <ns4:span ns4:style-name="T74">Adjustment for normal operations and increased attendance for poor performers</ns4:span>
+          <ns4:bookmark-end ns4:name="_Toc67657365" />
+          <ns4:bookmark-end ns4:name="_Toc74073949" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">
+          <ns4:bookmark-end ns4:name="Adjustment" />Under the current TCM attendance requirements, an operator may agree a reduced TCM attendance with us after the first 6 months of normal operations. If that site is performing poorly the site must revert to the standard attendance requirements.</ns4:p>
+        <ns4:p ns4:style-name="Normal">This approach is not considered robust enough. We propose that the attendance requirements include additional operational hours attendance at sites in CCS bands C to F. This would be calculated on the basis of a percentage increase in the attendance requirement, dependent on the compliance band of the site. The attendance requirement would still be limited by the 48 hours per week attendance cap. <ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">In very exceptional circumstances where the operator has a history of good permit compliance, we may agree in writing to no increase in the attendance requirement. This would include for example where the non-compliance was easily rectified and additional TCM attendance would provide no tangible benefit. <ns4:s />The decision to waive the additional attendance requirement would be solely at<ns4:s />our<ns4:s />discretion.</ns4:p>
+        <ns4:p ns4:style-name="Normal">We consider the increased requirement for TCM attendance for deteriorating and poor performers will lead to the TCM taking on increased responsibility for improving performance, including the implementation of management systems, operational procedures and staff training.</ns4:p>
+        <ns4:p ns4:style-name="Normal">We acknowledge that this could lead to fluctuations in an operator's overall need for TCMs, but contingency in numbers of trained TCMs (to cover sickness, annual leave or staff changes) is already expected of operators.</ns4:p>
+        <ns4:p ns4:style-name="Normal">We welcome views on the above proposals, including what the percentage increases should be for each compliance band and when adjustment in the TCM attendance requirement should take effect. <ns4:s />
+        </ns4:p>
+        <ns4:h ns4:style-name="Mainheading" ns4:outline-level="2">
+          <ns4:bookmark-start ns4:name="_Toc67657367" />
+          <ns4:bookmark-start ns4:name="_Toc74073950" />Implementation<ns4:bookmark-end ns4:name="_Toc67657367" />
+          <ns4:bookmark-end ns4:name="_Toc74073950" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">After this consultation, when we have decided the preferred TCM attendance option,<ns4:s />if required<ns4:s />we will run another consultation to present further details, including the percentage of operational hours that are proposed for the preferred option. The percentage we propose will include consideration of the existing attendance requirements for existing sites (except for sites where local agreements have already been made). <ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">We will propose an implementation period for existing permitted sites. We welcome your views on the length of the implementation period. The implementation period will:</ns4:p>
+        <ns4:list ns4:style-name="LFO1" ns4:continue-numbering="true">
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">allow existing operators to understand what the new attendance requirements are for their facilities</ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">change the working arrangements of TCMs</ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">if necessary, arrange for additional trained TCMs <ns4:s />
+            </ns4:p>
+          </ns4:list-item>
+        </ns4:list>
+        <ns4:soft-page-break />
+        <ns4:p ns4:style-name="Normal">The existing TCM attendance requirements will continue until the end of the implementation period.</ns4:p>
+        <ns4:p ns4:style-name="Normal">There will be no implementation period for new permits issued after we have published the revised attendance requirements. <ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">Where an operator can demonstrate that a written agreement is already in place for TCM attendance, these agreements will be honoured until the end of the implementation period, when the new requirements will take effect. After the end of the implementation period,<ns4:s />we<ns4:s />may give written agreement to an operator for a lower attendance requirement at a facility. This will require that the:</ns4:p>
+        <ns4:list ns4:style-name="LFO1" ns4:continue-numbering="true">
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">operator has a satisfactory management system in place</ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">site is in CCS compliance band A or B</ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">site has not received any complaints about noise, odour or dust</ns4:p>
+          </ns4:list-item>
+          <ns4:list-item>
+            <ns4:p ns4:style-name="Roundbullet">site has not had any pollution incidents in the previous 12 months</ns4:p>
+          </ns4:list-item>
+        </ns4:list>
+        <ns4:p ns4:style-name="P75">We will not accept existing or future proposals by operators for a 1 hour per week attendance requirement for operational sites. This is not enough time for TCM(s) to ensure permit conditions and management systems are complied with. This level of attendance is impracticable for most TCMs when you consider the time needed on site to perform TCM duties, and travel time.</ns4:p>
+        <ns4:h ns4:style-name="Mainheading" ns4:outline-level="2">
+          <ns4:bookmark-start ns4:name="_Toc67657368" />
+          <ns4:bookmark-start ns4:name="_Toc74073951" />Consultation questions<ns4:bookmark-end ns4:name="_Toc67657368" />
+          <ns4:bookmark-end ns4:name="_Toc74073951" />
+        </ns4:h>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc74073952" />Section 1 - about you<ns4:bookmark-end ns4:name="_Toc74073952" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">Question 1: Please tell us if you are responding as an individual or on behalf of an organisation or group.</ns4:p>
+        <ns4:p ns4:style-name="Normal">Question 2: Keeping up to date - giving consent to receive emails</ns4:p>
+        <ns4:p ns4:style-name="Normal">Question 3: Can we publish your response? We will not publish any personal information or parts of your response that will reveal your identity.<ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">Question 4: Please tell us how you found out about this consultation?<ns4:s />
+        </ns4:p>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc74073953" />
+          <ns4:span ns4:style-name="T76">Section 2 - your views</ns4:span>
+          <ns4:bookmark-end ns4:name="_Toc74073953" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">Question 1: Do you have a preference for the approaches described in options 1, 2 or 3?<ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">Question 2: Do you have any comments or views on the financial impact of the proposed options on your business?</ns4:p>
+        <ns4:p ns4:style-name="Normal">Question 3: Do you have any comments or views on the environmental benefits of the proposed options?<ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">Question 4: Do you have any comments or views on the existing 48 hour attendance cap?</ns4:p>
+        <ns4:p ns4:style-name="Normal">Please provide further information to support your answer:</ns4:p>
+        <ns4:p ns4:style-name="Normal">Question 5: Do you have any comments or views on the attendance requirements for 24 hour operations?</ns4:p>
+        <ns4:p ns4:style-name="Normal">Question 6: Do you support the attendance requirements for sites with multiple regulated facilities? Do you have any comments or views on the attendance requirements for sites with multiple regulated facilities?</ns4:p>
+        <ns4:p ns4:style-name="Normal">Question 7: Do you have any comments or views on the attendance requirements for sites after permit transfer?</ns4:p>
+        <ns4:soft-page-break />
+        <ns4:p ns4:style-name="Normal">Question 8: Do you have any comments or views on the attendance requirements for mothballed sites?</ns4:p>
+        <ns4:p ns4:style-name="Normal">Question 9: What implementation period do you consider appropriate for existing permitted sites? 3 months, 6 months, 1 year or do not know?</ns4:p>
+        <ns4:p ns4:style-name="Normal">Question 10: Do you have any comments or views on the implementation arrangements?</ns4:p>
+        <ns4:p ns4:style-name="Normal">Question 11: Do you support the proposed attendance requirements for closed landfills?</ns4:p>
+        <ns4:p ns4:style-name="Normal">Question 12: Do you support the proposed attendance requirements for mobile plant for landspreading permits?</ns4:p>
+        <ns4:p ns4:style-name="Normal">Question 13: Do you support the proposed attendance requirements for land remediation mobile plant permits?</ns4:p>
+        <ns4:p ns4:style-name="Normal">Question 14: Do you support the proposed attendance requirements for other mobile plant permits?</ns4:p>
+        <ns4:p ns4:style-name="Normal">Question 15: Do you support the adjustment of the attendance requirement for operator performance, with those in deteriorating or poor compliance bands having an increased attendance requirement?</ns4:p>
+        <ns4:p ns4:style-name="Normal">Question 16: After a deterioration in compliance banding, how soon after this should the adjustment of the attendance requirement for operator performance take place?<ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">Question 17:<ns4:s />Do you support the proposed attendance requirements during grace periods?</ns4:p>
+        <ns4:p ns4:style-name="Normal">Question 18: We value your feedback on the proposed changes. Please tell us if you have further comments not covered by the questions above.<ns4:s />
+        </ns4:p>
+        <ns4:h ns4:style-name="Mainheading" ns4:outline-level="2">
+          <ns4:bookmark-start ns4:name="_Toc67657369" />
+          <ns4:bookmark-start ns4:name="_Toc74073954" />Responding to this consultation<ns4:bookmark-end ns4:name="_Toc67657369" />
+          <ns4:bookmark-end ns4:name="_Toc74073954" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">This consultation will start on 14 June 2021 and run until 9 August 2021.</ns4:p>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc34754954" />
+          <ns4:bookmark-start ns4:name="_Toc43447830" />
+          <ns4:bookmark-start ns4:name="_Toc67657370" />
+          <ns4:bookmark-start ns4:name="_Toc74073955" />How to respond<ns4:bookmark-end ns4:name="_Toc34754954" />
+          <ns4:bookmark-end ns4:name="_Toc43447830" />
+          <ns4:bookmark-end ns4:name="_Toc67657370" />
+          <ns4:bookmark-end ns4:name="_Toc74073955" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">You can view the consultation documents and questions online at:</ns4:p>
+        <ns4:p ns4:style-name="Normal">
+          <ns4:a ns6:href="https://consult.environment-agency.gov.uk/environment-and-business/environmental-permit-competence-requirements-chang" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">Environment Agency Citizen Space consultation - environmental permit competence requirements - changes to TCM attendance</ns4:span>
+          </ns4:a>
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">Submitting your response on line will help us gather and summarise responses quickly and accurately, and reduce the costs of the consultation.</ns4:p>
+        <ns4:p ns4:style-name="Normal">If you cannot complete your response online, please use the response form and submit it by email. Please send it to<ns4:s />
+          <ns4:a ns6:href="mailto:wastetreatment@environment-agency.gov.uk" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">wastetreatment@environment-agency.gov.uk</ns4:span>
+          </ns4:a>
+          <ns4:s />with 'TCM attendance consultation' in the subject title.</ns4:p>
+        <ns4:p ns4:style-name="Normal">If you would like to send your response by post, please send your completed response form by 9 August 2021 to:</ns4:p>
+        <ns4:p ns4:style-name="Normal">Waste Treatment Team<ns4:line-break />Environment Agency<ns4:line-break />Goldcrest House<ns4:line-break />Alice Holt Lodge<ns4:line-break />Wrecclesham<ns4:line-break />Farnham<ns4:line-break />Surrey<ns4:line-break />GU10 4LH</ns4:p>
+        <ns4:soft-page-break />
+        <ns4:p ns4:style-name="Normal">If you would like us to post the document to you, please contact our National Customer Contact Centre on 03708 506 506 (Minicom, for the hard of hearing; 03702 422 549), Monday to Friday, 8am to 6pm, or email<ns4:s />
+          <ns4:a ns6:href="mailto:wastetreatment@environment-agency.gov.uk" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">wastetreatment@environment-agency.gov.uk</ns4:span>
+          </ns4:a>
+          <ns4:s />with 'TCM attendance consultation' in the subject title. Please include your address.</ns4:p>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc34754955" />
+          <ns4:bookmark-start ns4:name="_Toc43447831" />
+          <ns4:bookmark-start ns4:name="_Toc67657371" />
+          <ns4:bookmark-start ns4:name="_Toc74073956" />How we will use your information<ns4:bookmark-end ns4:name="_Toc34754955" />
+          <ns4:bookmark-end ns4:name="_Toc43447831" />
+          <ns4:bookmark-end ns4:name="_Toc67657371" />
+          <ns4:bookmark-end ns4:name="_Toc74073956" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">
+          <ns4:span ns4:style-name="T77">We will use your information to help shape the technical<ns4:s />
+          </ns4:span>competence attendance requirements<ns4:span ns4:style-name="T78">.<ns4:s />
+          </ns4:span>
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">We<ns4:s />will look to make all responses publicly available during and after the consultation, unless you have specifically requested that we keep your response confidential.<ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">We will not publish names of individuals who respond.<ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">Throughout the consultation we will look to make all comments (excluding personal information) publicly available on GOV.UK. This includes comments received online, by email, post and by fax, unless you have specifically requested that we keep your response confidential. We will not publish personal data. But we will publish the name of the organisation for those responses made on behalf of organisations.<ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">We will also publish a summary of responses on GOV.UK in which we will publish the name of the organisation for those responses made on behalf of organisations.<ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">We will not respond individually to responses. After the consultation has closed we will publish a summary of the responses on GOV.UK and contact you to let you know when this is available.<ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">In accordance with the Freedom of Information Act 2000, we may be required to publish your response to this consultation, but will not include any personal information. If you have requested your response to be kept confidential, we may still be required to provide a summary of it.</ns4:p>
+        <ns4:p ns4:style-name="Normal">For more information see our<ns4:s />
+          <ns4:a ns6:href="https://www.gov.uk/government/organisations/environment-agency/about/personal-information-charter" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">Personal Information Charter.</ns4:span>
+          </ns4:a>
+        </ns4:p>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc34754956" />
+          <ns4:bookmark-start ns4:name="_Toc43447832" />
+          <ns4:bookmark-start ns4:name="_Toc67657372" />
+          <ns4:bookmark-start ns4:name="_Toc74073957" />Privacy note<ns4:bookmark-end ns4:name="_Toc34754956" />
+          <ns4:bookmark-end ns4:name="_Toc43447832" />
+          <ns4:bookmark-end ns4:name="_Toc67657372" />
+          <ns4:bookmark-end ns4:name="_Toc74073957" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">We<ns4:s />would like to keep you informed about the outcomes of the consultation. If you would like to receive an email acknowledging your response and be notified that the summary of responses has been published, please give us your email address below.</ns4:p>
+        <ns4:p ns4:style-name="Normal">By providing us with your email address you consent for us to email you about the consultation. We will keep your details until we have notified you about publication of the response document.</ns4:p>
+        <ns4:p ns4:style-name="Normal">We will not share your details with any other third party without your explicit consent unless required to by law.</ns4:p>
+        <ns4:p ns4:style-name="Normal">You can withdraw your consent to receive these emails at any time by emailing us at:</ns4:p>
+        <ns4:p ns4:style-name="Normal">
+          <ns4:a ns6:href="mailto:wastetreatment@environment-agency.gov.uk" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">wastetreatment@environment-agency.gov.uk</ns4:span>
+          </ns4:a>
+          <ns4:s />
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">with the details of your email address:</ns4:p>
+        <ns4:p ns4:style-name="Normal">The Environment Agency is the data controller for the personal data you provide. For further information on how we deal with your personal data please see our<ns4:s />
+          <ns4:a ns6:href="https://www.gov.uk/government/organisations/environment-agency/about/personal-information-charter" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">Personal Information Charter</ns4:span>
+          </ns4:a>
+          <ns4:s />or contact our Data Protection team at.</ns4:p>
+        <ns4:p ns4:style-name="Normal">Data Protection team<ns4:line-break />Environment Agency<ns4:line-break />Horizon House<ns4:line-break />Deanery Road<ns4:line-break />
+          <ns4:soft-page-break />Bristol<ns4:line-break />BS1 5AH</ns4:p>
+        <ns4:p ns4:style-name="Normal">Email:<ns4:s />
+          <ns4:a ns6:href="mailto:dataprotection@environment-agency.gov.uk" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">dataprotection@environment-agency.gov.uk</ns4:span>
+          </ns4:a>
+          <ns4:bookmark-end ns4:name="_Toc473641179" />
+        </ns4:p>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc34754957" />
+          <ns4:bookmark-start ns4:name="_Toc43447833" />
+          <ns4:bookmark-start ns4:name="_Toc67657373" />
+          <ns4:bookmark-start ns4:name="_Toc74073958" />Consultation principles<ns4:bookmark-end ns4:name="_Toc34754957" />
+          <ns4:bookmark-end ns4:name="_Toc43447833" />
+          <ns4:bookmark-end ns4:name="_Toc67657373" />
+          <ns4:bookmark-end ns4:name="_Toc74073958" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">This consultation is being conducted in line with the Cabinet Office’s “Consultation Principles” which can be found at: <ns4:a ns0:title="Consultation Principles" ns6:href="https://www.gov.uk/government/publications/consultation-principles-guidance" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">https://www.gov.uk/government/publications/consultation-principles-guidance</ns4:span>
+          </ns4:a>
+        </ns4:p>
+        <ns4:p ns4:style-name="Normal">If you have any queries or complaints about the way this consultation has been carried out, please contact<ns4:s />
+          <ns4:a ns6:href="mailto:wastetreatment@environment-agency.gov.uk" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">wastetreatment@environment-agency.gov.uk</ns4:span>
+          </ns4:a>
+          <ns4:s />with 'TCM attendance consultation' in the subject title</ns4:p>
+        <ns4:p ns4:style-name="P79">
+          <ns4:bookmark-start ns4:name="Table1" />
+          <ns4:bookmark-end ns4:name="Table1" />
+        </ns4:p>
+        <ns4:h ns4:style-name="P80" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc522629686" />
+          <ns4:bookmark-start ns4:name="_Toc18942404" />
+          <ns4:bookmark-start ns4:name="_Toc19525890" />
+          <ns4:bookmark-start ns4:name="_Toc19711890" />
+          <ns4:bookmark-start ns4:name="_Toc19713171" />
+          <ns4:bookmark-start ns4:name="_Toc23340888" />
+          <ns4:bookmark-start ns4:name="_Toc23342511" />
+          <ns4:bookmark-start ns4:name="_Toc23343551" />
+          <ns4:bookmark-start ns4:name="_Toc30522088" />
+          <ns4:bookmark-start ns4:name="_Toc34754958" />
+          <ns4:bookmark-start ns4:name="_Toc43447834" />
+          <ns4:bookmark-start ns4:name="_Toc44317494" />
+          <ns4:bookmark-start ns4:name="_Toc67657374" />
+          <ns4:bookmark-start ns4:name="_Toc74073959" />
+          <ns4:soft-page-break />
+          <ns4:span ns4:style-name="T81">Would you like to find out more about us or your environment?</ns4:span>
+          <ns4:bookmark-end ns4:name="_Toc522629686" />
+          <ns4:bookmark-end ns4:name="_Toc18942404" />
+          <ns4:bookmark-end ns4:name="_Toc19525890" />
+          <ns4:bookmark-end ns4:name="_Toc19711890" />
+          <ns4:bookmark-end ns4:name="_Toc19713171" />
+          <ns4:bookmark-end ns4:name="_Toc23340888" />
+          <ns4:bookmark-end ns4:name="_Toc23342511" />
+          <ns4:bookmark-end ns4:name="_Toc23343551" />
+          <ns4:bookmark-end ns4:name="_Toc30522088" />
+          <ns4:bookmark-end ns4:name="_Toc34754958" />
+          <ns4:bookmark-end ns4:name="_Toc43447834" />
+          <ns4:bookmark-end ns4:name="_Toc44317494" />
+          <ns4:bookmark-end ns4:name="_Toc67657374" />
+          <ns4:bookmark-end ns4:name="_Toc74073959" />
+        </ns4:h>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc522629687" />
+          <ns4:bookmark-start ns4:name="_Toc18942405" />
+          <ns4:bookmark-start ns4:name="_Toc19525891" />
+          <ns4:bookmark-start ns4:name="_Toc19711891" />
+          <ns4:bookmark-start ns4:name="_Toc19713172" />
+          <ns4:bookmark-start ns4:name="_Toc23340889" />
+          <ns4:bookmark-start ns4:name="_Toc23342512" />
+          <ns4:bookmark-start ns4:name="_Toc23343552" />
+          <ns4:bookmark-start ns4:name="_Toc30522089" />
+          <ns4:bookmark-start ns4:name="_Toc34754959" />
+          <ns4:bookmark-start ns4:name="_Toc43447835" />
+          <ns4:bookmark-start ns4:name="_Toc44317495" />
+          <ns4:bookmark-start ns4:name="_Toc67657375" />
+          <ns4:bookmark-start ns4:name="_Toc74073960" />
+          <ns4:span ns4:style-name="T82">Then call us on</ns4:span>
+          <ns4:bookmark-end ns4:name="_Toc522629687" />
+          <ns4:bookmark-end ns4:name="_Toc18942405" />
+          <ns4:bookmark-end ns4:name="_Toc19525891" />
+          <ns4:bookmark-end ns4:name="_Toc19711891" />
+          <ns4:bookmark-end ns4:name="_Toc19713172" />
+          <ns4:bookmark-end ns4:name="_Toc23340889" />
+          <ns4:bookmark-end ns4:name="_Toc23342512" />
+          <ns4:bookmark-end ns4:name="_Toc23343552" />
+          <ns4:bookmark-end ns4:name="_Toc30522089" />
+          <ns4:bookmark-end ns4:name="_Toc34754959" />
+          <ns4:bookmark-end ns4:name="_Toc43447835" />
+          <ns4:bookmark-end ns4:name="_Toc44317495" />
+          <ns4:bookmark-end ns4:name="_Toc67657375" />
+          <ns4:bookmark-end ns4:name="_Toc74073960" />
+          <ns4:span ns4:style-name="T83">
+            <ns4:s />
+          </ns4:span>
+        </ns4:h>
+        <ns4:h ns4:style-name="Thirdheading" ns4:outline-level="4">
+          <ns4:bookmark-start ns4:name="_Toc522629688" />
+          <ns4:bookmark-start ns4:name="_Toc18942406" />
+          <ns4:bookmark-start ns4:name="_Toc19525892" />
+          <ns4:bookmark-start ns4:name="_Toc19711892" />
+          <ns4:bookmark-start ns4:name="_Toc19713173" />
+          <ns4:bookmark-start ns4:name="_Toc23340890" />
+          <ns4:bookmark-start ns4:name="_Toc23342513" />
+          <ns4:bookmark-start ns4:name="_Toc23343553" />
+          <ns4:bookmark-start ns4:name="_Toc30522090" />
+          <ns4:bookmark-start ns4:name="_Toc34754960" />
+          <ns4:bookmark-start ns4:name="_Toc43447836" />
+          <ns4:bookmark-start ns4:name="_Toc44317496" />
+          <ns4:bookmark-start ns4:name="_Toc67657376" />
+          <ns4:bookmark-start ns4:name="_Toc74073961" />03708 506 506<ns4:s />
+          <ns4:span ns4:style-name="T84">(Monday to Friday, 8am to 6pm)</ns4:span>
+          <ns4:bookmark-end ns4:name="_Toc522629688" />
+          <ns4:bookmark-end ns4:name="_Toc18942406" />
+          <ns4:bookmark-end ns4:name="_Toc19525892" />
+          <ns4:bookmark-end ns4:name="_Toc19711892" />
+          <ns4:bookmark-end ns4:name="_Toc19713173" />
+          <ns4:bookmark-end ns4:name="_Toc23340890" />
+          <ns4:bookmark-end ns4:name="_Toc23342513" />
+          <ns4:bookmark-end ns4:name="_Toc23343553" />
+          <ns4:bookmark-end ns4:name="_Toc30522090" />
+          <ns4:bookmark-end ns4:name="_Toc34754960" />
+          <ns4:bookmark-end ns4:name="_Toc43447836" />
+          <ns4:bookmark-end ns4:name="_Toc44317496" />
+          <ns4:bookmark-end ns4:name="_Toc67657376" />
+          <ns4:bookmark-end ns4:name="_Toc74073961" />
+        </ns4:h>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc522629689" />
+          <ns4:bookmark-start ns4:name="_Toc18942407" />
+          <ns4:bookmark-start ns4:name="_Toc19525893" />
+          <ns4:bookmark-start ns4:name="_Toc19711893" />
+          <ns4:bookmark-start ns4:name="_Toc19713174" />
+          <ns4:bookmark-start ns4:name="_Toc23340891" />
+          <ns4:bookmark-start ns4:name="_Toc23342514" />
+          <ns4:bookmark-start ns4:name="_Toc23343554" />
+          <ns4:bookmark-start ns4:name="_Toc30522091" />
+          <ns4:bookmark-start ns4:name="_Toc34754961" />
+          <ns4:bookmark-start ns4:name="_Toc43447837" />
+          <ns4:bookmark-start ns4:name="_Toc44317497" />
+          <ns4:bookmark-start ns4:name="_Toc67657377" />
+          <ns4:bookmark-start ns4:name="_Toc74073962" />
+          <ns4:span ns4:style-name="T85">email</ns4:span>
+          <ns4:bookmark-end ns4:name="_Toc522629689" />
+          <ns4:bookmark-end ns4:name="_Toc18942407" />
+          <ns4:bookmark-end ns4:name="_Toc19525893" />
+          <ns4:bookmark-end ns4:name="_Toc19711893" />
+          <ns4:bookmark-end ns4:name="_Toc19713174" />
+          <ns4:bookmark-end ns4:name="_Toc23340891" />
+          <ns4:bookmark-end ns4:name="_Toc23342514" />
+          <ns4:bookmark-end ns4:name="_Toc23343554" />
+          <ns4:bookmark-end ns4:name="_Toc30522091" />
+          <ns4:bookmark-end ns4:name="_Toc34754961" />
+          <ns4:bookmark-end ns4:name="_Toc43447837" />
+          <ns4:bookmark-end ns4:name="_Toc44317497" />
+          <ns4:bookmark-end ns4:name="_Toc67657377" />
+          <ns4:bookmark-end ns4:name="_Toc74073962" />
+          <ns4:span ns4:style-name="T86">
+            <ns4:s />
+          </ns4:span>
+        </ns4:h>
+        <ns4:h ns4:style-name="Thirdheading" ns4:outline-level="4">
+          <ns4:bookmark-start ns4:name="_Toc522629690" />
+          <ns4:bookmark-start ns4:name="_Toc18942408" />
+          <ns4:bookmark-start ns4:name="_Toc19525894" />
+          <ns4:bookmark-start ns4:name="_Toc19711894" />
+          <ns4:bookmark-start ns4:name="_Toc19713175" />
+          <ns4:bookmark-start ns4:name="_Toc23340892" />
+          <ns4:bookmark-start ns4:name="_Toc23342515" />
+          <ns4:bookmark-start ns4:name="_Toc23343555" />
+          <ns4:bookmark-start ns4:name="_Toc30522092" />
+          <ns4:bookmark-start ns4:name="_Toc34754962" />
+          <ns4:bookmark-start ns4:name="_Toc43447838" />
+          <ns4:bookmark-start ns4:name="_Toc44317498" />
+          <ns4:bookmark-start ns4:name="_Toc67657378" />
+          <ns4:bookmark-start ns4:name="_Toc74073963" />enquiries@environment-agency.gov.uk<ns4:bookmark-end ns4:name="_Toc522629690" />
+          <ns4:bookmark-end ns4:name="_Toc18942408" />
+          <ns4:bookmark-end ns4:name="_Toc19525894" />
+          <ns4:bookmark-end ns4:name="_Toc19711894" />
+          <ns4:bookmark-end ns4:name="_Toc19713175" />
+          <ns4:bookmark-end ns4:name="_Toc23340892" />
+          <ns4:bookmark-end ns4:name="_Toc23342515" />
+          <ns4:bookmark-end ns4:name="_Toc23343555" />
+          <ns4:bookmark-end ns4:name="_Toc30522092" />
+          <ns4:bookmark-end ns4:name="_Toc34754962" />
+          <ns4:bookmark-end ns4:name="_Toc43447838" />
+          <ns4:bookmark-end ns4:name="_Toc44317498" />
+          <ns4:bookmark-end ns4:name="_Toc67657378" />
+          <ns4:bookmark-end ns4:name="_Toc74073963" />
+        </ns4:h>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc522629691" />
+          <ns4:bookmark-start ns4:name="_Toc18942409" />
+          <ns4:bookmark-start ns4:name="_Toc19525895" />
+          <ns4:bookmark-start ns4:name="_Toc19711895" />
+          <ns4:bookmark-start ns4:name="_Toc19713176" />
+          <ns4:bookmark-start ns4:name="_Toc23340893" />
+          <ns4:bookmark-start ns4:name="_Toc23342516" />
+          <ns4:bookmark-start ns4:name="_Toc23343556" />
+          <ns4:bookmark-start ns4:name="_Toc30522093" />
+          <ns4:bookmark-start ns4:name="_Toc34754963" />
+          <ns4:bookmark-start ns4:name="_Toc43447839" />
+          <ns4:bookmark-start ns4:name="_Toc44317499" />
+          <ns4:bookmark-start ns4:name="_Toc67657379" />
+          <ns4:bookmark-start ns4:name="_Toc74073964" />
+          <ns4:span ns4:style-name="T87">or visit our website</ns4:span>
+          <ns4:bookmark-end ns4:name="_Toc522629691" />
+          <ns4:bookmark-end ns4:name="_Toc18942409" />
+          <ns4:bookmark-end ns4:name="_Toc19525895" />
+          <ns4:bookmark-end ns4:name="_Toc19711895" />
+          <ns4:bookmark-end ns4:name="_Toc19713176" />
+          <ns4:bookmark-end ns4:name="_Toc23340893" />
+          <ns4:bookmark-end ns4:name="_Toc23342516" />
+          <ns4:bookmark-end ns4:name="_Toc23343556" />
+          <ns4:bookmark-end ns4:name="_Toc30522093" />
+          <ns4:bookmark-end ns4:name="_Toc34754963" />
+          <ns4:bookmark-end ns4:name="_Toc43447839" />
+          <ns4:bookmark-end ns4:name="_Toc44317499" />
+          <ns4:bookmark-end ns4:name="_Toc67657379" />
+          <ns4:bookmark-end ns4:name="_Toc74073964" />
+          <ns4:span ns4:style-name="T88">
+            <ns4:s />
+          </ns4:span>
+        </ns4:h>
+        <ns4:h ns4:style-name="Thirdheading" ns4:outline-level="4">
+          <ns4:bookmark-start ns4:name="_Toc522629692" />
+          <ns4:bookmark-start ns4:name="_Toc18942410" />
+          <ns4:bookmark-start ns4:name="_Toc19525896" />
+          <ns4:bookmark-start ns4:name="_Toc19711896" />
+          <ns4:bookmark-start ns4:name="_Toc19713177" />
+          <ns4:bookmark-start ns4:name="_Toc23340894" />
+          <ns4:bookmark-start ns4:name="_Toc23342517" />
+          <ns4:bookmark-start ns4:name="_Toc23343557" />
+          <ns4:bookmark-start ns4:name="_Toc30522094" />
+          <ns4:bookmark-start ns4:name="_Toc34754964" />
+          <ns4:bookmark-start ns4:name="_Toc43447840" />
+          <ns4:bookmark-start ns4:name="_Toc44317500" />
+          <ns4:bookmark-start ns4:name="_Toc67657380" />
+          <ns4:bookmark-start ns4:name="_Toc74073965" />www.gov.uk/environment-agency<ns4:bookmark-end ns4:name="_Toc522629692" />
+          <ns4:bookmark-end ns4:name="_Toc18942410" />
+          <ns4:bookmark-end ns4:name="_Toc19525896" />
+          <ns4:bookmark-end ns4:name="_Toc19711896" />
+          <ns4:bookmark-end ns4:name="_Toc19713177" />
+          <ns4:bookmark-end ns4:name="_Toc23340894" />
+          <ns4:bookmark-end ns4:name="_Toc23342517" />
+          <ns4:bookmark-end ns4:name="_Toc23343557" />
+          <ns4:bookmark-end ns4:name="_Toc30522094" />
+          <ns4:bookmark-end ns4:name="_Toc34754964" />
+          <ns4:bookmark-end ns4:name="_Toc43447840" />
+          <ns4:bookmark-end ns4:name="_Toc44317500" />
+          <ns4:bookmark-end ns4:name="_Toc67657380" />
+          <ns4:bookmark-end ns4:name="_Toc74073965" />
+        </ns4:h>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc522629693" />
+          <ns4:bookmark-start ns4:name="_Toc18942411" />
+          <ns4:bookmark-start ns4:name="_Toc19525897" />
+          <ns4:bookmark-start ns4:name="_Toc19711897" />
+          <ns4:bookmark-start ns4:name="_Toc19713178" />
+          <ns4:bookmark-start ns4:name="_Toc23340895" />
+          <ns4:bookmark-start ns4:name="_Toc23342518" />
+          <ns4:bookmark-start ns4:name="_Toc23343558" />
+          <ns4:bookmark-start ns4:name="_Toc30522095" />
+          <ns4:bookmark-start ns4:name="_Toc34754965" />
+          <ns4:bookmark-start ns4:name="_Toc43447841" />
+          <ns4:bookmark-start ns4:name="_Toc44317501" />
+          <ns4:bookmark-start ns4:name="_Toc67657381" />
+          <ns4:bookmark-start ns4:name="_Toc74073966" />
+          <ns4:span ns4:style-name="T89">incident hotline</ns4:span>
+          <ns4:bookmark-end ns4:name="_Toc522629693" />
+          <ns4:bookmark-end ns4:name="_Toc18942411" />
+          <ns4:bookmark-end ns4:name="_Toc19525897" />
+          <ns4:bookmark-end ns4:name="_Toc19711897" />
+          <ns4:bookmark-end ns4:name="_Toc19713178" />
+          <ns4:bookmark-end ns4:name="_Toc23340895" />
+          <ns4:bookmark-end ns4:name="_Toc23342518" />
+          <ns4:bookmark-end ns4:name="_Toc23343558" />
+          <ns4:bookmark-end ns4:name="_Toc30522095" />
+          <ns4:bookmark-end ns4:name="_Toc34754965" />
+          <ns4:bookmark-end ns4:name="_Toc43447841" />
+          <ns4:bookmark-end ns4:name="_Toc44317501" />
+          <ns4:bookmark-end ns4:name="_Toc67657381" />
+          <ns4:bookmark-end ns4:name="_Toc74073966" />
+          <ns4:span ns4:style-name="T90">
+            <ns4:s />
+          </ns4:span>
+        </ns4:h>
+        <ns4:h ns4:style-name="Thirdheading" ns4:outline-level="4">
+          <ns4:bookmark-start ns4:name="_Toc522629694" />
+          <ns4:bookmark-start ns4:name="_Toc18942412" />
+          <ns4:bookmark-start ns4:name="_Toc19525898" />
+          <ns4:bookmark-start ns4:name="_Toc19711898" />
+          <ns4:bookmark-start ns4:name="_Toc19713179" />
+          <ns4:bookmark-start ns4:name="_Toc23340896" />
+          <ns4:bookmark-start ns4:name="_Toc23342519" />
+          <ns4:bookmark-start ns4:name="_Toc23343559" />
+          <ns4:bookmark-start ns4:name="_Toc30522096" />
+          <ns4:bookmark-start ns4:name="_Toc34754966" />
+          <ns4:bookmark-start ns4:name="_Toc43447842" />
+          <ns4:bookmark-start ns4:name="_Toc44317502" />
+          <ns4:bookmark-start ns4:name="_Toc67657382" />
+          <ns4:bookmark-start ns4:name="_Toc74073967" />0800 807060<ns4:s />
+          <ns4:span ns4:style-name="T91">(24 hours)</ns4:span>
+          <ns4:bookmark-end ns4:name="_Toc522629694" />
+          <ns4:bookmark-end ns4:name="_Toc18942412" />
+          <ns4:bookmark-end ns4:name="_Toc19525898" />
+          <ns4:bookmark-end ns4:name="_Toc19711898" />
+          <ns4:bookmark-end ns4:name="_Toc19713179" />
+          <ns4:bookmark-end ns4:name="_Toc23340896" />
+          <ns4:bookmark-end ns4:name="_Toc23342519" />
+          <ns4:bookmark-end ns4:name="_Toc23343559" />
+          <ns4:bookmark-end ns4:name="_Toc30522096" />
+          <ns4:bookmark-end ns4:name="_Toc34754966" />
+          <ns4:bookmark-end ns4:name="_Toc43447842" />
+          <ns4:bookmark-end ns4:name="_Toc44317502" />
+          <ns4:bookmark-end ns4:name="_Toc67657382" />
+          <ns4:bookmark-end ns4:name="_Toc74073967" />
+        </ns4:h>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc522629695" />
+          <ns4:bookmark-start ns4:name="_Toc18942413" />
+          <ns4:bookmark-start ns4:name="_Toc19525899" />
+          <ns4:bookmark-start ns4:name="_Toc19711899" />
+          <ns4:bookmark-start ns4:name="_Toc19713180" />
+          <ns4:bookmark-start ns4:name="_Toc23340897" />
+          <ns4:bookmark-start ns4:name="_Toc23342520" />
+          <ns4:bookmark-start ns4:name="_Toc23343560" />
+          <ns4:bookmark-start ns4:name="_Toc30522097" />
+          <ns4:bookmark-start ns4:name="_Toc34754967" />
+          <ns4:bookmark-start ns4:name="_Toc43447843" />
+          <ns4:bookmark-start ns4:name="_Toc44317503" />
+          <ns4:bookmark-start ns4:name="_Toc67657383" />
+          <ns4:bookmark-start ns4:name="_Toc74073968" />
+          <ns4:span ns4:style-name="T92">floodline</ns4:span>
+          <ns4:bookmark-end ns4:name="_Toc522629695" />
+          <ns4:bookmark-end ns4:name="_Toc18942413" />
+          <ns4:bookmark-end ns4:name="_Toc19525899" />
+          <ns4:bookmark-end ns4:name="_Toc19711899" />
+          <ns4:bookmark-end ns4:name="_Toc19713180" />
+          <ns4:bookmark-end ns4:name="_Toc23340897" />
+          <ns4:bookmark-end ns4:name="_Toc23342520" />
+          <ns4:bookmark-end ns4:name="_Toc23343560" />
+          <ns4:bookmark-end ns4:name="_Toc30522097" />
+          <ns4:bookmark-end ns4:name="_Toc34754967" />
+          <ns4:bookmark-end ns4:name="_Toc43447843" />
+          <ns4:bookmark-end ns4:name="_Toc44317503" />
+          <ns4:bookmark-end ns4:name="_Toc67657383" />
+          <ns4:bookmark-end ns4:name="_Toc74073968" />
+          <ns4:span ns4:style-name="T93">
+            <ns4:s />
+          </ns4:span>
+        </ns4:h>
+        <ns4:h ns4:style-name="Thirdheading" ns4:outline-level="4">
+          <ns4:bookmark-start ns4:name="_Toc522629696" />
+          <ns4:bookmark-start ns4:name="_Toc18942414" />
+          <ns4:bookmark-start ns4:name="_Toc19525900" />
+          <ns4:bookmark-start ns4:name="_Toc19711900" />
+          <ns4:bookmark-start ns4:name="_Toc19713181" />
+          <ns4:bookmark-start ns4:name="_Toc23340898" />
+          <ns4:bookmark-start ns4:name="_Toc23342521" />
+          <ns4:bookmark-start ns4:name="_Toc23343561" />
+          <ns4:bookmark-start ns4:name="_Toc30522098" />
+          <ns4:bookmark-start ns4:name="_Toc34754968" />
+          <ns4:bookmark-start ns4:name="_Toc43447844" />
+          <ns4:bookmark-start ns4:name="_Toc44317504" />
+          <ns4:bookmark-start ns4:name="_Toc67657384" />
+          <ns4:bookmark-start ns4:name="_Toc74073969" />0345 988 1188<ns4:s />
+          <ns4:span ns4:style-name="T94">(24 hours)</ns4:span>
+          <ns4:bookmark-end ns4:name="_Toc522629696" />
+          <ns4:bookmark-end ns4:name="_Toc18942414" />
+          <ns4:bookmark-end ns4:name="_Toc19525900" />
+          <ns4:bookmark-end ns4:name="_Toc19711900" />
+          <ns4:bookmark-end ns4:name="_Toc19713181" />
+          <ns4:bookmark-end ns4:name="_Toc23340898" />
+          <ns4:bookmark-end ns4:name="_Toc23342521" />
+          <ns4:bookmark-end ns4:name="_Toc23343561" />
+          <ns4:bookmark-end ns4:name="_Toc30522098" />
+          <ns4:bookmark-end ns4:name="_Toc34754968" />
+          <ns4:bookmark-end ns4:name="_Toc43447844" />
+          <ns4:bookmark-end ns4:name="_Toc44317504" />
+          <ns4:bookmark-end ns4:name="_Toc67657384" />
+          <ns4:bookmark-end ns4:name="_Toc74073969" />
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">Find out about call charges (<ns4:a ns0:title="GOV.UK page for phone call charges" ns6:href="http://www.gov.uk/call-charges" ns0:target-frame-name="_top" ns6:show="replace">
+            <ns4:span ns4:style-name="Hyperlink">www.gov.uk/call-charges</ns4:span>
+          </ns4:a>)</ns4:p>
+        <ns4:h ns4:style-name="Secondheading" ns4:outline-level="3">
+          <ns4:bookmark-start ns4:name="_Toc522629697" />
+          <ns4:bookmark-start ns4:name="_Toc18942415" />
+          <ns4:bookmark-start ns4:name="_Toc19525901" />
+          <ns4:bookmark-start ns4:name="_Toc19711901" />
+          <ns4:bookmark-start ns4:name="_Toc19713182" />
+          <ns4:bookmark-start ns4:name="_Toc23340899" />
+          <ns4:bookmark-start ns4:name="_Toc23342522" />
+          <ns4:bookmark-start ns4:name="_Toc23343562" />
+          <ns4:bookmark-start ns4:name="_Toc30522099" />
+          <ns4:bookmark-start ns4:name="_Toc34754969" />
+          <ns4:bookmark-start ns4:name="_Toc43447845" />
+          <ns4:bookmark-start ns4:name="_Toc44317505" />
+          <ns4:bookmark-start ns4:name="_Toc67657385" />
+          <ns4:bookmark-start ns4:name="_Toc74073970" />
+          <ns4:span ns4:style-name="T95">Environment first:</ns4:span>
+          <ns4:bookmark-end ns4:name="_Toc522629697" />
+          <ns4:bookmark-end ns4:name="_Toc18942415" />
+          <ns4:bookmark-end ns4:name="_Toc19525901" />
+          <ns4:bookmark-end ns4:name="_Toc19711901" />
+          <ns4:bookmark-end ns4:name="_Toc19713182" />
+          <ns4:bookmark-end ns4:name="_Toc23340899" />
+          <ns4:bookmark-end ns4:name="_Toc23342522" />
+          <ns4:bookmark-end ns4:name="_Toc23343562" />
+          <ns4:bookmark-end ns4:name="_Toc30522099" />
+          <ns4:bookmark-end ns4:name="_Toc34754969" />
+          <ns4:bookmark-end ns4:name="_Toc43447845" />
+          <ns4:bookmark-end ns4:name="_Toc44317505" />
+          <ns4:bookmark-end ns4:name="_Toc67657385" />
+          <ns4:bookmark-end ns4:name="_Toc74073970" />
+          <ns4:span ns4:style-name="T96">
+            <ns4:s />
+          </ns4:span>
+        </ns4:h>
+        <ns4:p ns4:style-name="Normal">Are you viewing this onscreen? Please consider the environment and only print if absolutely necessary. If you are reading a paper copy, please don’t forget to reuse and recycle.</ns4:p>
+      </ns4:section>
+    </ns0:text>
+  </ns0:body>
+</ns0:document-content>
