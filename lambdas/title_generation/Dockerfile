@@ -29,4 +29,4 @@ COPY nltk_data/ ${LAMBDA_TASK_ROOT}/nltk_data
 COPY preprocess/regulator_name_list.txt ${LAMBDA_TASK_ROOT}/preprocess/regulator_name_list.txt
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
-CMD [ "title_extraction.handler" ]
+CMD [ "title_generation.handler" ]
