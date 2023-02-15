@@ -172,7 +172,11 @@ def handler(event, context: LambdaContext):
         s3_client=s3_client, object_key=object_key, source_bucket=source_bucket)
     doc_s3_metadata = get_s3_metadata(
         s3_client=s3_client, object_key=object_key, source_bucket=source_bucket)
+
+    # Raise an error if there is no UUID in the document's S3 metadata
+    assert doc_s3_metadata.get('uuid'), 'Document must have a UUID attached'
     document_uid = doc_s3_metadata['uuid']
+
     logger.append_keys(document_uid=document_uid)
 
     title = extract_title(doc_bytes_io=doc_bytes_io)
