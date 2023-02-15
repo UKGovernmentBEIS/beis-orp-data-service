@@ -1,8 +1,15 @@
 from odf import text, teletype
 from odf.opendocument import load
 import datefinder
+import os
+import sys
+import zipfile
+import xml.dom.minidom
+import lxml.etree as etree
+import xml.etree.ElementTree as ET
 
-sample_ODF = load("/Users/thomas/Documents/BEIS/input_data/ODF/OpenDocument-v1.2-os.odt")
+path = "/Users/thomas/Documents/BEIS/input_data/ODF/OpenDocument-v1.2-os.odt"
+sample_ODF = load(path)
 elements = sample_ODF.getElementsByType(text.P)
 
 def title_extraction(elements):
@@ -44,3 +51,22 @@ def text_extraction(elements):
         text = teletype.extractText(element)
         texts.append(text)
     return "\n".join(texts)
+
+
+def convert2xml(path):
+
+    myfile = zipfile.ZipFile(path)
+
+    listoffiles = myfile.infolist()
+
+    for s in listoffiles:
+        if s.orig_filename == 'content.xml':
+                fd = open("/Users/thomas/Documents/BEIS/repo/beis-orp-data-service/ODF_extract/output.xml",'w')
+                bh = myfile.read(s.orig_filename)
+                # x = etree.parse(bh)
+                # fd.write(etree.tostring(x, pretty_print = True, encoding='unicode'))
+                # fd.close()
+                element = ET.XML(bh)
+                ET.indent(element)
+                fd.write(ET.tostring(element, encoding='unicode'))
+
