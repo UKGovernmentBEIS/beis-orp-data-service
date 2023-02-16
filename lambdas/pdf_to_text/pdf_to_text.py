@@ -5,6 +5,7 @@ import boto3
 import pikepdf
 import fitz
 import pymongo
+from http import HTTPStatus
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -12,8 +13,12 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
+DDB_USER = os.environ['DDB_USER']
+DDB_PASSWORD = os.environ['DDB_PASSWORD']
+DDB_DOMAIN = os.environ['DDB_DOMAIN']
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
+
+ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
 
 
 def download_text(s3_client, object_key, source_bucket):
@@ -52,7 +57,7 @@ def extract_title(doc_bytes_io):
     except KeyError:
         title = pdf.docinfo.get('/Title')
 
-    return title
+    return str(title)
 
 
 def extract_text(doc_bytes_io):
@@ -86,7 +91,7 @@ def clean_text(text):
     text = text.replace('_x000c_', '')
     text = re.sub('\\s+', ' ', text)
     text = re.sub('<.*?>', '', text)
-    text = re.sub('\.{4,}', '.')
+    text = re.sub('\\.{4,}', '.')
 
     return text
 
@@ -107,7 +112,7 @@ def mongo_connect_and_push(source_bucket,
                            object_key,
                            document_uid,
                            title,
-                           database=DOCUMENT_DATABASE,
+                           database,
                            tlsCAFile='./rds-combined-ca-bundle.pem'):
     '''Connects to the DocumentDB and inserts extracted metadata from the PDF'''
 
@@ -115,7 +120,7 @@ def mongo_connect_and_push(source_bucket,
     db_client = pymongo.MongoClient(
         database,
         tls=True,
-        tlsCAFile='./rds-combined-ca-bundle.pem'
+        tlsCAFile=tlsCAFile
     )
 
     db = db_client.bre_orp
@@ -134,7 +139,7 @@ def mongo_connect_and_push(source_bucket,
     logger.info(f'Document inserted: {collection.find_one(doc)}')
 
     db_client.close()
-    return None
+    return {'mongoStatusCode': HTTPStatus.OK}
 
 
 def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUCKET):
@@ -142,7 +147,7 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
 
     response = s3_client.put_object(
         Body=text,
-        Bucket=DESTINATION_BUCKET,
+        Bucket=destination_bucket,
         Key=f'processed/{document_uid}.txt',
         Metadata={
             'uuid': document_uid
@@ -154,7 +159,7 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
 
 
 @logger.inject_lambda_context(log_event=True)
-def handler(event, context):
+def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
     source_bucket = event['detail']['bucket']['name']
@@ -167,22 +172,30 @@ def handler(event, context):
         s3_client=s3_client, object_key=object_key, source_bucket=source_bucket)
     doc_s3_metadata = get_s3_metadata(
         s3_client=s3_client, object_key=object_key, source_bucket=source_bucket)
+
+    # Raise an error if there is no UUID in the document's S3 metadata
+    assert doc_s3_metadata.get('uuid'), 'Document must have a UUID attached'
     document_uid = doc_s3_metadata['uuid']
+
     logger.append_keys(document_uid=document_uid)
 
-    title = extract_title(doc_bytes_io)
-    text = extract_text(doc_bytes_io)
+    title = extract_title(doc_bytes_io=doc_bytes_io)
+    text = extract_text(doc_bytes_io=doc_bytes_io)
     logger.info(f'Extracted title: {title}'
                 f'UUID obtained is: {document_uid}')
 
-    mongo_connect_and_push(source_bucket=source_bucket,
-                           object_key=object_key, document_uid=document_uid, title=title)
+    mongo_response = mongo_connect_and_push(
+        source_bucket=source_bucket,
+        object_key=object_key,
+        document_uid=document_uid,
+        title=title,
+        database=ddb_connection_uri)
+    s3_response = write_text(
+        s3_client=s3_client,
+        text=text,
+        document_uid=document_uid,
+        destination_bucket=DESTINATION_BUCKET)
+    handler_response = {**mongo_response, **s3_response}
+    handler_response['document_uid'] = document_uid
 
-    response = write_text(s3_client=s3_client, text=text,
-                          document_uid=document_uid)
-    logger.info(response)
-
-    return {
-        'statusCode': 200,
-        'document_uid': document_uid
-    }
+    return handler_response

@@ -19,18 +19,22 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
+DDB_USER = os.environ['DDB_USER']
+DDB_PASSWORD = os.environ['DDB_PASSWORD']
+DDB_DOMAIN = os.environ['DDB_DOMAIN']
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
 MODEL_BUCKET = os.environ['MODEL_BUCKET']
 NLTK_DATA = os.environ['NLTK_DATA']
 MODEL_PATH = os.environ['MODEL_PATH']
+
+ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
 
 
 def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
     '''Downloads the raw text from S3 ready for keyword extraction'''
 
     document = s3_client.get_object(
-        Bucket=SOURCE_BUCKET,
+        Bucket=bucket,
         Key=f'processed/{document_uid}.txt'
     )['Body'].read().decode('utf-8')
 
@@ -61,8 +65,7 @@ def download_model(s3_client,
 
 
 def pre_process_tokenization_function(documents: str):
-    '''Not overly sure what this does'''
-    # TODO: Describe the function
+    '''Pre-processes the text ready for keyword extraction'''
 
     # Preprocess data after embeddings are created
     text = BeautifulSoup(documents).get_text()
@@ -115,10 +118,10 @@ def extract_keywords(text, kw_model):
         vectorizer=vectorizer_model,
         top_n=15
     )
-
     logger.info({'keywords': keywords})
 
     return keywords
+
 
 
 def get_lemma(word):
@@ -143,6 +146,7 @@ def mongo_connect_and_update(document_uid,
                              keywords,
                              database=DOCUMENT_DATABASE,
                              tlsCAFile='./rds-combined-ca-bundle.pem'):
+
     '''Connects to the DocumentDB, finds the document matching our UUID and adds the keywords to it'''
 
     db_client = pymongo.MongoClient(
