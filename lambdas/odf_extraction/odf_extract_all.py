@@ -2,6 +2,7 @@ import io
 import os
 import boto3
 import pymongo
+import datetime
 import datefinder
 from bs4 import BeautifulSoup
 import re
@@ -47,68 +48,10 @@ def get_s3_metadata(s3_client, object_key, source_bucket):
     return metadata
 
 
-def return_elements(doc_bytes_io):
-    """
-    params: doc_bytes_io: doc bytes from s3 bucket
-    returns: elements: odf.element.Element object
-    """
-    odf = load(doc_bytes_io)
-    logger.info(odf)
-    elements = odf.getElementsByType(text.P)
-    return elements
-
-
-def title_extraction(elements):
-    """
-    params: elements: odf.element.Element
-    returns: title Str: the title of the document where the attribute value
-        is equal to "Title"
-    """
-    titles = []
-    for element in elements:
-        el_attributes = element.attributes
-        if "title" in str(list(el_attributes.values())[0]).lower() and "sub" not in str(list(el_attributes.values())[0]).lower():
-            title = teletype.extractText(element)
-            titles.append(title)
-    if len(titles) > 0:
-        return titles[0]
-    else:
-        return ""
-
-
-def publishing_date_extraction(elements):
-    """
-    params: elements: odf.element.Element
-    returns: match Str: date found in the footer of the document
-    """
-    for element in elements:
-        el_attributes = element.attributes
-        if list(el_attributes.values())[0] == "Footer":
-            text = teletype.extractText(element)
-            matches = [date for date in datefinder.find_dates(text, strict=True)] # Set strict to True to collect well formed dates
-            # If length of matches is greater than 1, return the last strict date format found
-            if len(matches) > 1:
-                return matches[-1]
-            # Else return the date found
-            else:
-                for match in matches:
-                    return str(match)
-
-
-def date_extraction(text):
-    """
-    params: elements: odf.element.Element
-    returns: match Str: date found in the footer of the document
-    """
-    matches = datefinder.find_dates(text)
-    date_matches = [str(date) for date in matches]
-    return date_matches[0]
-
-
 def convert2xml(odf):
     """
     params: odf
-    returns: xml
+    returns: content, metadata: content xml and metadata xml of the odf 
     """
     myfile = zipfile.ZipFile(odf)
 
@@ -119,8 +62,26 @@ def convert2xml(odf):
                 bh = myfile.read(s.orig_filename)
                 element = ET.XML(bh)
                 ET.indent(element)
+                content = ET.tostring(element, encoding='unicode')
+        elif s.orig_filename == 'meta.xml':
+                bh = myfile.read(s.orig_filename)
+                element = ET.XML(bh)
+                ET.indent(element)
+                metadataXML = ET.tostring(element, encoding='unicode')
 
-    return ET.tostring(element, encoding='unicode')
+    return content, metadataXML
+
+
+def metadata_title_date_extraction(metadataXML):
+    """
+    param: metadataXML: metadata of odf file
+    returns: modification date of odf
+    """
+    soup = BeautifulSoup(metadataXML, "lxml")   
+    metadata = soup.find("ns0:meta")
+    title= metadata.find("dc:title").get_text()
+    date = datetime.datetime.strptime(re.sub(r'[a-zA-Z]', r' ', metadata.find("dc:date").get_text()).strip(), '%Y-%m-%d %H:%M:%S')
+    return title, date
 
 
 def xml2text(xml):
@@ -205,18 +166,12 @@ def handler(event, context: LambdaContext):
     document_uid = doc_s3_metadata['uuid']
     logger.append_keys(document_uid=document_uid)
 
-    # Load the ODF and extract elements
-    elements = return_elements(doc_bytes_io)
-
-    # Extract the title
-    title = title_extraction(elements)
+    # Extract the content and metadata xml
+    contentXML, metadataXML = convert2xml(doc_bytes_io)
+    text = xml2text(contentXML)
 
     # Extract the publishing date
-    date_published = publishing_date_extraction(elements)
-
-    # Extract the text
-    xml = convert2xml(doc_bytes_io)
-    text = xml2text(xml)
+    title, date_published = metadata_title_date_extraction(metadataXML=metadataXML)
 
     logger.info(f'Extracted title: {title}'
                 f'Publishing date: {date_published}'

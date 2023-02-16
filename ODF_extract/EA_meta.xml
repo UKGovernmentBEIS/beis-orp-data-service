@@ -1,0 +1,16 @@
+<ns0:document-meta xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:ns0="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:ns1="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:ns3="http://www.w3.org/1999/xlink" ns0:version="1.2">
+  <ns0:meta>
+    <ns1:generator>MicrosoftOffice/15.0 MicrosoftWord</ns1:generator>
+    <dc:title />
+    <dc:description />
+    <dc:subject />
+    <ns1:initial-creator>Kendall, Matthew</ns1:initial-creator>
+    <dc:creator>Kendall, Matthew</dc:creator>
+    <ns1:creation-date>2021-06-09T10:30:00Z</ns1:creation-date>
+    <dc:date>2021-06-09T10:30:00Z</dc:date>
+    <ns1:template ns3:href="Normal" ns3:type="simple" />
+    <ns1:editing-cycles>2</ns1:editing-cycles>
+    <ns1:editing-duration>PT0S</ns1:editing-duration>
+    <ns1:document-statistic ns1:page-count="18" ns1:paragraph-count="86" ns1:word-count="6462" ns1:character-count="43212" ns1:row-count="306" ns1:non-whitespace-character-count="36836" />
+  </ns0:meta>
+</ns0:document-meta>
