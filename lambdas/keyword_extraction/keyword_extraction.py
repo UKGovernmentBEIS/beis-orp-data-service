@@ -1,12 +1,10 @@
 import io
 import os
 import re
-import zipfile
 import pymongo
 import boto3
 import wordninja
 import torch
-import nltk
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from collections import defaultdict
@@ -26,29 +24,6 @@ SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
 MODEL_BUCKET = os.environ['MODEL_BUCKET']
 NLTK_DATA = os.environ['NLTK_DATA']
 MODEL_PATH = os.environ['MODEL_PATH']
-
-
-def initialisation(resource_path=NLTK_DATA, model_path=MODEL_PATH):
-    '''Downloads and unzips alls the resources needed to initialise the model'''
-
-    # Create new directories in tmp directory
-    os.makedirs(resource_path, exist_ok=True)
-    os.makedirs(model_path, exist_ok=True)
-    nltk.download('wordnet', download_dir=resource_path)
-    nltk.download('omw-1.4', download_dir=resource_path)
-    nltk.download('punkt', download_dir=resource_path)
-
-    # Unzip all resources
-    with zipfile.ZipFile(os.path.join(resource_path, 'corpora', 'wordnet.zip'), 'r') as zip_ref:
-        zip_ref.extractall(os.path.join(resource_path, 'corpora'))
-    with zipfile.ZipFile(os.path.join(resource_path, 'corpora', 'omw-1.4.zip'), 'r') as zip_ref:
-        zip_ref.extractall(os.path.join(resource_path, 'corpora'))
-    with zipfile.ZipFile(os.path.join(resource_path, 'tokenizers', 'punkt.zip'), 'r') as zip_ref:
-        zip_ref.extractall(os.path.join(resource_path, 'tokenizers'))
-
-    logger.info('Completed initialisation')
-
-    return {'statusCode': HTTPStatus.OK}
 
 
 def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
@@ -198,7 +173,8 @@ def handler(event, context: LambdaContext):
     document_uid = event['document_uid']
     logger.append_keys(document_uid=document_uid)
     logger.info("Started initialisation...")
-    # initialisation()
+    os.makedirs(MODEL_PATH, exist_ok=True)
+    
 
     s3_client = boto3.client('s3')
     document = download_text(s3_client, document_uid)
