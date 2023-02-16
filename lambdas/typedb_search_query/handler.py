@@ -118,9 +118,11 @@ def query_builder(event):
 
         # compound filters
         if event.get('date_published'):
-            st, ed = event["date_published"]
-            query += f', has date_published >= {st}'
-            query += f', has date_published <= {ed}'
+            date = event["date_published"]
+            st = date.get('start_date')
+            ed = date.get('end_date')
+            if st: query += f', has date_published >= {st}'
+            if ed: query += f', has date_published <= {ed}'
 
         if event.get('title'):
             query += ', has title $title'
