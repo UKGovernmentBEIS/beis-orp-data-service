@@ -1,4 +1,3 @@
-# Import modules
 import io
 import os
 import docx
@@ -13,10 +12,12 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
-DESTINATION_BUCKET = SOURCE_BUCKET
-ddb_connection_uri = os.environ['DOCUMENT_DATABASE']
+DDB_USER = os.environ['DDB_USER']
+DDB_PASSWORD = os.environ['DDB_PASSWORD']
+DDB_DOMAIN = os.environ['DDB_DOMAIN']
+DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
 
+ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
 
 # Defining elements from openxml schema
 WORD_NAMESPACE = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
@@ -27,11 +28,11 @@ ROW = WORD_NAMESPACE + 'tr'
 CELL = WORD_NAMESPACE + 'tc'
 
 
-def download_text(s3_client, object_key, bucket=SOURCE_BUCKET):
+def download_text(s3_client, object_key, source_bucket):
     '''Downloads the raw text from S3 ready for keyword extraction'''
 
     document = io.BytesIO(s3_client.get_object(
-        Bucket=bucket,
+        Bucket=source_bucket,
         Key=object_key,
     )['Body'].read())
 
@@ -105,7 +106,7 @@ def mongo_connect_and_push(document_uid,
                            date_published,
                            database,
                            tlsCAFile='./rds-combined-ca-bundle.pem'):
-    '''Connects to the DocumentDB, finds the document matching our UUID and adds the title, text and date published to it'''
+    '''Connects to the DocumentDB and inserts extracted metadata from the PDF'''
 
     db_client = pymongo.MongoClient(
         database,
@@ -120,8 +121,7 @@ def mongo_connect_and_push(document_uid,
     logger.info({'document': collection.find_one(
         {'document_uid': document_uid})})
     collection.find_one_and_update({'document_uid': document_uid}, {
-        '$set': {'title': title},
-        '$set': {'date_published': date_published}})
+                                   '$set': {'title': title, 'date_published': date_published}})
     db_client.close()
 
     logger.info('Sent to DocumentDB')
@@ -162,18 +162,18 @@ def handler(event, context: LambdaContext):
     logger.append_keys(document_uid=document_uid)
 
     docx_file = download_text(
-        s3_client, object_key, bucket=source_bucket)
+        s3_client=s3_client, object_key=object_key, source_bucket=source_bucket)
 
     doc = docx.Document(docx_file)
-    metadata = getMetaData(doc)
+    metadata = getMetaData(doc=doc)
 
     # Get title and date published
     title = metadata["title"]
     date_published = metadata["created"]
 
     # Get and push text to destination bucket
-    text = get_docx_text(docx_file)
-    write_text(s3_client, text, object_key)
+    text = get_docx_text(path=docx_file)
+    write_text(s3_client=s3_client, text=text, document_uid=document_uid)
 
     logger.info(f"All data extracted. E.g. Title extracted: {title}")
 
@@ -183,6 +183,6 @@ def handler(event, context: LambdaContext):
         date_published=date_published,
         database=ddb_connection_uri)
 
-    response['document_uid'] = object_key
+    response['document_uid'] = document_uid
 
     return response
