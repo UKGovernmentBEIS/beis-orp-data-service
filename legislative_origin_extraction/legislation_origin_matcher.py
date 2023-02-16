@@ -20,12 +20,11 @@ from spacy.matcher import  Matcher, PhraseMatcher
 # from database.db_connection import get_hrefs, get_canonical_leg
 
 # User-defined params
-CUTOFF = 90 # ratio value for fuzzy matching; the higher, the tighter the condition has to be to say that string A and B are the same.
-keys = ['detected_ref', 'start', 'end', 'confidence']
+keys = ['detected_ref', 'start', 'end']
 
 # EXACT MATCHING
 
-def exact_matcher(title, docobj, nlp, cutoff=None):
+def exact_matcher(title, docobj, nlp):
     """
     Detects legislation in body of judgement by searching for the exact match of the title in the text.
 
@@ -56,25 +55,8 @@ def exact_matcher(title, docobj, nlp, cutoff=None):
         matched_text.append((span.text, start, end, 100))
     return matched_text
 
-# FUZZY MATCHING
-# def search_for_act_fuzzy(title, docobj, nlp, cutoff):
-#     """ 
-#     detects well-formed and malformed references to a legislation title in the judgement body.
-#     """
 
-#     fuzzy_matcher = FuzzyMatcher(nlp.vocab)
-#     phrase_list = [nlp(title)]
-#     options = {"fuzzy_func": "simple", "min_r1": cutoff-5, "min_r2": cutoff}
-#     fuzzy_matcher.add("Text Extractor",  phrase_list, kwargs=[options])
-#     matched_items = fuzzy_matcher(docobj)
-#     matched_text = []
-#     for _, start, end, ratio in matched_items:
-#         span = docobj[start: end]
-#         matched_text.append((span.text, start, end, ratio))
-#     return matched_text
-
-
-def lookup_pipe(titles, docobj, nlp, method,  cutoff):
+def lookup_pipe(titles, docobj, nlp, method):
     """
     Executes the 'method' matcher againt the judgement body to detect legislations.
 
@@ -90,9 +72,6 @@ def lookup_pipe(titles, docobj, nlp, method,  cutoff):
         Function specifying which matcher to execute (fuzzy or exact).
     conn : database connection
         Database connection to the legislation look-up table.
-    cutoff : int
-        Value to determine the level of similarity of matches to be returned by the fuzzy matcher.
-        Eg. a match between two string with a ratio of 90 and cutoff 95 would not be returned by the matcher.
     Returns
     -------
     results : list(dict)
@@ -109,7 +88,7 @@ def lookup_pipe(titles, docobj, nlp, method,  cutoff):
     # for every legislation title in the table
     for title in nlp.pipe(titles):
         # detect legislation in the judgement body
-        matches = method(title.text, docobj, nlp, cutoff)
+        matches = method(title.text, docobj, nlp)
         if matches:
             results[title.text] = results.get(title.text, []) + matches
     return results
@@ -136,12 +115,10 @@ def detect_year_span(docobj, nlp):
     dmatcher = Matcher(nlp.vocab)
     dmatcher.add('date matcher', [pattern])
     dm = dmatcher(docobj)
-    dates = [docobj[start:end].text for match_id, start, end in dm]
+    dates = [docobj[start:end].text for _, start, end in dm]
     dates = set([int(d) for d in dates if (len(d) == 4) & (d.isdigit())])
     return dates
 ######
-
-
 
 def leg_pipeline(leg_titles, nlp, docobj):
     dates = detect_year_span(docobj, nlp)
@@ -153,9 +130,7 @@ def leg_pipeline(leg_titles, nlp, docobj):
         relevant_titles = titles.candidate_titles.drop_duplicates().tolist()
         # print(f'\t Looking through {len(relevant_titles)} possible candidates...')
         results = lookup_pipe(relevant_titles, docobj, nlp,
-                            # search_for_act_fuzzy, 
-                            exact_matcher,
-                            CUTOFF)
+                            exact_matcher)
         if results:
             break
 

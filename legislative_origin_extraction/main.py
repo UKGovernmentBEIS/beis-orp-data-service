@@ -5,14 +5,10 @@ from utils.helpers import NLPsetup
 from legislation_origin_matcher import leg_pipeline
 
 ROOTDIR = "test_set/"
-# ROOTDIR = "/Users/imane.hafnaoui/Documents/datasets/mxt/beis-orp/orp_mvp_scraped_data/"
 LEGISLATION_DATA_PATH = "/Users/imane.hafnaoui/gitpod/mxt-pod/beis-orp/legislation_extraction/legislation_data_ALL.p"
 OUTPUT_FILE = "leg_tuples2.jsonl"
 cutoff = 0.1  # Top section of document to look into
 
-# db_conn = create_connection('tna', 'editha.nemsic', 'localhost', 5432)
-# leg_titles = get_legtitles(db_conn)
-# load_patterns(db_conn)
 leg_titles = pd.read_pickle(LEGISLATION_DATA_PATH)
 leg_titles = leg_titles[leg_titles.legType.isin(['Primary', 'Secondary'])]
 nlp = NLPsetup()
