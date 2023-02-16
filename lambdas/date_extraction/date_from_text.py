@@ -23,10 +23,6 @@ SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
 nlp, matcher = initialise_matcher()
 
 
-def addSpace(text):
-    return re.sub(r'(?<=([a-z])|\d)(?=(?(1)\d|[a-z]))', ' ', text)
-
-
 def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
     '''Downloads the raw text from S3 ready for keyword extraction'''
 
@@ -69,6 +65,10 @@ def mongo_connect_and_push(document_uid,
 
 
 def preprocess_text(text):
+    """
+    param: text: str
+    returns: clean_text: text more easily read by matcher
+    """
     txt = text.lower()
     # Add spaces between digits and str characters
     txt = re.sub(r"(?i)(?<=\d)(?=[a-z])|(?<=[a-z])(?=\d)", " ", txt)
@@ -78,12 +78,20 @@ def preprocess_text(text):
 
 
 def standardise_date(date):
+    """
+    param date: datetime
+    returns date_matches: List of dates found
+    """
     matches = datefinder.find_dates(date)
     date_matches = [str(date) for date in matches]
     return date_matches
 
 
 def clean_date(candidate_dates):
+    """
+    param: candidate_dates: List of dates found from text
+    returns: date_list: cleaned List of dates found from text
+    """
     if len(candidate_dates) == 0:
         return None
     else:
@@ -102,6 +110,10 @@ def clean_date(candidate_dates):
 
 
 def find_date(clean_text):
+    """
+    param: clean_text: text from preprocess_text function
+    returns: date_list: list of dates found from text
+    """
     doc = nlp(clean_text)
     matches = matcher(doc)
 
@@ -116,6 +128,12 @@ def find_date(clean_text):
 
 
 def check_metadata_date_in_doc(metadata_date, date_list):
+    """
+    param: metadata_date: date pulled from document's metadata
+    param: date_list: list of dates from the cleaned text
+    returns: date / metadata_date: either date from text or metadata date
+        If any date extracted from the text is within 3 months of the metadata date, return this date
+    """
     margin = relativedelta(months = 3)
 
     datetime_obj = datetime.datetime.strptime(metadata_date[0], '%Y-%m-%d %H:%M:%S')
