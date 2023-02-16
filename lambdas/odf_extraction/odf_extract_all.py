@@ -1,16 +1,13 @@
 import io
+import re
 import os
 import boto3
 import pymongo
-import datetime
-import datefinder
-from bs4 import BeautifulSoup
-import re
-import xml.etree.ElementTree as ET
 import zipfile
-from odf import text, teletype
+import datetime
 from http import HTTPStatus
-from odf.opendocument import load
+from bs4 import BeautifulSoup
+import xml.etree.ElementTree as ET
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 

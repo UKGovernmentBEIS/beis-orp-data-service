@@ -1,8 +1,4 @@
-aws_lambda_powertools==2.7.1
+aws_lambda_powertools==2.8.0
+beautifulsoup4==4.11.2
 boto3==1.21.32
-datefinder==0.7.3
-fitz==0.0.1.dev2
-odfpy==1.4.1
-openpyxl==3.0.9
-pikepdf==7.0.0
 pymongo==4.3.3
