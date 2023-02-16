@@ -92,13 +92,13 @@ def metadata_title_date_extraction(metadataXML):
     soup = BeautifulSoup(metadataXML, "lxml")   
     metadata = soup.find("ns0:meta")
     title= metadata.find("dc:title").get_text()
-    date = datetime.datetime.strptime(re.sub(r'[a-zA-Z]', r' ', metadata.find("dc:date").get_text()).strip(), '%Y-%m-%d %H:%M:%S')
+    date = datetime.datetime.strptime(metadata.find("dc:date").get_text()[:10], '%Y-%m-%d')
     return title, date
 
 
 if __name__ == "__main__":
 
-    content, metadataXML = convert2xml(path2)
+    content, metadataXML = convert2xml(path1)
     print(metadata_title_date_extraction(metadataXML=metadataXML))
     # text = xml2text(xml)
     # fd = open("/Users/thomas/Documents/BEIS/repo/beis-orp-data-service/ODF_extract/" + "odf_text_output.txt",'w')
