@@ -1,16 +1,16 @@
 import io
 import os
 import re
-import zipfile
 import pymongo
 import boto3
 import wordninja
 import torch
-import nltk
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
+from collections import defaultdict
 from http import HTTPStatus
 from smart_open import open as smart_open
+from word_forms_loc.lemmatizer import lemmatize
 from sklearn.feature_extraction.text import CountVectorizer
 from bs4 import BeautifulSoup
 from aws_lambda_powertools.logging.logger import Logger
@@ -19,38 +19,17 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
+
+DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
 DDB_USER = os.environ['DDB_USER']
 DDB_PASSWORD = os.environ['DDB_PASSWORD']
 DDB_DOMAIN = os.environ['DDB_DOMAIN']
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
 MODEL_BUCKET = os.environ['MODEL_BUCKET']
-NLTK_DATA_PATH = os.environ['NLTK_DATA']
+NLTK_DATA = os.environ['NLTK_DATA']
 MODEL_PATH = os.environ['MODEL_PATH']
 
 ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
-
-
-def initialisation(resource_path=NLTK_DATA_PATH, model_path=MODEL_PATH):
-    '''Downloads and unzips alls the resources needed to initialise the model'''
-
-    # Create new directories in tmp directory
-    os.makedirs(resource_path, exist_ok=True)
-    os.makedirs(model_path, exist_ok=True)
-    nltk.download('wordnet', download_dir=resource_path)
-    nltk.download('omw-1.4', download_dir=resource_path)
-    nltk.download('punkt', download_dir=resource_path)
-
-    # Unzip all resources
-    with zipfile.ZipFile(os.path.join(resource_path, 'corpora', 'wordnet.zip'), 'r') as zip_ref:
-        zip_ref.extractall(os.path.join(resource_path, 'corpora'))
-    with zipfile.ZipFile(os.path.join(resource_path, 'corpora', 'omw-1.4.zip'), 'r') as zip_ref:
-        zip_ref.extractall(os.path.join(resource_path, 'corpora'))
-    with zipfile.ZipFile(os.path.join(resource_path, 'tokenizers', 'punkt.zip'), 'r') as zip_ref:
-        zip_ref.extractall(os.path.join(resource_path, 'tokenizers'))
-
-    logger.info('Completed initialisation')
-
-    return None
 
 
 def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
@@ -122,6 +101,7 @@ def pre_process_tokenization_function(documents: str):
 
 
 def extract_keywords(text, kw_model):
+    # TODO: replace the hardcoded regs references
     '''Extracts the keywords from the downloaded text using the downloaded model'''
 
     text = re.sub('Health and Safety Executive', '', text)
@@ -138,17 +118,37 @@ def extract_keywords(text, kw_model):
     keywords = kw_model.extract_keywords(
         text,
         vectorizer=vectorizer_model,
-        top_n=10
+        top_n=15
     )
     logger.info({'keywords': keywords})
 
     return keywords
 
 
-def mongo_connect_and_push(document_uid,
-                           keywords,
-                           database,
-                           tlsCAFile='./rds-combined-ca-bundle.pem'):
+
+def get_lemma(word):
+    try:
+        return lemmatize(word)
+    except ValueError as err:
+        if 'is not a real word' in err.args[0]:
+            return word
+        else:
+            raise ValueError(err)
+
+
+def get_relevant_keywords(x):
+    nounify = [(get_lemma(k), v) for k, v in x]
+    kwds = defaultdict(list)
+    for k, v in nounify:
+        kwds[k].append(v)
+    return [(k, max(v)) for k, v in kwds.items()][:10]
+
+
+def mongo_connect_and_update(document_uid,
+                             keywords,
+                             database=DOCUMENT_DATABASE,
+                             tlsCAFile='./rds-combined-ca-bundle.pem'):
+
     '''Connects to the DocumentDB, finds the document matching our UUID and adds the keywords to it'''
 
     db_client = pymongo.MongoClient(
@@ -178,19 +178,21 @@ def handler(event, context: LambdaContext):
 
     document_uid = event['document_uid']
     logger.append_keys(document_uid=document_uid)
-
-    initialisation()
+    logger.info("Started initialisation...")
+    os.makedirs(MODEL_PATH, exist_ok=True)
+    
 
     s3_client = boto3.client('s3')
-    document = download_text(s3_client=s3_client, document_uid=document_uid)
-    kw_model = download_model(s3_client=s3_client)
-    keywords = extract_keywords(text=document, kw_model=kw_model)
+    document = download_text(s3_client, document_uid)
+    kw_model = download_model(s3_client)
+    keywords = extract_keywords(document, kw_model)
+    # lemmatise keywords
+    keywords = get_relevant_keywords(keywords)
+    logger.info({'relevant keywords': keywords})
+    
     subject_keywords = [i[0] for i in keywords]
 
-    response = mongo_connect_and_push(
-        document_uid=document_uid,
-        keywords=subject_keywords,
-        database=ddb_connection_uri)
+    response = mongo_connect_and_update(document, subject_keywords)
     response['document_uid'] = document_uid
 
     return response
