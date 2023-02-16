@@ -64,11 +64,16 @@ def title_extraction(elements):
     returns: title Str: the title of the document where the attribute value
         is equal to "Title"
     """
+    titles = []
     for element in elements:
         el_attributes = element.attributes
-        if list(el_attributes.values())[0] == "Title":
+        if "title" in str(list(el_attributes.values())[0]).lower() and "sub" not in str(list(el_attributes.values())[0]).lower():
             title = teletype.extractText(element)
-            return title
+            titles.append(title)
+    if len(titles) > 0:
+        return titles[0]
+    else:
+        return ""
 
 
 def publishing_date_extraction(elements):
@@ -90,8 +95,21 @@ def publishing_date_extraction(elements):
                     return str(match)
 
 
-def convert2xml(odf):
+def date_extraction(text):
+    """
+    params: elements: odf.element.Element
+    returns: match Str: date found in the footer of the document
+    """
+    matches = datefinder.find_dates(text)
+    date_matches = [str(date) for date in matches]
+    return date_matches[0]
 
+
+def convert2xml(odf):
+    """
+    params: odf
+    returns: xml
+    """
     myfile = zipfile.ZipFile(odf)
 
     listoffiles = myfile.infolist()
@@ -106,6 +124,10 @@ def convert2xml(odf):
 
 
 def xml2text(xml):
+    """
+    params: xml
+    returns: text
+    """
     soup = BeautifulSoup(xml, "lxml")   
     pageText = soup.findAll(text=True)
     text = str(" ".join(pageText)).replace("\n", "")

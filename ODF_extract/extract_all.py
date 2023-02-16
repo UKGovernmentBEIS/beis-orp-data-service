@@ -14,22 +14,25 @@ from htmldate import find_date
 path1 = "/Users/thomas/Documents/BEIS/input_data/ODF/OpenDocument-v1.2-os.odt"
 path2 = "/Users/thomas/Documents/BEIS/input_data/ODF/Consultation technically competent manager attendance consultation document.odt"
 
+ODF = load(path2)
+elements = ODF.getElementsByType(text.P)
 
-def title_extraction(path):
+def title_extraction(elements):
     """
     params: elements: odf.element.Element
     returns: title Str: the title of the document where the attribute value
         is equal to "Title"
     """
-    ODF = load(path)
-    elements = ODF.getElementsByType(text.P)
     titles = []
     for element in elements:
         el_attributes = element.attributes
         if "title" in str(list(el_attributes.values())[0]).lower() and "sub" not in str(list(el_attributes.values())[0]).lower():
             title = teletype.extractText(element)
             titles.append(title)
-    return titles[0]
+    if len(titles) > 0:
+        return titles[0]
+    else:
+        return None
 
 
 def publishing_date_extraction(path):
@@ -75,49 +78,27 @@ def xml2text(xml):
     text = str(" ".join(pageText)).replace("\n", "")
     return re.sub("\s+", " ", text)
 
-
-import lxml.html
-from lxml import etree
  
-def xml2html(xml):
-    dom = ET.parse(xml)
-    xslt = ET.parse(xml)
-    transform = ET.XSLT(xslt)
-    newdom = transform(dom)
-    return ET.tostring(newdom, pretty_print=True)
+# def xml2html(xml):
+#     dom = ET.parse(xml)
+#     xslt = ET.parse(xml)
+#     transform = ET.XSLT(xslt)
+#     newdom = transform(dom)
+#     return ET.tostring(newdom, pretty_print=True)
 
 
-def date_extraction(path):
-    """
-
-    """
-    ODF = load(path)
-    elements = ODF.getElementsByType(text.P)
-    dates = []
-    for element in elements:
-        el_attributes = element.attributes
-        if "subtitle" in str(list(el_attributes.values())[0]).lower():
-            date = str(teletype.extractText(element))
-            dates.append(date)
-    print(" ".join(dates))
-    matches = datefinder.find_dates(" ".join(dates))
+def date_extraction(text):
+    matches = datefinder.find_dates(text)
     date_matches = [str(date) for date in matches]
-    return date_matches[0]
+    print(date_matches[0])
 
 
 if __name__ == "__main__":
-    # convert2xml(path1, "output.xml")
-    # print(date_extraction(path2))
-    # print(title_extraction(path2))
 
-    # ODF = load(path2)
-    # elements = ODF.getElementsByType(text.P)
-    # text = text_extraction(elements)
-    # fd = open("/Users/thomas/Documents/BEIS/repo/beis-orp-data-service/ODF_extract/" + "text_output.txt",'w')
-    # fd.write(str(text))
-
-    xml = convert2xml(path2, "EAoutput.xml")
+    xml = convert2xml(path1, "output.xml")
     text = xml2text(xml)
-    fd = open("/Users/thomas/Documents/BEIS/repo/beis-orp-data-service/ODF_extract/" + "text_output.txt",'w')
+    fd = open("/Users/thomas/Documents/BEIS/repo/beis-orp-data-service/ODF_extract/" + "odf_text_output.txt",'w')
     fd.write(str(text))
 
+    title = title_extraction(elements)
+    print(title)
