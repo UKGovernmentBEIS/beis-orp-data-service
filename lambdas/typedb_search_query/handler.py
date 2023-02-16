@@ -102,8 +102,6 @@ def query_builder(event):
         # simple filters
         if event.get('regulatory_topic'):
             query += f', has regulatory_topic "{event["regulatory_topic"]}"'
-        if event.get('status'):
-            query += f', has status "{event["status"]}"'
 
         # list filters
         if event.get('keyword'):
@@ -113,6 +111,10 @@ def query_builder(event):
         if event.get('document_type'):
             query += ', has document_type $document_type'
             subq += f"; $document_type like \"{'|'.join([i for i in event['document_type']])}\""
+        
+        if event.get('status'):
+            query += ', has status $status'
+            subq += f"; $status like \"{'|'.join([i for i in event['status']])}\""
 
         # compound filters
         if event.get('date_published'):
