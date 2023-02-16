@@ -19,6 +19,8 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
+
+DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
 DDB_USER = os.environ['DDB_USER']
 DDB_PASSWORD = os.environ['DDB_PASSWORD']
 DDB_DOMAIN = os.environ['DDB_DOMAIN']
