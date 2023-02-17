@@ -17,6 +17,7 @@ logger = Logger()
 
 DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
 MODEL_PATH = os.environ['MODEL_PATH']
+MODEL_BUCKET = os.environ['MODEL_BUCKET']
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
 NLTK_DATA_PATH = os.environ['NLTK_DATA']
 
