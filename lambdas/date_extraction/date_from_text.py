@@ -136,13 +136,13 @@ def check_metadata_date_in_doc(metadata_date, date_list):
     """
     margin = relativedelta(months = 3)
 
-    datetime_obj = datetime.datetime.strptime(metadata_date[0], '%Y-%m-%d %H:%M:%S')
+    datetime_obj = datetime.datetime.strptime(metadata_date, '%Y-%m-%d %H:%M:%S')
     upper_date = datetime_obj + margin
     lower_date = datetime_obj - margin
 
     for date in date_list:
         date =  datetime.datetime.strptime(date[0], '%Y-%m-%d %H:%M:%S')
-        if  upper_date > date > lower_date:
+        if  upper_date >= date >= lower_date:
             return date
         else: 
             return metadata_date
@@ -166,6 +166,9 @@ def handler(event, context: LambdaContext):
 
     # Check if metadata date appears near dates found
     date = check_metadata_date_in_doc(metadata_date=metadata_date, date_list=date_list)
+
+    # Show date
+    logger.info(f"Date published: {date}")
 
     response = mongo_connect_and_push(document_uid, date)
     response['document_uid'] = document_uid
