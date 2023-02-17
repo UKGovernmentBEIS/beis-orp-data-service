@@ -3,6 +3,7 @@ import torch
 from transformers import BertTokenizer
 from nltk.tokenize import sent_tokenize
 
+
 def preprocess(source_fp):
     """
     - Remove \n
@@ -32,7 +33,7 @@ def load_text(processed_text, max_pos, device):
         src_subtoken_idxs[-1] = sep_vid
         _segs = [-1] + [i for i, t in enumerate(src_subtoken_idxs) if t == sep_vid]
         segs = [_segs[i] - _segs[i - 1] for i in range(1, len(_segs))]
-        
+
         segments_ids = []
         segs = segs[:max_pos]
         for i, s in enumerate(segs):
@@ -51,7 +52,8 @@ def load_text(processed_text, max_pos, device):
 
     src, mask_src, segments_ids, clss, mask_cls = _process_src(processed_text)
     segs = torch.tensor(segments_ids)[None, :].to(device)
-    src_text = [[sent.replace("[SEP]", "").strip() for sent in processed_text.split("[CLS]")]]
+    src_text = [[sent.replace("[SEP]", "").strip()
+                 for sent in processed_text.split("[CLS]")]]
     return src, mask_src, segs, clss, mask_cls, src_text
 
 
@@ -61,7 +63,7 @@ def test(model, input_data, max_length, block_trigram=True):
         text_length = len(text)
         max_index_ngram_start = text_length - n
         for i in range(max_index_ngram_start + 1):
-            ngram_set.add(tuple(text[i : i + n]))
+            ngram_set.add(tuple(text[i: i + n]))
         return ngram_set
 
     def _block_tri(c, p):
@@ -113,4 +115,3 @@ def summarize(raw_txt_fp, model, max_length=3, max_pos=512, return_summary=True)
     pred = test(model, input_data, max_length, block_trigram=True)
     if return_summary:
         return pred.strip()
-        

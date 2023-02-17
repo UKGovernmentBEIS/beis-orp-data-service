@@ -20,7 +20,6 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 logger = Logger()
 
 
-DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
 DDB_USER = os.environ['DDB_USER']
 DDB_PASSWORD = os.environ['DDB_PASSWORD']
 DDB_DOMAIN = os.environ['DDB_DOMAIN']
@@ -125,7 +124,6 @@ def extract_keywords(text, kw_model):
     return keywords
 
 
-
 def get_lemma(word):
     try:
         return lemmatize(word)
@@ -146,9 +144,8 @@ def get_relevant_keywords(x):
 
 def mongo_connect_and_update(document_uid,
                              keywords,
-                             database=DOCUMENT_DATABASE,
+                             database=ddb_connection_uri,
                              tlsCAFile='./rds-combined-ca-bundle.pem'):
-
     '''Connects to the DocumentDB, finds the document matching our UUID and adds the keywords to it'''
 
     db_client = pymongo.MongoClient(
@@ -180,7 +177,6 @@ def handler(event, context: LambdaContext):
     logger.append_keys(document_uid=document_uid)
     logger.info("Started initialisation...")
     os.makedirs(MODEL_PATH, exist_ok=True)
-    
 
     s3_client = boto3.client('s3')
     document = download_text(s3_client, document_uid)
@@ -189,7 +185,7 @@ def handler(event, context: LambdaContext):
     # lemmatise keywords
     keywords = get_relevant_keywords(keywords)
     logger.info({'relevant keywords': keywords})
-    
+
     subject_keywords = [i[0] for i in keywords]
 
     response = mongo_connect_and_update(document, subject_keywords)

@@ -3,16 +3,18 @@ import torch.nn as nn
 from MobileBert.modeling_mobilebert import MobileBertConfig, MobileBertModel
 from encoder import ExtTransformerEncoder
 
+
 class Bert(nn.Module):
     def __init__(self, bert_type="bertbase"):
         super(Bert, self).__init__()
         self.bert_type = bert_type
         configuration = MobileBertConfig.from_pretrained("checkpoints/mobilebert")
-        self.model = MobileBertModel(configuration)  
+        self.model = MobileBertModel(configuration)
 
     def forward(self, x, segs, mask):
         top_vec, _ = self.model(x, attention_mask=mask, token_type_ids=segs)
         return top_vec
+
 
 class ExtSummarizer(nn.Module):
     def __init__(self, device, checkpoint=None, bert_type="bertbase"):

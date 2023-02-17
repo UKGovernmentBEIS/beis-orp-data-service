@@ -18,9 +18,9 @@ ENV DOCUMENT_DATABASE=mongodb://ddbadmin:Test123456789@beis-orp-dev-beis-orp.clu
 ADD MobileBert/ ${LAMBDA_TASK_ROOT}/MobileBert
 ADD checkpoints ${LAMBDA_TASK_ROOT}/checkpoints 
 
-# Copy function code
+# Copy function code and supporting packages
 COPY nltk_data/ ${LAMBDA_TASK_ROOT}/nltk_data/
-COPY summarisation_script.py ${LAMBDA_TASK_ROOT}
+COPY summarisation.py ${LAMBDA_TASK_ROOT}
 COPY model_builder.py ${LAMBDA_TASK_ROOT}
 COPY ext_sum.py ${LAMBDA_TASK_ROOT}
 COPY encoder.py ${LAMBDA_TASK_ROOT}

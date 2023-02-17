@@ -45,11 +45,11 @@ def initialisation(resource_path=NLTK_DATA_PATH):
     return None
 
 
-def download_text(s3_client, document_uid, Bucket=SOURCE_BUCKET):
+def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
     '''Downloads the raw text from S3 ready for keyword extraction'''
 
     document = s3_client.get_object(
-        Bucket=SOURCE_BUCKET,
+        Bucket=bucket,
         Key=f'processed/{document_uid}.txt'
     )['Body'].read().decode('utf-8')
 
@@ -62,14 +62,18 @@ def download_model(
         s3_client,
         bucket=MODEL_BUCKET,
         key='mobilebert_ext.pt'):
+    '''Downloads the ML model for summarisation'''
 
-    s3_client.Bucket(bucket).download_file(key, os.path.join("/tmp/modeldir", key))
+    s3_client.download_file(bucket, key, os.path.join("/tmp/modeldir", key))
 
     # Load the model in
     with smart_open(os.path.join("/tmp/modeldir", key), 'rb') as f:
         CHECKPOINT = io.BytesIO(f.read())
         checkpoint = torch.load(CHECKPOINT, map_location=torch.device("cpu"))
-        model = ExtSummarizer(checkpoint=checkpoint, bert_type="mobilebert", device="cpu")
+        model = ExtSummarizer(
+            checkpoint=checkpoint,
+            bert_type="mobilebert",
+            device="cpu")
 
         return model
 
@@ -82,7 +86,7 @@ def smart_shortener(text):
     if len(text.split(" ")) < 600:
         return text
     else:
-        shortened = " ".join(text.split(" ")[ : 600])
+        shortened = " ".join(text.split(" ")[: 600])
         shortened_complete = shortened + text.replace(shortened, "").split(".")[0]
         return shortened_complete
 
@@ -116,23 +120,23 @@ def mongo_connect_and_update(document_uid,
 
 def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
+
     document_uid = event['document_uid']
     logger.append_keys(document_uid=document_uid)
 
-    s3_client = boto3.client('s3')
-
     initialisation()
 
+    s3_client = boto3.client('s3')
     document = download_text(s3_client, document_uid)
-
     logger.info("Loading model")
-    model = download_model(s3_client = s3_client)
+    model = download_model(s3_client=s3_client)
 
     # Shorten text for summarising
-    shortend_text = smart_shortener(document)
-    summary = summarize(smart_shortener(shortend_text), model, max_length=4)
+    shortened_text = smart_shortener(text=document)
+    summary = summarize(raw_text_fp=smart_shortener(
+        shortened_text), model=model, max_length=4)
 
-    response = mongo_connect_and_update(document, summary)
+    response = mongo_connect_and_update(document_uid=document_uid, summary=summary)
     response['document_uid'] = document_uid
 
     return response
