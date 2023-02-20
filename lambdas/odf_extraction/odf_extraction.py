@@ -115,7 +115,7 @@ def mongo_connect_and_push(source_bucket,
                            title,
                            database=DOCUMENT_DATABASE,
                            tlsCAFile='./rds-combined-ca-bundle.pem'):
-    '''Connects to the DocumentDB and inserts extracted metadata from the PDF'''
+    '''Connects to the DocumentDB and inserts extracted metadata from the ODF'''
 
     # Create a MongoDB client and open a connection to Amazon DocumentDB
     db_client = pymongo.MongoClient(
