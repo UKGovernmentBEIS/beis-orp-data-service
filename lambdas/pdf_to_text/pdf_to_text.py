@@ -169,9 +169,13 @@ def handler(event, context: LambdaContext):
 
     s3_client = boto3.client('s3')
     doc_bytes_io = download_text(
-        s3_client=s3_client, object_key=object_key, source_bucket=source_bucket)
+        s3_client=s3_client,
+        object_key=object_key,
+        source_bucket=source_bucket)
     doc_s3_metadata = get_s3_metadata(
-        s3_client=s3_client, object_key=object_key, source_bucket=source_bucket)
+        s3_client=s3_client,
+        object_key=object_key,
+        source_bucket=source_bucket)
 
     # Raise an error if there is no UUID in the document's S3 metadata
     assert doc_s3_metadata.get('uuid'), 'Document must have a UUID attached'

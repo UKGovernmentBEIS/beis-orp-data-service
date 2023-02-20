@@ -14,9 +14,12 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
-DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
+DDB_USER = os.environ['DDB_USER']
+DDB_PASSWORD = os.environ['DDB_PASSWORD']
+DDB_DOMAIN = os.environ['DDB_DOMAIN']
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
+
+ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
 
 
 def download_text(s3_client, object_key, source_bucket):
@@ -115,7 +118,7 @@ def mongo_connect_and_push(source_bucket,
                            document_uid,
                            date_published,
                            title,
-                           database=DOCUMENT_DATABASE,
+                           database=ddb_connection_uri,
                            tlsCAFile='./rds-combined-ca-bundle.pem'):
     '''Connects to the DocumentDB and inserts extracted metadata from the ODF'''
 
@@ -159,15 +162,19 @@ def handler(event, context: LambdaContext):
 
     s3_client = boto3.client('s3')
     doc_bytes_io = download_text(
-        s3_client=s3_client, object_key=object_key, source_bucket=SOURCE_BUCKET)
+        s3_client=s3_client,
+        object_key=object_key,
+        source_bucket=source_bucket)
     doc_s3_metadata = get_s3_metadata(
-        s3_client=s3_client, object_key=object_key, source_bucket=SOURCE_BUCKET)
+        s3_client=s3_client,
+        object_key=object_key,
+        source_bucket=source_bucket)
     document_uid = doc_s3_metadata['uuid']
     logger.append_keys(document_uid=document_uid)
 
     # Extract the content and metadata xml
-    contentXML, metadataXML = convert2xml(doc_bytes_io)
-    text = xml2text(contentXML)
+    contentXML, metadataXML = convert2xml(odf=doc_bytes_io)
+    text = xml2text(xml=contentXML)
 
     # Extract the publishing date
     title, date_published = metadata_title_date_extraction(metadataXML=metadataXML)
@@ -176,11 +183,13 @@ def handler(event, context: LambdaContext):
                 f'Publishing date: {date_published}'
                 f'UUID obtained is: {document_uid}')
 
-    mongo_response = mongo_connect_and_push(source_bucket=SOURCE_BUCKET,
-                                            object_key=object_key, document_uid=document_uid,
-                                            date_published=date_published, title=title)
-    s3_response = write_text(s3_client=s3_client, text=text,
-                             document_uid=document_uid)
+    mongo_response = mongo_connect_and_push(
+        source_bucket=source_bucket,
+        object_key=object_key,
+        document_uid=document_uid,
+        date_published=date_published,
+        title=title)
+    s3_response = write_text(s3_client=s3_client, text=text, document_uid=document_uid)
 
     handler_response = {**mongo_response, **s3_response}
     handler_response['document_uid'] = document_uid
