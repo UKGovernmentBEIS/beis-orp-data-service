@@ -14,4 +14,4 @@ COPY add_patterns.py ${LAMBDA_TASK_ROOT}
 COPY rds-combined-ca-bundle.pem ${LAMBDA_TASK_ROOT}
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
-CMD [ "date_from_text.handler" ]
+CMD [ "date_extraction.handler" ]
