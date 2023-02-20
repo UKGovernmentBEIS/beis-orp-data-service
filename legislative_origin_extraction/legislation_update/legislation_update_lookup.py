@@ -22,11 +22,11 @@ Returns:
 import pandas as pd
 from SPARQLWrapper import SPARQLWrapper, CSV
 from io import BytesIO
-import sys, re
+import sys
 
 
-LEG_DIV = 'leg-division-list.p'
-dff = pd.read_pickle(LEG_DIV)
+LEG_DIV = 'leg-division-list.csv'
+dff = pd.read_csv(LEG_DIV)
 
 if __name__ == "__main__":
     args = sys.argv[1:]
