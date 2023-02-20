@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 BERT_PRETRAINED_CONFIG_ARCHIVE_MAP = {}
 
+
 class MobileBertConfig(PretrainedConfig):
     r"""
         This is the configuration class to store the configuration of a :class:`~transformers.BertModel`.
@@ -136,4 +137,3 @@ class MobileBertConfig(PretrainedConfig):
             self.true_hidden_size = intra_bottleneck_size
         else:
             self.true_hidden_size = hidden_size
-

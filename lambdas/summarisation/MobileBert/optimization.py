@@ -44,7 +44,8 @@ def get_constant_schedule_with_warmup(optimizer, num_warmup_steps, last_epoch=-1
     return LambdaLR(optimizer, lr_lambda, last_epoch=last_epoch)
 
 
-def get_linear_schedule_with_warmup(optimizer, num_warmup_steps, num_training_steps, last_epoch=-1):
+def get_linear_schedule_with_warmup(
+        optimizer, num_warmup_steps, num_training_steps, last_epoch=-1):
     """ Create a schedule with a learning rate that decreases linearly after
     linearly increasing during a warmup period.
     """
@@ -53,13 +54,15 @@ def get_linear_schedule_with_warmup(optimizer, num_warmup_steps, num_training_st
         if current_step < num_warmup_steps:
             return float(current_step) / float(max(1, num_warmup_steps))
         return max(
-            0.0, float(num_training_steps - current_step) / float(max(1, num_training_steps - num_warmup_steps))
+            0.0, float(num_training_steps - current_step) /
+            float(max(1, num_training_steps - num_warmup_steps))
         )
 
     return LambdaLR(optimizer, lr_lambda, last_epoch)
 
 
-def get_cosine_schedule_with_warmup(optimizer, num_warmup_steps, num_training_steps, num_cycles=0.5, last_epoch=-1):
+def get_cosine_schedule_with_warmup(
+        optimizer, num_warmup_steps, num_training_steps, num_cycles=0.5, last_epoch=-1):
     """ Create a schedule with a learning rate that decreases following the
     values of the cosine function between 0 and `pi * cycles` after a warmup
     period during which it increases linearly between 0 and 1.
@@ -68,8 +71,10 @@ def get_cosine_schedule_with_warmup(optimizer, num_warmup_steps, num_training_st
     def lr_lambda(current_step):
         if current_step < num_warmup_steps:
             return float(current_step) / float(max(1, num_warmup_steps))
-        progress = float(current_step - num_warmup_steps) / float(max(1, num_training_steps - num_warmup_steps))
-        return max(0.0, 0.5 * (1.0 + math.cos(math.pi * float(num_cycles) * 2.0 * progress)))
+        progress = float(current_step - num_warmup_steps) / \
+            float(max(1, num_training_steps - num_warmup_steps))
+        return max(0.0, 0.5 * (1.0 + math.cos(math.pi *
+                   float(num_cycles) * 2.0 * progress)))
 
     return LambdaLR(optimizer, lr_lambda, last_epoch)
 
@@ -85,10 +90,12 @@ def get_cosine_with_hard_restarts_schedule_with_warmup(
     def lr_lambda(current_step):
         if current_step < num_warmup_steps:
             return float(current_step) / float(max(1, num_warmup_steps))
-        progress = float(current_step - num_warmup_steps) / float(max(1, num_training_steps - num_warmup_steps))
+        progress = float(current_step - num_warmup_steps) / \
+            float(max(1, num_training_steps - num_warmup_steps))
         if progress >= 1.0:
             return 0.0
-        return max(0.0, 0.5 * (1.0 + math.cos(math.pi * ((float(num_cycles) * progress) % 1.0))))
+        return max(0.0, 0.5 * (1.0 + math.cos(math.pi *
+                   ((float(num_cycles) * progress) % 1.0))))
 
     return LambdaLR(optimizer, lr_lambda, last_epoch)
 
@@ -104,16 +111,24 @@ class AdamW(Optimizer):
         correct_bias (bool): can be set to False to avoid correcting bias in Adam (e.g. like in Bert TF repository). Default True.
     """
 
-    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-6, weight_decay=0.0, correct_bias=True):
+    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999),
+                 eps=1e-6, weight_decay=0.0, correct_bias=True):
         if lr < 0.0:
             raise ValueError("Invalid learning rate: {} - should be >= 0.0".format(lr))
         if not 0.0 <= betas[0] < 1.0:
-            raise ValueError("Invalid beta parameter: {} - should be in [0.0, 1.0[".format(betas[0]))
+            raise ValueError(
+                "Invalid beta parameter: {} - should be in [0.0, 1.0[".format(betas[0]))
         if not 0.0 <= betas[1] < 1.0:
-            raise ValueError("Invalid beta parameter: {} - should be in [0.0, 1.0[".format(betas[1]))
+            raise ValueError(
+                "Invalid beta parameter: {} - should be in [0.0, 1.0[".format(betas[1]))
         if not 0.0 <= eps:
             raise ValueError("Invalid epsilon value: {} - should be >= 0.0".format(eps))
-        defaults = dict(lr=lr, betas=betas, eps=eps, weight_decay=weight_decay, correct_bias=correct_bias)
+        defaults = dict(
+            lr=lr,
+            betas=betas,
+            eps=eps,
+            weight_decay=weight_decay,
+            correct_bias=correct_bias)
         super().__init__(params, defaults)
 
     def step(self, closure=None):
@@ -133,7 +148,8 @@ class AdamW(Optimizer):
                     continue
                 grad = p.grad.data
                 if grad.is_sparse:
-                    raise RuntimeError("Adam does not support sparse gradients, please consider SparseAdam instead")
+                    raise RuntimeError(
+                        "Adam does not support sparse gradients, please consider SparseAdam instead")
 
                 state = self.state[p]
 
@@ -160,7 +176,8 @@ class AdamW(Optimizer):
                 if group["correct_bias"]:  # No bias correction for Bert
                     bias_correction1 = 1.0 - beta1 ** state["step"]
                     bias_correction2 = 1.0 - beta2 ** state["step"]
-                    step_size = step_size * math.sqrt(bias_correction2) / bias_correction1
+                    step_size = step_size * \
+                        math.sqrt(bias_correction2) / bias_correction1
 
                 p.data.addcdiv_(-step_size, exp_avg, denom)
 
