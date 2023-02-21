@@ -125,6 +125,7 @@ def extract_keywords(text, kw_model):
 
 
 def get_lemma(word):
+    # TODO: Docstring
     try:
         return lemmatize(word)
     except ValueError as err:
@@ -135,6 +136,7 @@ def get_lemma(word):
 
 
 def get_relevant_keywords(x):
+    # TODO: Docstring and name variables
     nounify = [(get_lemma(k), v) for k, v in x]
     kwds = defaultdict(list)
     for k, v in nounify:
@@ -179,16 +181,18 @@ def handler(event, context: LambdaContext):
     os.makedirs(MODEL_PATH, exist_ok=True)
 
     s3_client = boto3.client('s3')
-    document = download_text(s3_client, document_uid)
-    kw_model = download_model(s3_client)
-    keywords = extract_keywords(document, kw_model)
+    document = download_text(s3_client=s3_client, document_uid=document_uid)
+    kw_model = download_model(s3_client=s3_client)
+    keywords = extract_keywords(text=document, kw_model=kw_model)
     # lemmatise keywords
-    keywords = get_relevant_keywords(keywords)
+    keywords = get_relevant_keywords(x=keywords)
     logger.info({'relevant keywords': keywords})
 
     subject_keywords = [i[0] for i in keywords]
 
-    response = mongo_connect_and_update(document, subject_keywords)
+    response = mongo_connect_and_update(
+        document_uid=document_uid,
+        keywords=subject_keywords)
     response['document_uid'] = document_uid
 
     return response

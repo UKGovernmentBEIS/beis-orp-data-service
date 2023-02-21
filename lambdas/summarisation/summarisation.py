@@ -14,10 +14,14 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
+DDB_USER = os.environ['DDB_USER']
+DDB_PASSWORD = os.environ['DDB_PASSWORD']
+DDB_DOMAIN = os.environ['DDB_DOMAIN']
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
-NLTK_DATA_PATH = os.environ['NLTK_DATA']
 MODEL_BUCKET = os.environ['MODEL_BUCKET']
+NLTK_DATA_PATH = os.environ['NLTK_DATA']
+
+ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
 
 
 def initialisation(resource_path=NLTK_DATA_PATH):
@@ -93,7 +97,7 @@ def smart_shortener(text):
 
 def mongo_connect_and_update(document_uid,
                              summary,
-                             database=DOCUMENT_DATABASE,
+                             database=ddb_connection_uri,
                              tlsCAFile='./rds-combined-ca-bundle.pem'):
     '''Connects to the DocumentDB, finds the document matching our UUID and adds the summary to it'''
 
@@ -127,14 +131,17 @@ def handler(event, context: LambdaContext):
     initialisation()
 
     s3_client = boto3.client('s3')
-    document = download_text(s3_client, document_uid)
+    document = download_text(s3_client=s3_client, document_uid=document_uid)
     logger.info("Loading model")
     model = download_model(s3_client=s3_client)
 
     # Shorten text for summarising
     shortened_text = smart_shortener(text=document)
-    summary = summarize(raw_text_fp=smart_shortener(
-        shortened_text), model=model, max_length=4)
+    summary = summarize(
+        raw_text_fp=smart_shortener(
+            text=shortened_text),
+        model=model,
+        max_length=4)
 
     response = mongo_connect_and_update(document_uid=document_uid, summary=summary)
     response['document_uid'] = document_uid

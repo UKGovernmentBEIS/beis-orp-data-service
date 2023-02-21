@@ -227,3 +227,4 @@ def handler(event, context: LambdaContext):
     handler_response['document_uid'] = document_uid
 
     return handler_response
+

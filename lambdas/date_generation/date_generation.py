@@ -15,8 +15,12 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 logger = Logger()
 
 
-DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
+DDB_USER = os.environ['DDB_USER']
+DDB_PASSWORD = os.environ['DDB_PASSWORD']
+DDB_DOMAIN = os.environ['DDB_DOMAIN']
+
+ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
 
 
 # Initalise the matcher
@@ -39,7 +43,7 @@ def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
 
 def mongo_connect_and_push(document_uid,
                            date,
-                           database=DOCUMENT_DATABASE,
+                           database=ddb_connection_uri,
                            tlsCAFile='./rds-combined-ca-bundle.pem'):
     '''Connects to the DocumentDB, finds the document matching our UUID and adds the date to it'''
 
@@ -73,7 +77,7 @@ def preprocess_text(text):
     # Add spaces between digits and str characters
     txt = re.sub(r"(?i)(?<=\d)(?=[a-z])|(?<=[a-z])(?=\d)", " ", txt)
     clean_words = ''.join(' / ' if c in string.punctuation else c for c in txt)
-    clean_text = re.sub(r"\s+", ' ', clean_words) 
+    clean_text = re.sub(r"\s+", ' ', clean_words)
     return clean_text
 
 
@@ -100,11 +104,14 @@ def clean_date(candidate_dates):
             if re.search('[a-zA-Z]', date):
                 date_list.append(standardise_date(date))
             elif len(date.split(" / ")[-1]) < 4:
-                if date.split(" / ")[-1][0] == "9" or date.split(" / ")[-1][0] == "8" or date.split(" / ")[-1][0] == "7":
-                    date = "".join(date.split(" / ")[:-1]) + " / " + "19" + "".join(date.split(" / ")[-1])
+                if date.split(
+                        " / ")[-1][0] == "9" or date.split(" / ")[-1][0] == "8" or date.split(" / ")[-1][0] == "7":
+                    date = "".join(date.split(
+                        " / ")[:-1]) + " / " + "19" + "".join(date.split(" / ")[-1])
                     date_list.append(standardise_date(date))
-                else: 
-                    date = "".join(date.split(" / ")[:-1]) + " / " + "20" + "".join(date.split(" / ")[-1])
+                else:
+                    date = "".join(date.split(
+                        " / ")[:-1]) + " / " + "20" + "".join(date.split(" / ")[-1])
                     date_list.append(standardise_date(date))
         return date_list
 
@@ -119,7 +126,7 @@ def find_date(clean_text):
 
     candidate_dates = []
     for match_id, start, end in matches:
-        string_id = nlp.vocab.strings[match_id]  # Get string representation
+        # string_id = nlp.vocab.strings[match_id]  # Get string representation
         span = doc[start:end]  # The matched span
         candidate_dates.append(str(span).title())
 
@@ -134,17 +141,17 @@ def check_metadata_date_in_doc(metadata_date, date_list):
     returns: date / metadata_date: either date from text or metadata date
         If any date extracted from the text is within 3 months of the metadata date, return this date
     """
-    margin = relativedelta(months = 3)
+    margin = relativedelta(months=3)
 
     datetime_obj = datetime.datetime.strptime(metadata_date, '%Y-%m-%d %H:%M:%S')
     upper_date = datetime_obj + margin
     lower_date = datetime_obj - margin
 
     for date in date_list:
-        date =  datetime.datetime.strptime(date[0], '%Y-%m-%d %H:%M:%S')
-        if  upper_date >= date >= lower_date:
+        date = datetime.datetime.strptime(date[0], '%Y-%m-%d %H:%M:%S')
+        if upper_date >= date >= lower_date:
             return date
-        else: 
+        else:
             return metadata_date
 
 
@@ -158,8 +165,8 @@ def handler(event, context: LambdaContext):
 
     # Download raw text
     s3_client = boto3.client('s3')
-    text = download_text(s3_client, document_uid)
-    clean_text = preprocess_text(text)
+    text = download_text(s3_client=s3_client, document_uid=document_uid)
+    clean_text = preprocess_text(text=text)
 
     # Extract date from text
     date_list = find_date(clean_text=clean_text)
@@ -170,9 +177,7 @@ def handler(event, context: LambdaContext):
     # Show date
     logger.info(f"Date published: {date}")
 
-    response = mongo_connect_and_push(document_uid, date)
+    response = mongo_connect_and_push(document_uid=document_uid, date=date)
     response['document_uid'] = document_uid
 
     return response
-
-

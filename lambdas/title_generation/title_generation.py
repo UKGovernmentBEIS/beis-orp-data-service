@@ -15,13 +15,15 @@ from search_metadata_title.get_title import identify_metadata_title_in_text
 logger = Logger()
 
 
-DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
+DDB_USER = os.environ['DDB_USER']
+DDB_PASSWORD = os.environ['DDB_PASSWORD']
+DDB_DOMAIN = os.environ['DDB_DOMAIN']
 MODEL_PATH = os.environ['MODEL_PATH']
 MODEL_BUCKET = os.environ['MODEL_BUCKET']
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
 NLTK_DATA_PATH = os.environ['NLTK_DATA']
 
-my_pattern = re.compile(r'\s+')
+ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
 
 
 # Define predictor function
@@ -73,7 +75,7 @@ def get_title(title: str,
     title = removing_regulator_names(title)
 
     # Remove excess whitespace
-    title = re.sub(my_pattern, " ", title)
+    title = re.sub(re.compile(r'\s+'), " ", title)
 
     # Immediately filter out long metadata titles
     if (len(title.split(" ")) > 40):
@@ -115,7 +117,7 @@ def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
 
 def mongo_connect_and_push(document_uid,
                            title,
-                           database=DOCUMENT_DATABASE,
+                           database=ddb_connection_uri,
                            tlsCAFile='./rds-combined-ca-bundle.pem'):
     '''Connects to the DocumentDB, finds the document matching our UUID and adds the title to it'''
 
@@ -150,12 +152,12 @@ def handler(event, context: LambdaContext):
 
     # Download raw text
     s3_client = boto3.client('s3')
-    text = download_text(s3_client, document_uid)
+    text = download_text(s3_client=s3_client, document_uid=document_uid)
 
-    title = get_title(metadata_title, text, 85)
+    title = get_title(title=metadata_title, text=text, threshold=85)
     logger.info(f"Document title is: {title}")
 
-    response = mongo_connect_and_push(document_uid, title)
+    response = mongo_connect_and_push(document_uid=document_uid, title=title)
     response['document_uid'] = document_uid
 
     return response
