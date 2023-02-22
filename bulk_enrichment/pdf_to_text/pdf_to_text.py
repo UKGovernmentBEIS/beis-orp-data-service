@@ -8,8 +8,7 @@ import logging
 logger = logging.getLogger("Bulk_processing").addHandler(logging.StreamHandler())
 logger.setLevel(logging.INFO)
 
-
-def extract_title(doc_bytes_io):
+def extract_title_and_date(doc_bytes_io):
     '''Extracts title from PDF streaming input'''
 
     pdf = pikepdf.Pdf.open(doc_bytes_io)
@@ -18,17 +17,39 @@ def extract_title(doc_bytes_io):
         title = meta['{http://purl.org/dc/elements/1.1/}title']
     except KeyError:
         title = pdf.docinfo.get('/Title')
+    date_string = re.sub(r'[a-zA-Z]', r' ', meta['{http://ns.adobe.com/xap/1.0/}ModifyDate']).strip()[0:19]
+    date_published = datetime.fromtimestamp(mktime(strptime(date_string, "%Y-%m-%d %H:%M:%S")))
 
-    return str(title)
+    return str(title), date_published
 
 
 def extract_text(doc_bytes_io):
     '''Extracts text from PDF streaming input'''
 
-    with fitz.open(stream=doc_bytes_io) as doc:
-        text = ''
-        for page in doc:
-            text += page.get_text()
+    try:
+        # creating a pdf reader object
+        reader = PdfReader(doc_bytes_io)
+        
+        # printing number of pages in pdf file
+        # print(len(reader.pages))
+        
+        totalPages = PdfReader.numPages
+
+        # getting a specific page from the pdf file
+        text = []
+        for page in range(0, totalPages):
+            page = reader.pages[page]
+            # extracting text from page
+            txt = page.extract_text()
+            text.append(txt)
+
+        text = " ".join(text)
+
+    except:
+        with fitz.open(stream=doc_bytes_io) as doc:
+            text = ''
+            for page in doc:
+                text += page.get_text()
 
     return text
 
@@ -48,7 +69,6 @@ def clean_text(text):
     )
 
     text = text.strip()
-    text = text.lower()
     text = text.replace('\t', ' ')
     text = text.replace('_x000c_', '')
     text = re.sub('\\s+', ' ', text)
@@ -56,6 +76,8 @@ def clean_text(text):
     text = re.sub('\\.{4,}', '.')
 
     return text
+
+
 
 
 def cut_title(title):
@@ -79,7 +101,7 @@ def write_text(text, document_uid, destination_bucket):
 def pdf_converter(file_path, document_uid, save_path):
     doc_bytes_io = io.BytesIO(open(file_path))
 
-    title = extract_title(doc_bytes_io=doc_bytes_io)
+    title, date_published = extract_title_and_date(doc_bytes_io=doc_bytes_io)
     text = extract_text(doc_bytes_io=doc_bytes_io)
     logger.debug(f'Extracted title: {title}'
                 f'UUID obtained is: {document_uid}')
@@ -87,4 +109,4 @@ def pdf_converter(file_path, document_uid, save_path):
 
     write_text(text=text, document_uid=document_uid, destination_bucket=save_path)
 
-    return text, title
+    return text, title, date_published
