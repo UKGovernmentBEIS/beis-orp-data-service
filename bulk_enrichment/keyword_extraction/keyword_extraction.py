@@ -17,6 +17,7 @@ logger = logging.getLogger("Bulk_processing").addHandler(logging.StreamHandler()
 logger.setLevel(logging.INFO)
 
 
+KW_MODEL='model_store/keybert.pt'
 
 def download_model(model_path,
                    key='keybert.pt'):
@@ -107,10 +108,10 @@ def get_relevant_keywords(x):
     return [(k, max(v)) for k, v in kwds.items()][:10]
 
 
-def keyword_extraction(document, model_path):
+def keyword_extraction(document):
 
     logger.debug("Started initialisation...")
-    kw_model = download_model(model_path)
+    kw_model = download_model(KW_MODEL)
     keywords = extract_keywords(text=document, kw_model=kw_model)
     # lemmatise keywords
     keywords = get_relevant_keywords(x=keywords)

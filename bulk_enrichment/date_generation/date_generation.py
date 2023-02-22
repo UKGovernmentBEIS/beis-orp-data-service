@@ -101,7 +101,7 @@ def check_metadata_date_in_doc(metadata_date, date_list):
         else:
             return metadata_date
 
-def data_generation(text, metadata_date):
+def date_generation(text, metadata_date):
     clean_text = preprocess_text(text=text)
 
     # Extract date from text

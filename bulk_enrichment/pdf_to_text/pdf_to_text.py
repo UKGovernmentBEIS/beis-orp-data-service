@@ -3,6 +3,7 @@ import re
 import pikepdf
 import fitz
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
+from pandas import to_datetime
 
 import logging
 logger = logging.getLogger("Bulk_processing").addHandler(logging.StreamHandler())
@@ -18,7 +19,7 @@ def extract_title_and_date(doc_bytes_io):
     except KeyError:
         title = pdf.docinfo.get('/Title')
     date_string = re.sub(r'[a-zA-Z]', r' ', meta['{http://ns.adobe.com/xap/1.0/}ModifyDate']).strip()[0:19]
-    date_published = datetime.fromtimestamp(mktime(strptime(date_string, "%Y-%m-%d %H:%M:%S")))
+    date_published = str(to_datetime(date_string))
 
     return str(title), date_published
 
@@ -78,8 +79,6 @@ def clean_text(text):
     return text
 
 
-
-
 def cut_title(title):
     '''Cuts title length down to 25 tokens'''
 
@@ -87,7 +86,7 @@ def cut_title(title):
     title = re.sub(r'[^\w\s]', '', title)
 
     if len(str(title).split(' ')) > 25:
-        title = ' '.join(title.split(' ')[0:25]) + '...'
+        title = ' '.join(title.split(' ')[:25]) + '...'
 
     return title
 

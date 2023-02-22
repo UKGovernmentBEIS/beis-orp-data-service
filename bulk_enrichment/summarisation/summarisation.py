@@ -11,6 +11,7 @@ logger = logging.getLogger("Bulk_processing").addHandler(logging.StreamHandler()
 logger.setLevel(logging.INFO)
 
 MODEL_BUCKET = 'model_store/'
+
 def download_model(
         bucket=MODEL_BUCKET,
         key='mobilebert_ext.pt'):
