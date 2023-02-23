@@ -145,7 +145,7 @@ def handler(event, context: LambdaContext):
     document_uid = event['document_uid']
 
     # Asserting that there is a published date
-    assert event.get('uuid'), 'Document must have a publishing date'
+    assert event.get('date_published'), 'Document must have a publishing date'
     metadata_date = event['date_published']
 
     # Download raw text
