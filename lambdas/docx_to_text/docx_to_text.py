@@ -4,6 +4,7 @@ import docx
 import boto3
 import zipfile
 import pymongo
+import pandas as pd
 from http import HTTPStatus
 import xml.etree.ElementTree as ET
 from aws_lambda_powertools.logging.logger import Logger
@@ -176,7 +177,8 @@ def handler(event, context: LambdaContext):
 
     # Get title and date published
     title = metadata["title"]
-    date_published = metadata["created"]
+    date_published = pd.to_datetime(
+        metadata["created"]).isoformat()
 
     # Get and push text to destination bucket
     text = get_docx_text(path=docx_file)
