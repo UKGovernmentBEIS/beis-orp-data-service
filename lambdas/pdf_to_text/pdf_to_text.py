@@ -2,6 +2,7 @@ import io
 import os
 import re
 import boto3
+import pandas as pd
 import pikepdf
 import fitz
 from PyPDF2 import PdfReader
@@ -59,8 +60,7 @@ def extract_title_and_date(doc_bytes_io):
         title = meta['{http://purl.org/dc/elements/1.1/}title']
     except KeyError:
         title = pdf.docinfo.get('/Title')
-    date_string = re.sub(r'[a-zA-Z]', r' ', meta['{http://ns.adobe.com/xap/1.0/}ModifyDate']).strip()[0:19]
-    date_published = datetime.fromtimestamp(mktime(strptime(date_string, "%Y-%m-%d %H:%M:%S")))
+    date_published = pd.to_datetime(meta['{http://ns.adobe.com/xap/1.0/}ModifyDate']).isoformat()
 
     return str(title), date_published
 
@@ -118,18 +118,6 @@ def clean_text(text):
     text = re.sub('\\.{4,}', '.')
 
     return text
-
-
-def cut_title(title):
-    '''Cuts title length down to 25 tokens'''
-
-    title = re.sub('Figure 1', '', title)
-    title = re.sub(r'[^\w\s]', '', title)
-
-    if len(str(title).split(' ')) > 25:
-        title = ' '.join(title.split(' ')[0:25]) + '...'
-
-    return title
 
 
 def mongo_connect_and_push(source_bucket,
