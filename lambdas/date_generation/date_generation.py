@@ -22,7 +22,6 @@ DDB_DOMAIN = os.environ['DDB_DOMAIN']
 
 ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
 
-
 # Initalise the matcher
 nlp, matcher = initialise_matcher()
 
@@ -161,6 +160,9 @@ def handler(event, context: LambdaContext):
 
     # Get document id
     document_uid = event['document_uid']
+
+    # Asserting that there is a published date
+    assert event.get('uuid'), 'Document must have a publishing date'
     metadata_date = event['date_published']
 
     # Download raw text

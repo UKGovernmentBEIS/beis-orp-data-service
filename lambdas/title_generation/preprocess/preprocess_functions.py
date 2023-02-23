@@ -2,12 +2,12 @@ import string
 import wordninja
 
 
-with open("regulator_name_list.txt", "r") as f:
+with open("preprocess/regulator_name_list.txt", "r") as f:
     fileObject = f.read()
     regulator_name_list = fileObject.split("\n")
 
 
-def removing_regulator_names(text : str, regulator_name_list = regulator_name_list) -> str:
+def removing_regulator_names(text: str, regulator_name_list=regulator_name_list) -> str:
     """
     param: text: Str document text
     param: regulator_name_list: List list of regulator names to remove from text
@@ -30,8 +30,8 @@ def delete_single_characters(text) -> str:
     short_char_counter = 0
     for char in text.strip().split(" ")[:5]:
         if len(char) == 1:
-            short_char_counter +=1
-    if short_char_counter == 5:        
+            short_char_counter += 1
+    if short_char_counter == 5:
         text = wordninja.split("".join(text).replace(" ", ""))
         return " ".join(text)
     else:

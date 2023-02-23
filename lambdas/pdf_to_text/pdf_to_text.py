@@ -8,8 +8,6 @@ import fitz
 from PyPDF2 import PdfReader
 import pymongo
 from http import HTTPStatus
-from datetime import datetime
-from time import mktime, strptime
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -71,10 +69,10 @@ def extract_text(doc_bytes_io):
     try:
         # creating a pdf reader object
         reader = PdfReader(doc_bytes_io)
-        
+
         # printing number of pages in pdf file
         # print(len(reader.pages))
-        
+
         totalPages = PdfReader.numPages
 
         # getting a specific page from the pdf file
@@ -87,7 +85,7 @@ def extract_text(doc_bytes_io):
 
         text = " ".join(text)
 
-    except:
+    except BaseException:
         with fitz.open(stream=doc_bytes_io) as doc:
             text = ''
             for page in doc:
@@ -215,4 +213,3 @@ def handler(event, context: LambdaContext):
     handler_response['document_uid'] = document_uid
 
     return handler_response
-
