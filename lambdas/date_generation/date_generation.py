@@ -96,8 +96,8 @@ def clean_date(candidate_dates):
                 elif len(date.split(" / ")[-1]) < 4:
                     "01/" + date
                     date_list.append(pd.to_datetime(date).isoformat())
-            except pd.errors.OutOfBoundsDatetime:
-                logger.warning(f'Date {date} is out of bounds')
+            except pd.errors.OutOfBoundsDatetime or pd.errors.ParserError:
+                logger.warning(f'Date {date} is out of bounds or cannot be parsed')
                 continue
 
         return date_list
