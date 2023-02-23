@@ -69,7 +69,7 @@ def pre_process_tokenization_function(documents: str):
     '''Pre-processes the text ready for keyword extraction'''
 
     # Preprocess data after embeddings are created
-    text = BeautifulSoup(documents).get_text()
+    text = BeautifulSoup(documents, features='html.parser').get_text()
     text = re.sub('[^a-zA-Z]', ' ', text)
 
     # Define stopwords
@@ -155,7 +155,7 @@ def mongo_connect_and_update(document_uid,
         tls=True,
         tlsCAFile=tlsCAFile
     )
-    logger.info(db_client.list_database_names())
+
     db = db_client.bre_orp
     collection = db.documents
 
@@ -193,6 +193,7 @@ def handler(event, context: LambdaContext):
     response = mongo_connect_and_update(
         document_uid=document_uid,
         keywords=subject_keywords)
+
     response['document_uid'] = document_uid
 
     return response
