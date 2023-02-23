@@ -4,7 +4,7 @@ import boto3
 import string
 import pymongo
 import datetime
-import datefinder
+import pandas as pd
 from http import HTTPStatus
 from add_patterns import initialise_matcher
 from dateutil.relativedelta import relativedelta
@@ -80,16 +80,6 @@ def preprocess_text(text):
     return clean_text
 
 
-def standardise_date(date):
-    """
-    param date: datetime
-    returns date_matches: List of dates found
-    """
-    matches = datefinder.find_dates(date)
-    date_matches = [str(date) for date in matches]
-    return date_matches
-
-
 def clean_date(candidate_dates):
     """
     param: candidate_dates: List of dates found from text
@@ -101,17 +91,10 @@ def clean_date(candidate_dates):
         date_list = []
         for date in candidate_dates:
             if re.search('[a-zA-Z]', date):
-                date_list.append(standardise_date(date))
+                date_list.append(pd.to_datetime(date).isoformat())
             elif len(date.split(" / ")[-1]) < 4:
-                if date.split(
-                        " / ")[-1][0] == "9" or date.split(" / ")[-1][0] == "8" or date.split(" / ")[-1][0] == "7":
-                    date = "".join(date.split(
-                        " / ")[:-1]) + " / " + "19" + "".join(date.split(" / ")[-1])
-                    date_list.append(standardise_date(date))
-                else:
-                    date = "".join(date.split(
-                        " / ")[:-1]) + " / " + "20" + "".join(date.split(" / ")[-1])
-                    date_list.append(standardise_date(date))
+                "01/" + date
+                date_list.append(pd.to_datetime(date).isoformat())
         return date_list
 
 
