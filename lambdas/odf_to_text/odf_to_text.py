@@ -5,6 +5,7 @@ import boto3
 import pymongo
 import zipfile
 import datetime
+import pandas as pd
 from http import HTTPStatus
 from bs4 import BeautifulSoup
 import xml.etree.ElementTree as ET
@@ -82,7 +83,7 @@ def metadata_title_date_extraction(metadataXML):
     title = metadata.find("dc:title").get_text()
     date_published = pd.to_datetime(
         metadata.find("dc:date").get_text()).isoformat()
-        
+
     return title, date_published
 
 
