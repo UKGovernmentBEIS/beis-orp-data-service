@@ -59,8 +59,10 @@ def extract_title_and_date(doc_bytes_io):
         title = meta['{http://purl.org/dc/elements/1.1/}title']
     except KeyError:
         title = pdf.docinfo.get('/Title')
-    date_string = re.sub(r'[a-zA-Z]', r' ', meta['{http://ns.adobe.com/xap/1.0/}ModifyDate']).strip()[0:19]
-    date_published = datetime.fromtimestamp(mktime(strptime(date_string, "%Y-%m-%d %H:%M:%S")))
+    date_string = re.sub(
+        r'[a-zA-Z]', r' ', meta['{http://ns.adobe.com/xap/1.0/}ModifyDate']).strip()[0:19]
+    date_published = datetime.fromtimestamp(
+        mktime(strptime(date_string, "%Y-%m-%d %H:%M:%S")))
 
     return str(title), date_published
 
@@ -71,10 +73,10 @@ def extract_text(doc_bytes_io):
     try:
         # creating a pdf reader object
         reader = PdfReader(doc_bytes_io)
-        
+
         # printing number of pages in pdf file
         # print(len(reader.pages))
-        
+
         totalPages = PdfReader.numPages
 
         # getting a specific page from the pdf file
@@ -87,7 +89,7 @@ def extract_text(doc_bytes_io):
 
         text = " ".join(text)
 
-    except:
+    except BaseException:
         with fitz.open(stream=doc_bytes_io) as doc:
             text = ''
             for page in doc:
@@ -227,4 +229,3 @@ def handler(event, context: LambdaContext):
     handler_response['document_uid'] = document_uid
 
     return handler_response
-
