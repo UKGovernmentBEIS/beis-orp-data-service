@@ -1,6 +1,7 @@
 aws_lambda_powertools==2.8.0
 boto3==1.21.32
 datefinder==0.7.3
+pandas==1.5.2
 pymongo==4.3.3
 python_dateutil==2.8.2
 spacy==3.5.0

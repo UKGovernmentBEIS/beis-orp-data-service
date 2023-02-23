@@ -201,5 +201,4 @@ def handler(event, context: LambdaContext):
         destination_bucket=DESTINATION_BUCKET)
 
     handler_response = {**mongo_response, **s3_response}
-
     return handler_response

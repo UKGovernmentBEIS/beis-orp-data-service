@@ -29,12 +29,11 @@ def initialisation(resource_path=NLTK_DATA_PATH):
 
     # Define new directory to tmp directory
     save_path = os.path.join('/tmp', 'mydir')
-    os.makedirs(save_path)
+    os.makedirs(save_path, exist_ok=True)
 
     # Define modeldir path
-    save_path = os.path.join('/tmp', 'modeldir')
-    if not os.path.isdir(save_path):
-        os.makedirs(save_path)
+    model_path = os.path.join('/tmp', 'modeldir')
+    os.makedirs(model_path, exist_ok=True)
 
     # Create new directories in tmp directory
     os.makedirs(resource_path, exist_ok=True)

@@ -125,7 +125,7 @@ def check_metadata_date_in_doc(metadata_date, date_list):
     """
     margin = relativedelta(months=3)
 
-    datetime_obj = datetime.datetime.strptime(metadata_date, '%Y-%m-%d %H:%M:%S')
+    datetime_obj = datetime.datetime.strptime(metadata_date, '%Y-%m-%dT%H:%M:%S')
     upper_date = datetime_obj + margin
     lower_date = datetime_obj - margin
 
