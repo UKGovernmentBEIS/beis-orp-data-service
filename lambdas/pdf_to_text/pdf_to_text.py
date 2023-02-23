@@ -167,7 +167,7 @@ def mongo_connect_and_push(source_bucket,
     logger.info(f'Document inserted: {collection.find_one(doc)}')
 
     db_client.close()
-    return {'mongoStatusCode': HTTPStatus.OK}
+    return {**doc, 'mongoStatusCode': HTTPStatus.OK}
 
 
 def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUCKET):
@@ -220,12 +220,13 @@ def handler(event, context: LambdaContext):
         title=title,
         date_published=date_published,
         database=ddb_connection_uri)
+
     s3_response = write_text(
         s3_client=s3_client,
         text=text,
         document_uid=document_uid,
         destination_bucket=DESTINATION_BUCKET)
+
     handler_response = {**mongo_response, **s3_response}
-    handler_response['document_uid'] = document_uid
 
     return handler_response

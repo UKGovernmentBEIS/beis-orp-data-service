@@ -101,12 +101,14 @@ def getMetaData(doc):
     return metadata
 
 
-def mongo_connect_and_push(document_uid,
+def mongo_connect_and_push(source_bucket,
+                           object_key,
+                           document_uid,
                            title,
                            date_published,
                            database,
                            tlsCAFile='./rds-combined-ca-bundle.pem'):
-    '''Connects to the DocumentDB and inserts extracted metadata from the PDF'''
+    '''Connects to the DocumentDB and inserts extracted metadata from the DOC'''
 
     db_client = pymongo.MongoClient(
         database,
@@ -117,16 +119,21 @@ def mongo_connect_and_push(document_uid,
     db = db_client.bre_orp
     collection = db.documents
 
-    # Insert document to DB
-    logger.info({'document': collection.find_one(
-        {'document_uid': document_uid})})
-    collection.find_one_and_update({'document_uid': document_uid}, {
-                                   '$set': {'title': title, 'date_published': date_published}})
+    doc = {
+        'title': title,
+        'date_published': date_published,
+        'document_uid': document_uid,
+        'uri': f's3://{source_bucket}/{object_key}',
+        'object_key': object_key
+    }
+
+    # Insert document to DB if it doesn't already exist
+    if not collection.find_one(doc):
+        collection.insert_one(doc)
+    logger.info(f'Document inserted: {collection.find_one(doc)}')
+
     db_client.close()
-
-    logger.info('Sent to DocumentDB')
-
-    return {'statusCode': HTTPStatus.OK}
+    return {**doc, 'mongoStatusCode': HTTPStatus.OK}
 
 
 def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUCKET):
@@ -177,12 +184,20 @@ def handler(event, context: LambdaContext):
 
     logger.info(f"All data extracted. E.g. Title extracted: {title}")
 
-    response = mongo_connect_and_push(
-        document_uid=object_key,
+    mongo_response = mongo_connect_and_push(
+        source_bucket=source_bucket,
+        object_key=object_key,
+        document_uid=document_uid,
         title=title,
         date_published=date_published,
         database=ddb_connection_uri)
 
-    response['document_uid'] = document_uid
+    s3_response = write_text(
+        s3_client=s3_client,
+        text=text,
+        document_uid=document_uid,
+        destination_bucket=DESTINATION_BUCKET)
 
-    return response
+    handler_response = {**mongo_response, **s3_response}
+
+    return handler_response
