@@ -90,11 +90,16 @@ def clean_date(candidate_dates):
     else:
         date_list = []
         for date in candidate_dates:
-            if re.search('[a-zA-Z]', date):
-                date_list.append(pd.to_datetime(date).isoformat())
-            elif len(date.split(" / ")[-1]) < 4:
-                "01/" + date
-                date_list.append(pd.to_datetime(date).isoformat())
+            try:
+                if re.search('[a-zA-Z]', date):
+                    date_list.append(pd.to_datetime(date).isoformat())
+                elif len(date.split(" / ")[-1]) < 4:
+                    "01/" + date
+                    date_list.append(pd.to_datetime(date).isoformat())
+            except pd.errors.OutOfBoundsDatetime:
+                logger.warning(f'Date {date} is out of bounds')
+                continue
+
         return date_list
 
 
