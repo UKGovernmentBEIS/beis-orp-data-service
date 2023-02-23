@@ -80,10 +80,10 @@ def metadata_title_date_extraction(metadataXML):
     soup = BeautifulSoup(metadataXML, "lxml")
     metadata = soup.find("ns0:meta")
     title = metadata.find("dc:title").get_text()
-    date = datetime.datetime.strptime(
-        metadata.find("dc:date").get_text()[
-            :10], '%Y-%m-%d')
-    return title, date
+    date_published = pd.to_datetime(
+        metadata.find("dc:date").get_text()).isoformat()
+        
+    return title, date_published
 
 
 def xml2text(xml):
