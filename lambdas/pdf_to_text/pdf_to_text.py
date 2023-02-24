@@ -2,6 +2,7 @@ import io
 import os
 import re
 import boto3
+import string
 import pandas as pd
 import pikepdf
 import fitz
@@ -92,13 +93,32 @@ def extract_text(doc_bytes_io):
             for page in doc:
                 text += page.get_text()
 
+    text = clean_text(text)
+    return text
+
+
+def remove_excess_punctuation(text) -> str:
+    """
+    param: text: Str document text
+    returns: text: Str cleaned document text
+        Returns text without excess punctuation
+    """
+    # Clean punctuation spacing
+    text = text.replace(" .", "")
+    for punc in string.punctuation:
+        text = text.replace(punc + punc, "")
     return text
 
 
 def clean_text(text):
     '''Clean the text by removing illegal characters and excess whitespace'''
+    pattern = re.compile(r'\s+')
 
-    text = re.sub('\n', ' ', text)
+    text = text.replace('\n', ' ')
+    text = text.replace(' .', '. ')
+    text = re.sub('(\d+(\.\d+)?)', r' \1 .', text)
+    text = re.sub(pattern, ' ', text)
+    text = remove_excess_punctuation(text)
     text = re.sub(ILLEGAL_CHARACTERS_RE, ' ', text)
 
     # Space out merged words by adding a space before a capital letter
@@ -114,7 +134,7 @@ def clean_text(text):
     text = text.replace('_x000c_', '')
     text = re.sub('\\s+', ' ', text)
     text = re.sub('<.*?>', '', text)
-    text = re.sub('\\.{4,}', '.')
+    text = re.sub('\\.{4,}', '.', text)
 
     return text
 
