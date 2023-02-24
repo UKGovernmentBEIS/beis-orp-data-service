@@ -1,5 +1,6 @@
 import os
 import io
+import re
 import nltk
 import torch
 import boto3
@@ -94,6 +95,21 @@ def smart_shortener(text):
         return shortened_complete
 
 
+def smart_postprocessor(sentence):
+    if len(sentence.split(" ")) < 100:
+        return sentence
+    else:
+        shortened = " ".join(sentence.split(" ")[ : 100])
+        end_sentence = sentence.replace(shortened, "")
+        shortened_complete = shortened + end_sentence.split(".")[0] + "."
+        if len(shortened_complete) > 1000:
+            res = [match.start() for match in re.finditer(r'[A-Z]', end_sentence)] 
+            shortened_complete = shortened + end_sentence[:res[0] -1] + "."
+            return shortened_complete
+        else:
+            return shortened_complete
+
+
 def mongo_connect_and_update(document_uid,
                              summary,
                              database=ddb_connection_uri,
@@ -136,11 +152,11 @@ def handler(event, context: LambdaContext):
 
     # Shorten text for summarising
     shortened_text = smart_shortener(text=document)
-    summary = summarize(
+    summary = smart_postprocessor(summarize(
         raw_text_fp=smart_shortener(
             text=shortened_text),
         model=model,
-        max_length=4)
+        max_length=4))
 
     response = mongo_connect_and_update(document_uid=document_uid, summary=summary)
     response['document_uid'] = document_uid
