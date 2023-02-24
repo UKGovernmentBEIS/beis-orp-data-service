@@ -16,9 +16,10 @@ from word_forms_loc.word_forms_loc import get_word_forms
 from word_forms_loc.lemmatizer import lemmatize
 
 search_keys = {"id", "keyword", "title", "data_published",
-               "regulator_id", "status", "regulatory_topic", "document_type"}
+               "regulator_id", "status", "regulatory_topic", "document_type",
+               "legislation_href"}
 return_vals = ['title', 'summary', 'document_uid', 'regulator_id',
-               'document_type', 'keyword',  'object_key',
+               'document_type', 'keyword',  'uri',
                'date_published', 'date_uploaded', 'legislative_origins', 'version']
 leg_vals = ['url', 'title', 'leg_type', 'leg_division']
 RET_SIZE = 10
@@ -49,16 +50,33 @@ def get_select_dict(results: dict, selc: list): return {k: (format_datetime(
 
 def remap(d:dict, mapd:dict):
     return {mapd.get(k, k):v for k,v in d.items()}
+def group_attributes(attr):
+    results = []
+    for k, gp in groupby(attr, lambda x: x[0]):
+        gpl = list(gp)
+        results.append((k, [i[1] for i in gpl] if len(gpl) > 1 else gpl[0][1]))
+    return dict(results)
 
 def getUniqueResult(results):
     res = [(i.get_type().get_label().name(), i.get_value())
            for a in results for i in a.concepts() if i.is_attribute()]
-    results = []
-    for k, gp in groupby(res, lambda x: x[0]):
-        gpl = list(gp)
-        results.append((k, [i[1] for i in gpl] if len(gpl) > 1 else gpl[0][1]))
-    return results
+    # results = []
+    # for k, gp in groupby(res, lambda x: x[0]):
+    #     gpl = list(gp)
+    #     results.append((k, [i[1] for i in gpl] if len(gpl) > 1 else gpl[0][1]))
+    # return results
+    return group_attributes(res)
 
+def group_of_group(results, id ='id', grouping='y', attribute='attribute'):
+    ret = {}
+    for res in results:
+        a=[]
+        gp1 = res.concept_maps()[0].map()[id].get_value()
+        for _, gp2 in groupby(res.concept_maps(), lambda x: x.map()[grouping]):
+            attr= [i.map()[attribute] for i in gp2]
+            a.append(group_attributes([(i.get_type().get_label().name(), i.get_value()) for i in attr]))
+        ret[gp1] = a
+    return ret
 
 def matchquery(query, session, group=True):
     with session.transaction(TransactionType.READ) as transaction:
@@ -90,13 +108,22 @@ def lemma2noun(lemma):
 
 def query_builder(event):
 
-    # Build TQL query from search params
+    ### Build TQL query from search params
     subq = ""
     query = 'match $x isa regulatoryDocument, has attribute $attribute'
     # Document API
     if event.get('id'):
         query += f', has document_uid "{event["id"].lower()}"'
 
+    # Related reg docs (links to legislation search)
+    elif event.get('legislation_href'):
+        query = 'match $x isa legislation, has url $id; $id like "'
+        query += '|'.join([leg for leg in event.get('legislation_href', [])])
+        query += '''";  $regdoc isa regulatoryDocument, has attribute $attribute;
+            (issuedFor:$x,issued:$regdoc) isa publication;
+            group $x;'''
+        return query
+    
     # Search API
     else:
         # simple filters
@@ -136,7 +163,48 @@ def query_builder(event):
     query += '; get $attribute, $x; group $x;'
     return query
 
+def search_reg_docs(ans):
+    # -> [{leg_href:string, related_docs:[]}]
+    res = group_of_group(ans, grouping='regdoc')
+    # res = group_of_group(ans,id='q',attribute='a')
+    docs = []
+    for leg, regdocs in res.items():
+        doc = {'legislation_href':leg}
+        data=[]
+        for rd in regdocs:
+            rd['keyword'] = list(set([lemma2noun(kw) for kw in rd.get('keyword', [])]))
+            # TODO  REMOVE THIS AFTER NEW BULK INGESTION
+            rd['uri'] = rd.pop('object_key')
+            data.append(get_select_dict(rd, return_vals))
+        doc['related_docs'] = data
+        docs.append(doc)
+    return docs
 
+def search_leg_orgs(ans, session):
+    # TODO  redo the query to send a single query instead of multiple
+    res = [dict(getUniqueResult(a.concept_maps()))
+               for a in ans]
+
+    # Query the graph database for legislative origins
+    LOGGER.info("Querying the graph for legislative origins")
+    for doc in res:
+        query = f'match $x isa regulatoryDocument, has node_id "{doc["node_id"]}";' + \
+            '$y isa entity, has attribute $attribute;' + \
+            ' ($x,$y) isa publication;' + \
+            ' get $attribute, $y; group $y;'
+        ans = [dict(getUniqueResult(a.concept_maps()))
+                for a in matchquery(query, session)]
+
+        doc['keyword'] = list(set([lemma2noun(kw) for kw in doc.get('keyword', [])]))
+        # TODO  REMOVE THIS AFTER NEW BULK INGESTION
+        doc['uri'] = doc.pop('object_key')
+        legmap = {'leg_type':'type', 'leg_division':'division'}
+        doc['legislative_origins'] = list(filter(None, [remap(get_select_dict(a, leg_vals), legmap) for a in ans]))
+        doc['regulator_id'] = list(
+            filter(None, [a.get('regulator_id') for a in ans]))[0]
+
+    return [get_select_dict(doc, return_vals) for doc in res]
+    
 def search_module(event, session):
     keyset = set(event.keys()) & search_keys
     page_size = int(event.get('page_size', RET_SIZE))
@@ -156,27 +224,15 @@ def search_module(event, session):
         LOGGER.info("Querying the graph for reg. documents")
         ans = matchquery(query, session)
         num_ret = len(ans)
-        res = [dict(getUniqueResult(a.concept_maps()))
-               for a in ans[page:page+RET_SIZE]]
+
         LOGGER.info(f"Ret -> {num_ret}")
 
-        # Query the graph database for legislative origins
-        LOGGER.info("Querying the graph for legislative origins")
-        for doc in res:
-            query = f'match $x isa regulatoryDocument, has node_id "{doc["node_id"]}";' + \
-                '$y isa entity, has attribute $attribute;' + \
-                ' ($x,$y) isa publication;' + \
-                ' get $attribute, $y; group $y;'
-            ans = [dict(getUniqueResult(a.concept_maps()))
-                   for a in matchquery(query, session)]
-
-            doc['keyword'] = list(set([lemma2noun(kw) for kw in doc.get('keyword', [])]))
-            legmap = {'leg_type':'type', 'leg_division':'division'}
-            doc['legislative_origins'] = list(filter(None, [remap(get_select_dict(a, leg_vals), legmap) for a in ans]))
-            doc['regulator_id'] = list(
-                filter(None, [a.get('regulator_id') for a in ans]))[0]
-
-        docs = [get_select_dict(doc, return_vals) for doc in res]
+        # second hop search
+        if event.get('legislation_href'):
+            docs = search_reg_docs(ans)
+        else:
+            docs = search_leg_orgs(ans[page:page+RET_SIZE], session)
+       
 
         return {
             "status_code": 200,
