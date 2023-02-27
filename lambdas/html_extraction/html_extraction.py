@@ -13,25 +13,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 logger = Logger()
 
 DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
-SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
-DESTINATION_BUCKET = SOURCE_BUCKET
-
-
-# TO DO:
-# CHANGE DOWNLOAD_HTML FUNCTION AS S3 BUCKET WILL NOT BE USED
-def download_html(s3_client, document_uid, bucket=SOURCE_BUCKET):
-    '''Downloads the raw text from S3 ready for keyword extraction'''
-
-    url = s3_client.get_object(
-        Bucket=bucket,
-        Key=f'raw/{document_uid}'
-    )['Body'].read()
-
-    req = requests.get(url)
-
-    logger.info('Downloaded html')
-
-    return req
+DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
 
 
 def get_title_text(URL):
@@ -121,13 +103,14 @@ def handler(event, context: LambdaContext):
     # Get document id
     document_uid = event['document_uid']
     # Download raw pdf and extracted text
-    URL = download_html(s3_client, document_uid)
+    URL = event['detail']['url']
     # Get metadata title
     title, text = get_title_text(URL)
     # Get publishing date
     date_published = get_publication_modification_date(URL)
 
-    logger.info(f"Document title is: {title}")
+    logger.info(f"Document title is: {title} "
+                f"Publishing date is: {date_published}")
 
     mongo_response = mongo_connect_and_push(document_uid, title, text, date_published)
     s3_response = write_text(s3_client, text=text, document_uid=document_uid)
