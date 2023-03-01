@@ -90,17 +90,17 @@ def clean_date(candidate_dates):
     else:
         date_list = []
         for date in candidate_dates:
-            # If month isalph()
-            if re.search('[a-zA-Z]', date):
-                date_list.append(pd.to_datetime(date).isoformat())
-            # Else if date is numeric
-            elif len(date.split(" / ")[-1]) < 4:
-                try:
+            try:
+                # If month isalph()
+                if re.search('[a-zA-Z]', date):
+                    date_list.append(pd.to_datetime(date).isoformat())
+                # Else if date is numeric
+                elif len(date.split(" / ")[-1]) < 4:
                     date = "/".join([date.split(" / ")[0], "01", date.split(" / ")[1]])
                     date_list.append(pd.to_datetime(date).isoformat())
-                except:
+                else:
                     continue
-            else:
+            except:
                 continue
 
         return date_list

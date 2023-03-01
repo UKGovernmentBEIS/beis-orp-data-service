@@ -55,12 +55,22 @@ def extract_title_and_date(doc_bytes_io):
 
     pdf = pikepdf.Pdf.open(doc_bytes_io)
     meta = pdf.open_metadata()
+    docinfo = pdf.docinfo
+    dict_docinfo = dict(docinfo.items())
+
     try:
         title = meta['{http://purl.org/dc/elements/1.1/}title']
     except KeyError:
         title = pdf.docinfo.get('/Title')
+
+    # Get date
+    if "/ModDate" in dict_docinfo:
+        mod_date = re.search(r"\d{8}", str(docinfo["/ModDate"])).group()
+    elif "/CreationDate" in dict_docinfo:
+        mod_date = re.search(r"\d{8}", str(docinfo["/CreationDate"])).group()
+
     date_published = pd.to_datetime(
-        meta['{http://ns.adobe.com/xap/1.0/}ModifyDate']).isoformat()
+        mod_date).isoformat()     
 
     return str(title), date_published
 
