@@ -70,7 +70,7 @@ def extract_title_and_date(doc_bytes_io):
         mod_date = re.search(r"\d{8}", str(docinfo["/CreationDate"])).group()
 
     date_published = pd.to_datetime(
-        mod_date).isoformat()     
+        mod_date).isoformat()
 
     return str(title), date_published
 
@@ -126,7 +126,7 @@ def clean_text(text):
 
     text = text.replace('\n', ' ')
     text = text.replace(' .', '. ')
-    text = re.sub('(\d+(\.\d+)?)', r' \1 .', text)
+    text = re.sub('(\\d+(\\.\\d+)?)', r' \1 .', text)
     text = re.sub(pattern, ' ', text)
     text = remove_excess_punctuation(text)
     text = re.sub(ILLEGAL_CHARACTERS_RE, ' ', text)

@@ -18,7 +18,7 @@ ENV MODEL_PATH=/tmp/modeldir/
 ADD postprocess ${LAMBDA_TASK_ROOT}/postprocess 
 ADD preprocess ${LAMBDA_TASK_ROOT}/preprocess
 ADD search_metadata_title ${LAMBDA_TASK_ROOT}/search_metadata_title 
-COPY nltk_data/ ${LAMBDA_TASK_ROOT}/nltk_data 
+# ADD nltk_data/ /tmp/nltk_data
 
 # Copy function code
 COPY title_generation.py ${LAMBDA_TASK_ROOT}

@@ -54,7 +54,11 @@ def sqs_connect_and_send(document, queue=DESTINATION_SQS_URL):
 def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
-    document_uid = event['document_uid']
+    # Ensuring the outputs of the parallel stage are the same
+    assert all(map(lambda x: x == event[0], event)
+               ), f'Outputs of parallel stage are not the same: {event}'
+
+    document_uid = event[0]['document_uid']
     logger.append_keys(document_uid=document_uid)
 
     document = mongo_connect_and_pull(

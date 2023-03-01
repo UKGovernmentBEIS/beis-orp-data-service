@@ -12,8 +12,8 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 from preprocess.preprocess_functions import removing_regulator_names
 from search_metadata_title.get_title import identify_metadata_title_in_text
 
-logger = Logger()
 
+logger = Logger()
 
 DDB_USER = os.environ['DDB_USER']
 DDB_PASSWORD = os.environ['DDB_PASSWORD']
@@ -21,12 +21,17 @@ DDB_DOMAIN = os.environ['DDB_DOMAIN']
 MODEL_PATH = os.environ['MODEL_PATH']
 MODEL_BUCKET = os.environ['MODEL_BUCKET']
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
-NLTK_DATA_PATH = os.environ['NLTK_DATA']
+NLTK_DATA = os.environ['NLTK_DATA']
 
 ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
 
+os.makedirs(NLTK_DATA, exist_ok=True)
+nltk.download('wordnet', download_dir=NLTK_DATA)
+nltk.download('omw-1.4', download_dir=NLTK_DATA)
+nltk.download('punkt', download_dir=NLTK_DATA)
+nltk.download('stopwords', download_dir=NLTK_DATA)
 
-# Define predictor function
+
 def title_predictor(text: str) -> str:
     """
     param: text: Str document text

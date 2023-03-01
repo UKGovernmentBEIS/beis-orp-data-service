@@ -31,7 +31,6 @@ MODEL_PATH = os.environ['MODEL_PATH']
 ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
 
 os.makedirs(NLTK_DATA, exist_ok=True)
-os.makedirs(MODEL_PATH, exist_ok=True)
 nltk.download('wordnet', download_dir=NLTK_DATA)
 nltk.download('omw-1.4', download_dir=NLTK_DATA)
 nltk.download('punkt', download_dir=NLTK_DATA)
