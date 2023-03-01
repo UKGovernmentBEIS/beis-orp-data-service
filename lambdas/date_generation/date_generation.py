@@ -90,14 +90,17 @@ def clean_date(candidate_dates):
     else:
         date_list = []
         for date in candidate_dates:
-            try:
-                if re.search('[a-zA-Z]', date):
+            # If month isalph()
+            if re.search('[a-zA-Z]', date):
+                date_list.append(pd.to_datetime(date).isoformat())
+            # Else if date is numeric
+            elif len(date.split(" / ")[-1]) < 4:
+                try:
+                    date = "/".join([date.split(" / ")[0], "01", date.split(" / ")[1]])
                     date_list.append(pd.to_datetime(date).isoformat())
-                elif len(date.split(" / ")[-1]) < 4:
-                    "01/" + date
-                    date_list.append(pd.to_datetime(date).isoformat())
-            except BaseException:  # pd.errors.OutOfBoundsDatetime or pd.errors.ParserError:
-                logger.warning(f'Date: {date} is out of bounds or cannot be parsed')
+                except:
+                    continue
+            else:
                 continue
 
         return date_list
@@ -128,22 +131,23 @@ def check_metadata_date_in_doc(metadata_date, date_list):
     returns: date / metadata_date: either date from text or metadata date
         If any date extracted from the text is within 3 months of the metadata date, return this date
     """
-    margin = relativedelta(months=3)
+    if date_list == None:
+        return metadata_date
 
-    datetime_obj = datetime.datetime.strptime(metadata_date, '%Y-%m-%dT%H:%M:%S')
-    upper_date = datetime_obj + margin
-    lower_date = datetime_obj - margin
+    else:
+        margin = relativedelta(months=3)
 
-    for date in date_list:
-        try:
-            date = datetime.datetime.strptime(date[0], '%Y-%m-%d %H:%M:%S')
-            if upper_date >= date >= lower_date:
-                return date
-            else:
-                return metadata_date
-        except BaseException:  # pd.errors.OutOfBoundsDatetime or pd.errors.ParserError:
-            logger.warning(f'Date: {date[0]} does not match the required format')
-            continue
+        datetime_obj = datetime.datetime.fromisoformat(metadata_date).date()
+        upper_date = datetime_obj + margin
+        lower_date = datetime_obj - margin
+
+        # Find the closest date
+        closest_date = min([datetime.datetime.fromisoformat(date).date() for date in date_list], key=lambda x: abs(x - datetime_obj))
+
+        if upper_date >= closest_date >= lower_date:
+            return pd.to_datetime(closest_date).isoformat()
+        else:
+            return metadata_date
 
 
 @logger.inject_lambda_context(log_event=True)
@@ -175,3 +179,4 @@ def handler(event, context: LambdaContext):
     response['document_uid'] = document_uid
 
     return response
+
