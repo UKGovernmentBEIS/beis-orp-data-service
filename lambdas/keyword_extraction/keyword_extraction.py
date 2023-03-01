@@ -5,6 +5,7 @@ import pymongo
 import boto3
 import wordninja
 import torch
+import nltk
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from collections import defaultdict
@@ -19,7 +20,6 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-
 DDB_USER = os.environ['DDB_USER']
 DDB_PASSWORD = os.environ['DDB_PASSWORD']
 DDB_DOMAIN = os.environ['DDB_DOMAIN']
@@ -29,6 +29,12 @@ NLTK_DATA = os.environ['NLTK_DATA']
 MODEL_PATH = os.environ['MODEL_PATH']
 
 ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
+
+os.makedirs(NLTK_DATA, exist_ok=True)
+os.makedirs(MODEL_PATH, exist_ok=True)
+nltk.download('wordnet', download_dir=NLTK_DATA)
+nltk.download('omw-1.4', download_dir=NLTK_DATA)
+nltk.download('punkt', download_dir=NLTK_DATA)
 
 
 def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):

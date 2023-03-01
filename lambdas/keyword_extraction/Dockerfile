@@ -19,7 +19,7 @@ RUN chmod 755 -R ${LAMBDA_TASK_ROOT}/word_forms_loc
 COPY keyword_extraction.py ${LAMBDA_TASK_ROOT}
 COPY stopwords.txt ${LAMBDA_TASK_ROOT}
 COPY rds-combined-ca-bundle.pem ${LAMBDA_TASK_ROOT}
-ADD nltk_data/ ${LAMBDA_TASK_ROOT}/nltk_data 
+# COPY nltk_data/ ${LAMBDA_TASK_ROOT}/nltk_data 
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
 CMD [ "keyword_extraction.handler" ]
