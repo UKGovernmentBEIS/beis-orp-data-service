@@ -97,8 +97,8 @@ def clean_date(candidate_dates):
                     "01/" + date
                     date_list.append(pd.to_datetime(date).isoformat())
             except BaseException:  # pd.errors.OutOfBoundsDatetime or pd.errors.ParserError:
-                logger.warning(f'Date {date} is out of bounds or cannot be parsed')
-            continue
+                logger.warning(f'Date: {date} is out of bounds or cannot be parsed')
+                continue
 
         return date_list
 
@@ -135,11 +135,15 @@ def check_metadata_date_in_doc(metadata_date, date_list):
     lower_date = datetime_obj - margin
 
     for date in date_list:
-        date = datetime.datetime.strptime(date[0], '%Y-%m-%d %H:%M:%S')
-        if upper_date >= date >= lower_date:
-            return date
-        else:
-            return metadata_date
+        try:
+            date = datetime.datetime.strptime(date[0], '%Y-%m-%d %H:%M:%S')
+            if upper_date >= date >= lower_date:
+                return date
+            else:
+                return metadata_date
+        except BaseException:  # pd.errors.OutOfBoundsDatetime or pd.errors.ParserError:
+            logger.warning(f'Date: {date[0]} does not match the required format')
+            continue
 
 
 @logger.inject_lambda_context(log_event=True)
