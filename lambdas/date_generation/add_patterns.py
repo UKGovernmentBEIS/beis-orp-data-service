@@ -15,7 +15,7 @@ digit_month_list_nozero =  ["1","2","3","4","5","6","7","8","9","10","11","12"]
 
 
 # Long hand date patterns
-pattern1 = [{"IS_DIGIT": True, "OP": "?"}, {"TEXT": {"IN" :month_list}}, {"IS_DIGIT": True}]
+pattern1 = [{"IS_DIGIT": True, "OP": "?"}, {"TEXT": {"IN" :month_list}}, {"IS_DIGIT": True, "LENGTH" : 4}]
 # Long hand date patterns w/ punctuation
 pattern2 = [{"IS_DIGIT": True}, {"IS_PUNCT" : True, "OP": "?"}, {"TEXT": {"IN" :month_list}}, {"IS_PUNCT" : True, "OP": "?"}, {"IS_DIGIT": True}]
 # Short hand date patterns
