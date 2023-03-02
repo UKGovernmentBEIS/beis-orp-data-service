@@ -12,8 +12,13 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-DOCUMENT_DATABASE = os.environ['DOCUMENT_DATABASE']
+DDB_USER = os.environ['DDB_USER']
+DDB_PASSWORD = os.environ['DDB_PASSWORD']
+DDB_DOMAIN = os.environ['DDB_DOMAIN']
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
+
+
+ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
 
 
 def get_title_text(URL):
@@ -52,7 +57,7 @@ def get_publication_modification_date(URL):
 def mongo_connect_and_push(document_uid,
                            title,
                            date_published,
-                           database=DOCUMENT_DATABASE,
+                           database=ddb_connection_uri,
                            tlsCAFile='./rds-combined-ca-bundle.pem'):
     '''Connects to the DocumentDB, finds the document matching our UUID and adds the title, text and publishing date to it'''
 
