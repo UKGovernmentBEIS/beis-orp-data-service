@@ -153,10 +153,11 @@ def handler(event, context: LambdaContext):
     # Shorten text for summarising
     shortened_text = smart_shortener(text=document)
     summary = smart_postprocessor(summarize(
-        raw_text_fp=smart_shortener(
-            text=shortened_text),
-        model=model,
+        shortened_text,
+        model,
         max_length=4))
+
+    logger.info(f"Summary: {summary}")
 
     response = mongo_connect_and_update(document_uid=document_uid, summary=summary)
     response['document_uid'] = document_uid
