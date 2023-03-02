@@ -12,11 +12,11 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Get current branch
-        run: echo "CURRENT_BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+      # - name: Get current branch
+      #   run: echo "CURRENT_BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
-      - name: Use variable
-        run: echo "The value of CURRENT_BRANCH is ${{ env.CURRENT_BRANCH }}"
+      # - name: Use variable
+      #   run: echo "The value of CURRENT_BRANCH is ${{ env.CURRENT_BRANCH }}"
 
       - name: Find changed files
         run: |
