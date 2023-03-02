@@ -146,7 +146,7 @@ def mongo_connect_and_push(source_bucket,
     logger.info(f'Document inserted: {collection.find_one(doc)}')
 
     db_client.close()
-    return {'mongoStatusCode': HTTPStatus.OK}
+    return {**doc, 'mongoStatusCode': HTTPStatus.OK}
 
 
 @logger.inject_lambda_context(log_event=True)
