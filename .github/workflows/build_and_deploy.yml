@@ -1,0 +1,42 @@
+name: Build, Push and Deploy Docker Image
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
+      - name: Get current branch
+        run: echo "CURRENT_BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+
+      - name: Use variable
+        run: echo "The value of CURRENT_BRANCH is ${{ env.CURRENT_BRANCH }}"
+
+      - name: Find changed files
+        run: |
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+          echo "Changed files: $CHANGED_FILES"
+
+      # - name: Build Docker image
+      #   uses: docker/build-push-action@v2
+      #   with:
+      #     context: .
+      #     push: true
+      #     tags: your-docker-username/your-docker-repo-name:latest
+
+      # - name: Build Docker image
+      #   uses: docker/build-push-action@v2
+      #   with:
+      #     context: .
+      #     push: true
+      #     tags: your-docker-username/your-docker-repo-name:latest
+      #     build-args: |
+      #       CHANGED_FILES=${{ steps.get-changed-files.outputs.changed_files }}
+
+      #     # The Dockerfile should have an ARG variable named CHANGED_FILES
