@@ -100,7 +100,7 @@ def clean_date(candidate_dates):
                     date_list.append(pd.to_datetime(date).isoformat())
                 else:
                     continue
-            except:
+            except BaseException:
                 continue
 
         return date_list
@@ -131,7 +131,7 @@ def check_metadata_date_in_doc(metadata_date, date_list):
     returns: date / metadata_date: either date from text or metadata date
         If any date extracted from the text is within 3 months of the metadata date, return this date
     """
-    if date_list == None:
+    if date_list is None:
         return metadata_date
 
     else:
@@ -142,7 +142,8 @@ def check_metadata_date_in_doc(metadata_date, date_list):
         lower_date = datetime_obj - margin
 
         # Find the closest date
-        closest_date = min([datetime.datetime.fromisoformat(date).date() for date in date_list], key=lambda x: abs(x - datetime_obj))
+        closest_date = min([datetime.datetime.fromisoformat(date).date()
+                           for date in date_list], key=lambda x: abs(x - datetime_obj))
 
         if upper_date >= closest_date >= lower_date:
             return pd.to_datetime(closest_date).isoformat()
@@ -179,4 +180,3 @@ def handler(event, context: LambdaContext):
     response['document_uid'] = document_uid
 
     return response
-

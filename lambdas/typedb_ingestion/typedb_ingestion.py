@@ -44,7 +44,7 @@ def sqs_connect_and_send(document, queue=DESTINATION_SQS_URL):
     sqs = boto3.client('sqs')
     response = sqs.send_message(
         QueueUrl=queue,
-        MessageBody=json.dumps(document)
+        MessageBody=json.dumps(document, indent=4, sort_keys=True, default=str)
     )
 
     return response
