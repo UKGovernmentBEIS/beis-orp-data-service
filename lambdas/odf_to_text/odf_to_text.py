@@ -4,7 +4,6 @@ import os
 import boto3
 import pymongo
 import zipfile
-import datetime
 import pandas as pd
 from http import HTTPStatus
 from bs4 import BeautifulSoup
@@ -170,6 +169,8 @@ def handler(event, context: LambdaContext):
         s3_client=s3_client,
         object_key=object_key,
         source_bucket=source_bucket)
+
+    assert doc_s3_metadata.get('uuid'), 'Document must have a UUID attached'
     document_uid = doc_s3_metadata['uuid']
     logger.append_keys(document_uid=document_uid)
 

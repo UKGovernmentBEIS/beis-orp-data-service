@@ -2,6 +2,7 @@ aws_lambda_powertools==2.9.0
 boto3==1.21.32
 PyMuPDF==1.21.1
 openpyxl==3.0.10
+pandas==1.5.2
 pikepdf==6.2.9
 pymongo==4.3.3
 PyPDF2==3.0.1
