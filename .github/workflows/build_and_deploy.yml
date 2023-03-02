@@ -18,10 +18,18 @@ jobs:
       # - name: Use variable
       #   run: echo "The value of CURRENT_BRANCH is ${{ env.CURRENT_BRANCH }}"
 
-      - name: Find changed files
+      - name: Find changed lambda
         run: |
-          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
-          echo "Changed files: $CHANGED_FILES"
+          echo "CHANGED_LAMBDA=$(git diff --name-only HEAD^ HEAD | xargs -I {} dirname {} | grep "^lambdas/" | xargs -I {} basename {})" >> $GITHUB_ENV
+
+      - name: Replace underscores with hyphens
+        run: |
+          echo "CHANGED_LAMBDA_HYPHENATED=$(echo ${{ env.CHANGED_LAMBDA }} | sed 's/_/-/g')" >> $GITHUB_ENV
+
+      - name: Print variables
+        run: |
+          echo "Changed lambda: ${{ env.CHANGED_LAMBDA }}"
+          echo "Changed lambda hypenated: ${{ env.CHANGED_LAMBDA_HYPHENATED }}"
 
       # - name: Build Docker image
       #   uses: docker/build-push-action@v2
