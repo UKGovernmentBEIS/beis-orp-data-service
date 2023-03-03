@@ -15,7 +15,7 @@ jobs:
       - name: Find changed lambda
         id: find-lambda
         run: |
-          echo "CHANGED_LAMBDA=$(git diff --name-only HEAD^ HEAD | xargs -I {} dirname {} | grep "^lambdas/" | xargs -I {} basename {})" >> $GITHUB_ENV
+          echo "CHANGED_LAMBDA=$(git diff --name-only HEAD^ HEAD | grep '^lambdas/' | sed 's/lambdas\///' | sed 's/\/.*//' | sort | uniq)" >> $GITHUB_ENV
 
       - name: Replace underscores with hyphens in var
         id: find-lambda-hyphen
