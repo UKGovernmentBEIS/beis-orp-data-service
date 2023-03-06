@@ -57,10 +57,10 @@ def extract_title_and_date(doc_bytes_io):
         title = pdf.docinfo.get('/Title')
 
     # Get date
-    if "/ModDate" in dict_docinfo:
-        mod_date = re.search(r"\d{8}", str(docinfo["/ModDate"])).group()
-    elif "/CreationDate" in dict_docinfo:
-        mod_date = re.search(r"\d{8}", str(docinfo["/CreationDate"])).group()
+    if '/ModDate' in dict_docinfo:
+        mod_date = re.search(r'\d{8}', str(docinfo['/ModDate'])).group()
+    elif '/CreationDate' in dict_docinfo:
+        mod_date = re.search(r'\d{8}', str(docinfo['/CreationDate'])).group()
 
     date_published = pd.to_datetime(
         mod_date).isoformat()
@@ -85,7 +85,7 @@ def extract_text(doc_bytes_io):
             txt = page.extract_text()
             text.append(txt)
 
-        text = " ".join(text)
+        text = ' '.join(text)
 
     except BaseException:
         with fitz.open(stream=doc_bytes_io) as doc:
@@ -98,15 +98,15 @@ def extract_text(doc_bytes_io):
 
 
 def remove_excess_punctuation(text) -> str:
-    """
+    '''
     param: text: Str document text
     returns: text: Str cleaned document text
         Returns text without excess punctuation
-    """
+    '''
     # Clean punctuation spacing
-    text = text.replace(" .", "")
+    text = text.replace(' .', '')
     for punc in string.punctuation:
-        text = text.replace(punc + punc, "")
+        text = text.replace(punc + punc, '')
     return text
 
 
@@ -197,25 +197,25 @@ def handler(event, context: LambdaContext):
         destination_bucket=DESTINATION_BUCKET
     )
 
-    logger.info(f"All data extracted e.g. Title extracted: {title}")
+    logger.info(f'All data extracted e.g. Title extracted: {title}')
 
     # Building metadata document
     doc = {
-        "title": title,
-        "document_uid": document_uid,
-        "regulator_id": regulator_id,
-        "user_id": user_id,
-        "uri": f's3://{source_bucket}/{object_key}',
-        "data":
+        'title': title,
+        'document_uid': document_uid,
+        'regulator_id': regulator_id,
+        'user_id': user_id,
+        'uri': f's3://{source_bucket}/{object_key}',
+        'data':
         {
-            "dates":
+            'dates':
             {
-                "date_published": date_published,
+                'date_published': date_published,
             }
         },
-        "document_type": document_type,
-        # "regulatory_topic": regulatory_topic,
-        "status": status,
+        'document_type': document_type,
+        # 'regulatory_topic': regulatory_topic,
+        'status': status,
     }
 
     handler_response = {
