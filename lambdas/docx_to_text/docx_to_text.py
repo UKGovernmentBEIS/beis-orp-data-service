@@ -1,7 +1,6 @@
 import io
 import os
 import docx
-import json
 import boto3
 import zipfile
 import pandas as pd
@@ -158,7 +157,7 @@ def handler(event, context: LambdaContext):
     title = metadata["title"]
     date_published = pd.to_datetime(metadata["created"]).isoformat()
 
-    logger.info(f"All data extracted. E.g. Title extracted: {title}")
+    logger.info(f"All data extracted e.g. Title extracted: {title}")
 
     # Building metadata document
     doc = {
@@ -179,13 +178,11 @@ def handler(event, context: LambdaContext):
         "status": status,
     }
 
-    handler_response = json.dumps(
-        {
-            'document': json.dumps(doc),
-            'object_key': object_key,
-            'api_user': api_user,
-            **s3_response
-        }
-    )
+    handler_response = {
+        'document': doc,
+        'object_key': object_key,
+        'api_user': api_user,
+        **s3_response
+    }
 
     return handler_response
