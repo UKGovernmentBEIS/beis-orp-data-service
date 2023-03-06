@@ -47,11 +47,11 @@ def get_s3_metadata(s3_client, object_key, source_bucket):
 
 
 def get_docx_text(path):
-    """
+    '''
     param: path Str: Take the path of a docx file as argument
     returns: paragraphs Str: text in unicode.
         Function from stackoverflow to pull text from a docx file
-    """
+    '''
     document = zipfile.ZipFile(path)
     xml_content = document.read('word/document.xml')
     document.close()
@@ -69,27 +69,27 @@ def get_docx_text(path):
 
 
 def get_doc_metadata(doc):
-    """
+    '''
     param: doc/docx
     returns: metadata
         Function from stackoverflow to get metadata from docx
-    """
+    '''
 
     prop = doc.core_properties
     metadata = {
-        "author": prop.author,
-        "category": prop.category,
-        "comments": prop.comments,
-        "content_status": prop.content_status,
-        "created": prop.created,
-        "identifier": prop.identifier,
-        "keywords": prop.keywords,
-        "last_modified_by": prop.last_modified_by,
-        "language": prop.language,
-        "modified": prop.modified,
-        "subject": prop.subject,
-        "title": prop.title,
-        "version": prop.version
+        'author': prop.author,
+        'category': prop.category,
+        'comments': prop.comments,
+        'content_status': prop.content_status,
+        'created': prop.created,
+        'identifier': prop.identifier,
+        'keywords': prop.keywords,
+        'last_modified_by': prop.last_modified_by,
+        'language': prop.language,
+        'modified': prop.modified,
+        'subject': prop.subject,
+        'title': prop.title,
+        'version': prop.version
     }
 
     return metadata
@@ -154,28 +154,28 @@ def handler(event, context: LambdaContext):
     )
 
     # Get title and date published
-    title = metadata["title"]
-    date_published = pd.to_datetime(metadata["created"]).isoformat()
+    title = metadata['title']
+    date_published = pd.to_datetime(metadata['created']).isoformat()
 
-    logger.info(f"All data extracted e.g. Title extracted: {title}")
+    logger.info(f'All data extracted e.g. Title extracted: {title}')
 
     # Building metadata document
     doc = {
-        "title": title,
-        "document_uid": document_uid,
-        "regulator_id": regulator_id,
-        "user_id": user_id,
-        "uri": f's3://{source_bucket}/{object_key}',
-        "data":
+        'title': title,
+        'document_uid': document_uid,
+        'regulator_id': regulator_id,
+        'user_id': user_id,
+        'uri': f's3://{source_bucket}/{object_key}',
+        'data':
         {
-            "dates":
+            'dates':
             {
-                "date_published": date_published,
+                'date_published': date_published,
             }
         },
-        "document_type": document_type,
-        # "regulatory_topic": regulatory_topic,
-        "status": status,
+        'document_type': document_type,
+        # 'regulatory_topic': regulatory_topic,
+        'status': status,
     }
 
     handler_response = {
