@@ -4,7 +4,6 @@ import os
 import boto3
 import zipfile
 import pandas as pd
-from http import HTTPStatus
 from bs4 import BeautifulSoup
 import xml.etree.ElementTree as ET
 from aws_lambda_powertools.logging.logger import Logger
@@ -43,10 +42,10 @@ def get_s3_metadata(s3_client, object_key, source_bucket):
 
 
 def convert2xml(odf):
-    """
+    '''
     params: odf
     returns: content, metadata: content xml and metadata xml of the odf
-    """
+    '''
     myfile = zipfile.ZipFile(odf)
 
     listoffiles = myfile.infolist()
@@ -67,28 +66,28 @@ def convert2xml(odf):
 
 
 def metadata_title_date_extraction(metadataXML):
-    """
+    '''
     param: metadataXML: metadata of odf file
     returns: modification date of odf
-    """
-    soup = BeautifulSoup(metadataXML, "lxml")
-    metadata = soup.find("ns0:meta")
-    title = metadata.find("dc:title").get_text()
+    '''
+    soup = BeautifulSoup(metadataXML, 'lxml')
+    metadata = soup.find('ns0:meta')
+    title = metadata.find('dc:title').get_text()
     date_published = pd.to_datetime(
-        metadata.find("dc:date").get_text()).isoformat()
+        metadata.find('dc:date').get_text()).isoformat()
 
     return title, date_published
 
 
 def xml2text(xml):
-    """
+    '''
     params: xml
     returns: text
-    """
-    soup = BeautifulSoup(xml, "lxml")
+    '''
+    soup = BeautifulSoup(xml, 'lxml')
     pageText = soup.findAll(text=True)
-    text = str(" ".join(pageText)).replace("\n", "")
-    return re.sub("\\s+", " ", text)
+    text = str(' '.join(pageText)).replace('\n', '')
+    return re.sub('\\s+', ' ', text)
 
 
 def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUCKET):
@@ -154,25 +153,25 @@ def handler(event, context: LambdaContext):
         metadataXML=metadataXML
     )
 
-    logger.info(f"All data extracted e.g. Title extracted: {title}")
+    logger.info(f'All data extracted e.g. Title extracted: {title}')
 
     # Building metadata document
     doc = {
-        "title": title,
-        "document_uid": document_uid,
-        "regulator_id": regulator_id,
-        "user_id": user_id,
-        "uri": f's3://{source_bucket}/{object_key}',
-        "data":
+        'title': title,
+        'document_uid': document_uid,
+        'regulator_id': regulator_id,
+        'user_id': user_id,
+        'uri': f's3://{source_bucket}/{object_key}',
+        'data':
         {
-            "dates":
+            'dates':
             {
-                "date_published": date_published,
+                'date_published': date_published,
             }
         },
-        "document_type": document_type,
-        # "regulatory_topic": regulatory_topic,
-        "status": status,
+        'document_type': document_type,
+        # 'regulatory_topic': regulatory_topic,
+        'status': status,
     }
 
     handler_response = {
