@@ -70,7 +70,7 @@ def get_docx_text(path):
 
 def get_doc_metadata(doc):
     """
-    param: doc docx
+    param: doc/docx
     returns: metadata
         Function from stackoverflow to get metadata from docx
     """
