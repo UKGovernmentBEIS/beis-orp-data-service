@@ -2,7 +2,6 @@ import io
 import re
 import os
 import boto3
-import pymongo
 import zipfile
 import pandas as pd
 from http import HTTPStatus
@@ -14,12 +13,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-DDB_USER = os.environ['DDB_USER']
-DDB_PASSWORD = os.environ['DDB_PASSWORD']
-DDB_DOMAIN = os.environ['DDB_DOMAIN']
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
-
-ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
 
 
 def download_text(s3_client, object_key, source_bucket):
@@ -113,42 +107,6 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
     return response
 
 
-def mongo_connect_and_push(source_bucket,
-                           object_key,
-                           document_uid,
-                           date_published,
-                           title,
-                           database=ddb_connection_uri,
-                           tlsCAFile='./rds-combined-ca-bundle.pem'):
-    '''Connects to the DocumentDB and inserts extracted metadata from the ODF'''
-
-    # Create a MongoDB client and open a connection to Amazon DocumentDB
-    db_client = pymongo.MongoClient(
-        database,
-        tls=True,
-        tlsCAFile=tlsCAFile
-    )
-
-    db = db_client.bre_orp
-    collection = db.documents
-
-    doc = {
-        'title': title,
-        'document_uid': document_uid,
-        'date_published': date_published,
-        'uri': f's3://{source_bucket}/{object_key}',
-        'object_key': object_key
-    }
-
-    # Insert document to DB if it doesn't already exist
-    if not collection.find_one(doc):
-        collection.insert_one(doc)
-    logger.info(f'Document inserted: {collection.find_one(doc)}')
-
-    db_client.close()
-    return {**doc, 'mongoStatusCode': HTTPStatus.OK}
-
-
 @logger.inject_lambda_context(log_event=True)
 def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
@@ -158,42 +116,70 @@ def handler(event, context: LambdaContext):
     source_bucket = event['detail']['bucket']['name']
     object_key = event['detail']['object']['key']
     logger.info(
-        f'New document in {source_bucket}: {object_key}')
+        f'New document in {source_bucket}: {object_key}'
+    )
 
     s3_client = boto3.client('s3')
     doc_bytes_io = download_text(
         s3_client=s3_client,
         object_key=object_key,
-        source_bucket=source_bucket)
+        source_bucket=source_bucket
+    )
     doc_s3_metadata = get_s3_metadata(
         s3_client=s3_client,
         object_key=object_key,
-        source_bucket=source_bucket)
+        source_bucket=source_bucket
+    )
 
     assert doc_s3_metadata.get('uuid'), 'Document must have a UUID attached'
     document_uid = doc_s3_metadata['uuid']
-    logger.append_keys(document_uid=document_uid)
+
+    # Getting S3 metadata from S3 object
+    document_uid = doc_s3_metadata['uuid']
+    regulator_id = doc_s3_metadata.get('regulator_id')
+    user_id = doc_s3_metadata.get('user_id')
+    api_user = doc_s3_metadata.get('api_user')
+    document_type = doc_s3_metadata.get('document_type')
+    status = doc_s3_metadata.get('status')
 
     # Extract the content and metadata xml
     contentXML, metadataXML = convert2xml(odf=doc_bytes_io)
     text = xml2text(xml=contentXML)
+    s3_response = write_text(
+        s3_client=s3_client, text=text, document_uid=document_uid
+    )
 
     # Extract the publishing date
-    title, date_published = metadata_title_date_extraction(metadataXML=metadataXML)
+    title, date_published = metadata_title_date_extraction(
+        metadataXML=metadataXML
+    )
 
-    logger.info(f'Extracted title: {title}'
-                f'Publishing date: {date_published}'
-                f'UUID obtained is: {document_uid}')
+    logger.info(f"All data extracted e.g. Title extracted: {title}")
 
-    mongo_response = mongo_connect_and_push(
-        source_bucket=source_bucket,
-        object_key=object_key,
-        document_uid=document_uid,
-        date_published=date_published,
-        title=title)
-    s3_response = write_text(s3_client=s3_client, text=text, document_uid=document_uid)
+    # Building metadata document
+    doc = {
+        "title": title,
+        "document_uid": document_uid,
+        "regulator_id": regulator_id,
+        "user_id": user_id,
+        "uri": f's3://{source_bucket}/{object_key}',
+        "data":
+        {
+            "dates":
+            {
+                "date_published": date_published,
+            }
+        },
+        "document_type": document_type,
+        # "regulatory_topic": regulatory_topic,
+        "status": status,
+    }
 
-    handler_response = {**mongo_response, **s3_response}
-    handler_response['document_uid'] = document_uid
+    handler_response = {
+        'document': doc,
+        'object_key': object_key,
+        'api_user': api_user,
+        **s3_response
+    }
 
     return handler_response
