@@ -14,12 +14,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-DDB_USER = os.environ['DDB_USER']
-DDB_PASSWORD = os.environ['DDB_PASSWORD']
-DDB_DOMAIN = os.environ['DDB_DOMAIN']
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
-
-ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
 
 
 def download_text(s3_client, object_key, source_bucket):
