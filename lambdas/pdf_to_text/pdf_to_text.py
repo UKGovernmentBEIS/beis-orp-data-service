@@ -80,9 +80,6 @@ def extract_text(doc_bytes_io):
         # creating a pdf reader object
         reader = PdfReader(doc_bytes_io)
 
-        # printing number of pages in pdf file
-        # print(len(reader.pages))
-
         totalPages = PdfReader.numPages
 
         # getting a specific page from the pdf file
