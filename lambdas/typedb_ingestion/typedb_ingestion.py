@@ -1,41 +1,34 @@
 import json
 import os
 import boto3
-import pymongo
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
 
 logger = Logger()
 
-DDB_USER = os.environ['DDB_USER']
-DDB_PASSWORD = os.environ['DDB_PASSWORD']
-DDB_DOMAIN = os.environ['DDB_DOMAIN']
 DESTINATION_SQS_URL = os.environ['DESTINATION_SQS_URL']
 
-ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
 
+def merge_dicts(*args):
+    merged_dict = {}
 
-def mongo_connect_and_pull(document_uid,
-                           database,
-                           tlsCAFile='./rds-combined-ca-bundle.pem'):
-    '''Connects to the DocumentDB, finds the document matching our UUID and pulls it'''
+    # Merge all dictionaries into the new dictionary
+    for dictionary in args:
+        for key, value in dictionary.items():
+            if value is None:
+                continue
+            if key not in merged_dict:
+                merged_dict[key] = value
+            elif merged_dict[key] == value:
+                continue
+            elif isinstance(merged_dict[key], list):
+                if value not in merged_dict[key]:
+                    merged_dict[key].append(value)
+            else:
+                merged_dict[key] = [merged_dict[key], value]
 
-    db_client = pymongo.MongoClient(
-        database,
-        tls=True,
-        tlsCAFile=tlsCAFile
-    )
-    logger.info('Succesfully Connected')
-    db = db_client.bre_orp
-    collection = db.documents
-
-    query = {'document_uid': document_uid}
-    document = collection.find_one(query)
-    del document['_id']
-    db_client.close()
-
-    return document
+    return merged_dict
 
 
 def sqs_connect_and_send(document, queue=DESTINATION_SQS_URL):
@@ -55,15 +48,14 @@ def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
     # Ensuring the outputs of the parallel stage are the same
-    assert all(map(lambda x: x == event[0], event)
-               ), f'Outputs of parallel stage are not the same: {event}'
+    # assert all(map(lambda x: x == event[0], event)
+    #            ), f'Outputs of parallel stage are not the same: {event}'
 
-    document_uid = event[0]['document_uid']
-    logger.append_keys(document_uid=document_uid)
+    # Each previous lambda has added a new key to the extracted metadata
+    # so we need to merge the metadata docs
+    lambda_responses = [response['document'] for response in event]
+    document = merge_dicts(lambda_responses)
 
-    document = mongo_connect_and_pull(
-        document_uid=document_uid,
-        database=ddb_connection_uri)
     logger.info({'document': document})
     response = sqs_connect_and_send(document=document)
     logger.info({'sqs_response': response})
