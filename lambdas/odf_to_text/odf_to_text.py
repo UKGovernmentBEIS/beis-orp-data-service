@@ -145,9 +145,7 @@ def handler(event, context: LambdaContext):
     # Extract the content and metadata xml
     contentXML, metadataXML = convert2xml(odf=doc_bytes_io)
     text = xml2text(xml=contentXML)
-    s3_response = write_text(
-        s3_client=s3_client, text=text, document_uid=document_uid
-    )
+    write_text(s3_client=s3_client, text=text, document_uid=document_uid)
 
     # Extract the publishing date
     title, date_published = metadata_title_date_extraction(
