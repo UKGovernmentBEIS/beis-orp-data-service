@@ -54,7 +54,7 @@ def handler(event, context: LambdaContext):
     # Each previous lambda has added a new key to the extracted metadata
     # so we need to merge the metadata docs
     lambda_responses = [response['document'] for response in event]
-    document = merge_dicts(lambda_responses)
+    document = merge_dicts(*lambda_responses)
 
     logger.info({'document': document})
     response = sqs_connect_and_send(document=document)
