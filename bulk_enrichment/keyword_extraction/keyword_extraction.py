@@ -35,7 +35,7 @@ def pre_process_tokenization_function(documents: str):
     '''Pre-processes the text ready for keyword extraction'''
 
     # Preprocess data after embeddings are created
-    text = BeautifulSoup(documents).get_text()
+    text = BeautifulSoup(documents, features='html.parser').get_text()
     text = re.sub('[^a-zA-Z]', ' ', text)
 
     # Define stopwords

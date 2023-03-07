@@ -42,17 +42,30 @@ def smart_shortener(text):
         return shortened_complete
 
 
-def summariser(document):
+def smart_postprocessor(sentence):
+    if len(sentence.split(" ")) < 100:
+        return sentence
+    else:
+        shortened = " ".join(sentence.split(" ")[ : 100])
+        end_sentence = sentence.replace(shortened, "")
+        shortened_complete = shortened + end_sentence.split(".")[0] + "."
+        if len(shortened_complete) > 1000:
+            res = [match.start() for match in re.finditer(r'[A-Z]', end_sentence)] 
+            shortened_complete = shortened + end_sentence[:res[0] -1] + "."
+            return shortened_complete
+        else:
+            return shortened_complete
 
+def summariser(document):
     logger.info("Loading model")
     model = download_model()
 
     # Shorten text for summarising
     shortened_text = smart_shortener(text=document)
-    summary = summarize(
-        raw_text_fp=smart_shortener(
-            text=shortened_text),
-        model=model,
-        max_length=4)
+    summary = smart_postprocessor(summarize(
+        shortened_text,
+        model,
+        max_length=4))
 
+    logger.debug(f"Summary: {summary}")
     return summary

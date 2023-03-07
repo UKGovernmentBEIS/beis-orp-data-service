@@ -18,9 +18,15 @@ def extract_title_and_date(doc_bytes_io):
         title = meta['{http://purl.org/dc/elements/1.1/}title']
     except KeyError:
         title = pdf.docinfo.get('/Title')
-    date_string = re.sub(r'[a-zA-Z]', r' ', meta['{http://ns.adobe.com/xap/1.0/}ModifyDate']).strip()[0:19]
-    date_published = str(to_datetime(date_string))
 
+    # Get date
+    if "/ModDate" in dict_docinfo:
+        mod_date = re.search(r"\d{8}", str(docinfo["/ModDate"])).group()
+    elif "/CreationDate" in dict_docinfo:
+        mod_date = re.search(r"\d{8}", str(docinfo["/CreationDate"])).group()
+
+    date_published = pd.to_datetime(
+        mod_date).isoformat()
     return str(title), date_published
 
 
@@ -46,19 +52,38 @@ def extract_text(doc_bytes_io):
 
         text = " ".join(text)
 
-    except:
+    except BaseException:
         with fitz.open(stream=doc_bytes_io) as doc:
             text = ''
             for page in doc:
                 text += page.get_text()
 
+    text = clean_text(text)
+    return text
+
+
+def remove_excess_punctuation(text) -> str:
+    """
+    param: text: Str document text
+    returns: text: Str cleaned document text
+        Returns text without excess punctuation
+    """
+    # Clean punctuation spacing
+    text = text.replace(" .", "")
+    for punc in string.punctuation:
+        text = text.replace(punc + punc, "")
     return text
 
 
 def clean_text(text):
     '''Clean the text by removing illegal characters and excess whitespace'''
+    pattern = re.compile(r'\s+')
 
-    text = re.sub('\n', ' ', text)
+    text = text.replace('\n', ' ')
+    text = text.replace(' .', '. ')
+    text = re.sub('(\\d+(\\.\\d+)?)', r' \1 .', text)
+    text = re.sub(pattern, ' ', text)
+    text = remove_excess_punctuation(text)
     text = re.sub(ILLEGAL_CHARACTERS_RE, ' ', text)
 
     # Space out merged words by adding a space before a capital letter
@@ -74,21 +99,9 @@ def clean_text(text):
     text = text.replace('_x000c_', '')
     text = re.sub('\\s+', ' ', text)
     text = re.sub('<.*?>', '', text)
-    text = re.sub('\\.{4,}', '.')
+    text = re.sub('\\.{4,}', '.', text)
 
     return text
-
-
-def cut_title(title):
-    '''Cuts title length down to 25 tokens'''
-
-    title = re.sub('Figure 1', '', title)
-    title = re.sub(r'[^\w\s]', '', title)
-
-    if len(str(title).split(' ')) > 25:
-        title = ' '.join(title.split(' ')[:25]) + '...'
-
-    return title
 
 
 def write_text(text, document_uid, destination_bucket):

@@ -1,7 +1,8 @@
 import re
 import string
 import datetime
-import datefinder
+import pandas as pd
+from http import HTTPStatus
 from add_patterns import initialise_matcher
 from dateutil.relativedelta import relativedelta
 
@@ -28,16 +29,6 @@ def preprocess_text(text):
     return clean_text
 
 
-def standardise_date(date):
-    """
-    param date: datetime
-    returns date_matches: List of dates found
-    """
-    matches = datefinder.find_dates(date)
-    date_matches = [str(date) for date in matches]
-    return date_matches
-
-# TODO  check if this is unnecessary 
 def clean_date(candidate_dates):
     """
     param: candidate_dates: List of dates found from text
@@ -48,19 +39,20 @@ def clean_date(candidate_dates):
     else:
         date_list = []
         for date in candidate_dates:
-            if re.search('[a-zA-Z]', date):
-                date_list.append(standardise_date(date))
-            elif len(date.split(" / ")[-1]) < 4:
-                if date.split(
-                        " / ")[-1][0] == "9" or date.split(" / ")[-1][0] == "8" or date.split(" / ")[-1][0] == "7":
-                    date = "".join(date.split(
-                        " / ")[:-1]) + " / " + "19" + "".join(date.split(" / ")[-1])
-                    date_list.append(standardise_date(date))
+            try:
+                # If month isalph()
+                if re.search('[a-zA-Z]', date):
+                    date_list.append(pd.to_datetime(date).isoformat())
+                # Else if date is numeric
+                elif len(date.split(" / ")[-1]) < 4:
+                    date = "/".join([date.split(" / ")[0], "01", date.split(" / ")[1]])
+                    date_list.append(pd.to_datetime(date).isoformat())
                 else:
-                    date = "".join(date.split(
-                        " / ")[:-1]) + " / " + "20" + "".join(date.split(" / ")[-1])
-                    date_list.append(standardise_date(date))
-        return date_list
+                    continue
+            except BaseException:
+                continue
+
+       return date_list
 
 
 def find_date(clean_text):
@@ -88,17 +80,23 @@ def check_metadata_date_in_doc(metadata_date, date_list):
     returns: date / metadata_date: either date from text or metadata date
         If any date extracted from the text is within 3 months of the metadata date, return this date
     """
-    margin = relativedelta(months=3)
+    if date_list is None:
+        return metadata_date
 
-    datetime_obj = datetime.datetime.strptime(metadata_date, '%Y-%m-%d %H:%M:%S')
-    upper_date = datetime_obj + margin
-    lower_date = datetime_obj - margin
+    else:
+        margin = relativedelta(months=3)
 
-    for date in date_list:
-        date = datetime.datetime.strptime(date[0], '%Y-%m-%d %H:%M:%S')
-        if upper_date >= date >= lower_date:
-            return date
-        else:
+        datetime_obj = datetime.datetime.fromisoformat(metadata_date).date()
+        upper_date = datetime_obj + margin
+        lower_date = datetime_obj - margin
+
+        # Find the closest date
+        closest_date = min([datetime.datetime.fromisoformat(date).date()
+                           for date in date_list], key=lambda x: abs(x - datetime_obj))
+
+        if upper_date >= closest_date >= lower_date:
+            return pd.to_datetime(closest_date).isoformat()
+       else:
             return metadata_date
 
 def date_generation(text, metadata_date):
