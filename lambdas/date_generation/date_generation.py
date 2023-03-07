@@ -141,6 +141,7 @@ def handler(event, context: LambdaContext):
     logger.info(f'Date published: {date}')
 
     handler_response = event
+    handler_response['lambda'] = 'date_generation'
     handler_response['document']['data']['dates']['date_published'] = date
 
     return handler_response
