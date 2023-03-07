@@ -148,11 +148,7 @@ def handler(event, context: LambdaContext):
 
     # Get and push text to destination bucket
     text = get_docx_text(path=docx_file)
-    s3_response = write_text(
-        s3_client=s3_client,
-        text=text,
-        document_uid=document_uid
-    )
+    write_text(s3_client=s3_client, text=text, document_uid=document_uid)
 
     # Get title and date published
     title = metadata['title']
