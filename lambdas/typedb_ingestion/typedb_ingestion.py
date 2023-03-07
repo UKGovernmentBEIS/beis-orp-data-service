@@ -17,7 +17,8 @@ def merge_dicts(dict_list):
     merged_dict = {}
     for dictionary in dict_list:
         if dictionary['lambda'] == 'date_generation':
-            merged_dict['data']['dates']['date_published'] = dictionary['document']['data']['dates']['date_published']
+            merged_dict.setdefault('data', {}).setdefault('dates', {})[
+                'date_published'] = dictionary['document']['data']['dates']['date_published']
         elif dictionary['lambda'] == 'title_generation':
             merged_dict['title'] = dictionary['document']['title']
         elif dictionary['lambda'] == 'keyword_extraction':
@@ -41,7 +42,9 @@ def assert_same_base_values(keys, dict_list):
     assert len(
         values) == 1, f'The base values of the inputs received are not the same'
 
-    return itemgetter(*keys)(dict_list[0])
+    base_document = {k: v for k,
+                     v in dict_list[0]['document'].items() if k in keys}
+    return base_document
 
 
 def sqs_connect_and_send(document, queue=DESTINATION_SQS_URL):
