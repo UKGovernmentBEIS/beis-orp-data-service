@@ -67,7 +67,7 @@ if __name__ == "__main__":
                 """ % date)
     results = sparql.query().convert()
     df = pd.read_csv(BytesIO(results))
-    stitles = ['shorttitle', 'citation', 'acronymcitation']
+    stitles = ['title', 'shorttitle', 'citation', 'acronymcitation']
     df['candidate_titles'] = df[stitles].apply(list, axis=1)
 # ====
     df['divAbbv']=df.ref.apply(lambda x: x.split('/')[4])
