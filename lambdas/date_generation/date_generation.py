@@ -123,7 +123,7 @@ def handler(event, context: LambdaContext):
     document_uid = event['document']['document_uid']
 
     # Asserting that there is a published date
-    assert event['document'].get(
+    assert event['document']['data']['dates'].get(
         'date_published'), 'Document must have a publishing date'
     metadata_date = event['document']['data']['dates']['date_published']
 
