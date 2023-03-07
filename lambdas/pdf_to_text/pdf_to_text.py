@@ -191,12 +191,8 @@ def handler(event, context: LambdaContext):
 
     title, date_published = extract_title_and_date(doc_bytes_io=doc_bytes_io)
     text = extract_text(doc_bytes_io=doc_bytes_io)
-    s3_response = write_text(
-        s3_client=s3_client,
-        text=text,
-        document_uid=document_uid,
-        destination_bucket=DESTINATION_BUCKET
-    )
+    write_text(s3_client=s3_client, text=text,
+               document_uid=document_uid, destination_bucket=DESTINATION_BUCKET)
 
     logger.info(f'All data extracted e.g. Title extracted: {title}')
 
