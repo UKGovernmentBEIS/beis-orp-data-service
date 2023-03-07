@@ -128,6 +128,7 @@ def handler(event, context: LambdaContext):
     logger.info(f'Document title is: {title}')
 
     handler_response = event
+    handler_response['lambda'] = 'title_generation'
     handler_response['document']['title'] = title
 
     return handler_response
