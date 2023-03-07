@@ -155,6 +155,7 @@ def handler(event, context: LambdaContext):
     subject_keywords = [i[0] for i in keywords]
 
     handler_response = event
+    handler_response['lambda'] = 'keyword_extraction'
     handler_response['document']['subject_keywords'] = subject_keywords
 
     return handler_response
