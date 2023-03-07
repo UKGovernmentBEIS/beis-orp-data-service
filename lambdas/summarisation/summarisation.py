@@ -126,6 +126,8 @@ def handler(event, context: LambdaContext):
     logger.info(f'Summary: {summary}')
 
     handler_response = event
+    handler_response['lambda'] = 'summarisation'
+
     handler_response['document']['summary'] = summary
 
     return handler_response
