@@ -151,8 +151,9 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
         }
     )
     logger.info('Saved text to data lake')
+    assert response['ResponseMetadata']['HTTPStatusCode'] == 200, 'Text did not successfully write to S3'
 
-    return response
+    return None
 
 
 @logger.inject_lambda_context(log_event=True)
@@ -222,7 +223,6 @@ def handler(event, context: LambdaContext):
         'document': doc,
         'object_key': object_key,
         'api_user': api_user,
-        **s3_response
     }
 
     return handler_response
