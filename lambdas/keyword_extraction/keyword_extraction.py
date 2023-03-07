@@ -138,7 +138,7 @@ def handler(event, context: LambdaContext):
 
     document_uid = event['document']['document_uid']
 
-    logger.info("Started initialisation...")
+    logger.info('Started initialisation...')
     os.makedirs(MODEL_PATH, exist_ok=True)
     os.makedirs(NLTK_DATA, exist_ok=True)
     nltk.download('wordnet', download_dir=NLTK_DATA)
