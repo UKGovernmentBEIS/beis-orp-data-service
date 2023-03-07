@@ -175,7 +175,6 @@ def handler(event, context: LambdaContext):
             }
         },
         'document_type': document_type,
-        # 'regulatory_topic': regulatory_topic,
         'status': status,
     }
 
