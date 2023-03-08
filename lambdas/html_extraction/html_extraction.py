@@ -12,13 +12,8 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-DDB_USER = os.environ['DDB_USER']
-DDB_PASSWORD = os.environ['DDB_PASSWORD']
-DDB_DOMAIN = os.environ['DDB_DOMAIN']
+
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
-
-
-ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
 
 
 def get_title_text(URL):
@@ -54,35 +49,6 @@ def get_publication_modification_date(URL):
     return publication_date, modification_date
 
 
-def mongo_connect_and_push(document_uid,
-                           title,
-                           date_published,
-                           database=ddb_connection_uri,
-                           tlsCAFile='./rds-combined-ca-bundle.pem'):
-    '''Connects to the DocumentDB, finds the document matching our UUID and adds the title, text and publishing date to it'''
-
-    db_client = pymongo.MongoClient(
-        database,
-        tls=True,
-        tlsCAFile=tlsCAFile
-    )
-    logger.info(db_client.list_database_names())
-    db = db_client.bre_orp
-    collection = db.documents
-
-    # Insert document to DB
-    logger.info({'document': collection.find_one(
-        {'document_uid': document_uid})})
-    collection.find_one_and_update({'document_uid': document_uid}, {
-                                   '$set': {'title': title},
-                                   '$set': {'date_published': date_published}})
-    db_client.close()
-
-    logger.info('Sent to DocumentDB')
-
-    return {'statusCode': HTTPStatus.OK}
-
-
 def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUCKET):
     '''Write the extracted text to a .txt file in the staging bucket'''
 
@@ -95,6 +61,7 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
         }
     )
     logger.info('Saved text to data lake')
+    assert response['ResponseMetadata']['HTTPStatusCode'] == 200, 'Text did not successfully write to S3'
 
     return 
 
@@ -105,23 +72,49 @@ def handler(event, context: LambdaContext):
 
     logger.set_correlation_id(context.aws_request_id)
 
-    # Get document id
-    document_uid = event['document_uid']
-    # Download raw pdf and extracted text
+    # Getting metadata from event
+    document_uid = event['uuid']
+    regulator_id = event['detail']['regulator_id']
+    user_id = event['detail']['user_id']
+    api_user = event['detail']['api_user']
+    document_type = event['detail']['document_type']
+    status = event['detail']['status']
     URL = event['detail']['url']
-    # Get metadata title
+
+
     title, text = get_title_text(URL)
-    # Get publishing date
     date_published = get_publication_modification_date(URL)
 
     logger.info(f"Document title is: {title} "
                 f"Publishing date is: {date_published}")
 
-    mongo_response = mongo_connect_and_push(document_uid, title, text, date_published)
-    s3_response = write_text(s3_client, text=text, document_uid=document_uid)
+    write_text(s3_client, text=text, document_uid=document_uid)
 
-    handler_response = {**mongo_response, **s3_response}
-    handler_response['document_uid'] = document_uid
+    logger.info(f'All data extracted e.g. Title extracted: {title}')
+
+    # Building metadata document
+    doc = {
+        'title': title,
+        'document_uid': document_uid,
+        'regulator_id': regulator_id,
+        'user_id': user_id,
+        'url': URL,
+        'data':
+        {
+            'dates':
+            {
+                'date_published': date_published,
+            }
+        },
+        'document_type': document_type,
+        # 'regulatory_topic': regulatory_topic,
+        'status': status,
+    }
+
+    handler_response = {
+        'document': doc,
+        'api_user': api_user
+    }
 
     return handler_response
 
