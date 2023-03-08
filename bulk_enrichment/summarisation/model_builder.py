@@ -1,14 +1,18 @@
 import torch
 import torch.nn as nn
-from MobileBert.modeling_mobilebert import MobileBertConfig, MobileBertModel
-from encoder import ExtTransformerEncoder
-
+from summarisation.MobileBert.modeling_mobilebert import MobileBertConfig, MobileBertModel
+from summarisation.encoder import ExtTransformerEncoder
+import os
+# TODO  REMOVE THIS
+chkpt = '/Users/imane.hafnaoui/gitpod/MXTrepos/beis-orp-data-service/bulk_enrichment/summarisation/checkpoints/mobilebert'
 
 class Bert(nn.Module):
     def __init__(self, bert_type="bertbase"):
         super(Bert, self).__init__()
         self.bert_type = bert_type
-        configuration = MobileBertConfig.from_pretrained("checkpoints/mobilebert")
+        configuration = MobileBertConfig.from_pretrained(chkpt)
+        # configuration = MobileBertConfig.from_pretrained("checkpoints/mobilebert")
+        
         self.model = MobileBertModel(configuration)
 
     def forward(self, x, segs, mask):
@@ -24,12 +28,9 @@ class ExtSummarizer(nn.Module):
         self.ext_layer = ExtTransformerEncoder(
             self.bert.model.config.hidden_size, d_ff=2048, heads=8, dropout=0.2, num_inter_layers=2
         )
-
         if checkpoint is not None:
             self.load_state_dict(checkpoint, strict=True)
-
         self.to(device)
-
     def forward(self, src, segs, clss, mask_src, mask_cls):
         top_vec = self.bert(src, segs, mask_src)
         sents_vec = top_vec[torch.arange(top_vec.size(0)).unsqueeze(1), clss]

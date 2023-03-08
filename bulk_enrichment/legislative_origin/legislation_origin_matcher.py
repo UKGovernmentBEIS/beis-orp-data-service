@@ -119,20 +119,24 @@ def detect_year_span(docobj, nlp):
     dates = set([int(d) for d in dates if (len(d) == 4) & (d.isdigit())])
     return dates
 ######
-
+q='the ionising radiations regulations 2017'
 def leg_pipeline(leg_titles, nlp, docobj):
     dates = detect_year_span(docobj, nlp)
     # filter the legislation list down to the years detected above
     sents = list(docobj.sents)
+    print(f'checking [{len(sents)}] sentences.')
     for sent in sents:
         sdates = [year  for year in dates if str(year) in sent.text]
         titles = leg_titles[leg_titles.year.isin(sdates)]
-        relevant_titles = titles.candidate_titles.drop_duplicates().tolist()
+        relevant_titles = titles.candidate_titles.drop_duplicates().apply(str.lower).tolist()
+        print(f"--- checking [{len(relevant_titles)}] leg titles...")
         # print(f'\t Looking through {len(relevant_titles)} possible candidates...')
-        results = lookup_pipe(relevant_titles, docobj, nlp,
-                            exact_matcher)
-        if results:
-            break
+        if relevant_titles:
+            # print(sent, q in relevant_titles, sdates,  relevant_titles[1745] if len(relevant_titles)>1745 else None)
+            results = lookup_pipe(relevant_titles, docobj, nlp,
+                                exact_matcher)
+            if results:
+                break
 
     results = dict([(k, [dict(zip(keys, j)) for j in v])
                     for k, v in results.items()])

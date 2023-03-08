@@ -1,16 +1,16 @@
 import os
 import io
 import torch
-from ext_sum import summarize
-from model_builder import ExtSummarizer
+from summarisation.ext_sum import summarize
+from summarisation.model_builder import ExtSummarizer
 from smart_open import open as smart_open
-
+import re
 
 import logging
-logger = logging.getLogger("Bulk_processing").addHandler(logging.StreamHandler())
-logger.setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("Bulk_processing")
 
-MODEL_BUCKET = 'model_store/'
+MODEL_BUCKET = 'summarisation/model_store/'
 
 def download_model(
         bucket=MODEL_BUCKET,
@@ -18,7 +18,7 @@ def download_model(
     '''Downloads the ML model for summarisation'''
 
     # Load the model in
-    with smart_open(os.path.join(bucket, key), 'rb') as f:
+    with smart_open(os.path.join(os.path.realpath(bucket), key), 'rb') as f:
         CHECKPOINT = io.BytesIO(f.read())
         checkpoint = torch.load(CHECKPOINT, map_location=torch.device("cpu"))
         model = ExtSummarizer(

@@ -2,7 +2,7 @@ import re
 import spacy
 from tqdm import tqdm
 from typing import List
-from preprocess.preprocess_functions import removing_regulator_names
+from title_generation.preprocess.preprocess_functions import removing_regulator_names
 
 
 my_pattern = re.compile(r'\s+')

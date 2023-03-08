@@ -2,14 +2,13 @@ import re
 import string
 import datetime
 import pandas as pd
-from http import HTTPStatus
-from add_patterns import initialise_matcher
+from date_generation.add_patterns import initialise_matcher
 from dateutil.relativedelta import relativedelta
 
 
 import logging
-logger = logging.getLogger("Bulk_processing").addHandler(logging.StreamHandler())
-logger.setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("Bulk_processing")
 
 
 # Initalise the matcher
@@ -52,7 +51,7 @@ def clean_date(candidate_dates):
             except BaseException:
                 continue
 
-       return date_list
+        return date_list
 
 
 def find_date(clean_text):
@@ -96,7 +95,7 @@ def check_metadata_date_in_doc(metadata_date, date_list):
 
         if upper_date >= closest_date >= lower_date:
             return pd.to_datetime(closest_date).isoformat()
-       else:
+        else:
             return metadata_date
 
 def date_generation(text, metadata_date):

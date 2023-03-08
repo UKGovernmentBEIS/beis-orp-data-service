@@ -7,8 +7,8 @@ import xml.etree.ElementTree as ET
 
 
 import logging
-logger = logging.getLogger("Bulk_processing").addHandler(logging.StreamHandler())
-logger.setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("Bulk_processing")
 
 def convert2xml(odf):
     """
@@ -66,6 +66,7 @@ def write_text(text, document_uid, destination_bucket):
     logger.debug(f'Saved text to {destination_bucket}')
 
 def odf_converter(file_path, document_uid, save_path):
+    logger.info('--- Calling ODF converter')
     doc_bytes_io = io.BytesIO(open(file_path))
 
     # Extract the content and metadata xml

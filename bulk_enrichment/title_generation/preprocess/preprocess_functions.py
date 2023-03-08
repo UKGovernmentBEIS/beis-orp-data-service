@@ -1,8 +1,9 @@
 import string
 import wordninja
+import os
 
-
-with open("regulator_name_list.txt", "r") as f:
+path = os.path.dirname(os.path.realpath(__file__))
+with open(path+"/regulator_name_list.txt", "r") as f:
     fileObject = f.read()
     regulator_name_list = fileObject.split("\n")
 

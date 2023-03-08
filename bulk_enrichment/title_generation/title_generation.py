@@ -1,14 +1,13 @@
 import re
 import nltk
-from preprocess.preprocess_functions import preprocess
+from title_generation.preprocess.preprocess_functions import preprocess, removing_regulator_names
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-from postprocess.postprocess_functions import postprocess_title
-from preprocess.preprocess_functions import removing_regulator_names
-from search_metadata_title.get_title import identify_metadata_title_in_text
+from title_generation.postprocess.postprocess_functions import postprocess_title
+from title_generation.search_metadata_title.get_title import identify_metadata_title_in_text
 
 import logging
-logger = logging.getLogger("Bulk_processing").addHandler(logging.StreamHandler())
-logger.setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("Bulk_processing")
 
 
 # Define predictor function

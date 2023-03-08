@@ -1,19 +1,23 @@
 import io
 import re
 import pikepdf
+import string
 import fitz
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from pandas import to_datetime
+from PyPDF2 import PdfReader
 
 import logging
-logger = logging.getLogger("Bulk_processing").addHandler(logging.StreamHandler())
-logger.setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("Bulk_processing")
 
 def extract_title_and_date(doc_bytes_io):
     '''Extracts title from PDF streaming input'''
 
     pdf = pikepdf.Pdf.open(doc_bytes_io)
     meta = pdf.open_metadata()
+    docinfo = pdf.docinfo
+    dict_docinfo = dict(docinfo.items())
     try:
         title = meta['{http://purl.org/dc/elements/1.1/}title']
     except KeyError:
@@ -25,7 +29,7 @@ def extract_title_and_date(doc_bytes_io):
     elif "/CreationDate" in dict_docinfo:
         mod_date = re.search(r"\d{8}", str(docinfo["/CreationDate"])).group()
 
-    date_published = pd.to_datetime(
+    date_published = to_datetime(
         mod_date).isoformat()
     return str(title), date_published
 
@@ -53,7 +57,7 @@ def extract_text(doc_bytes_io):
         text = " ".join(text)
 
     except BaseException:
-        with fitz.open(stream=doc_bytes_io) as doc:
+        with fitz.open(doc_bytes_io) as doc:
             text = ''
             for page in doc:
                 text += page.get_text()
@@ -111,8 +115,9 @@ def write_text(text, document_uid, destination_bucket):
     logger.debug(f'Saved text to {destination_bucket}')
 
 def pdf_converter(file_path, document_uid, save_path):
-    doc_bytes_io = io.BytesIO(open(file_path))
-
+    logger.info('--- Calling PDF converter')
+    # doc_bytes_io = io.BytesIO(open(file_path, 'rb'))
+    doc_bytes_io = open(file_path, 'rb')
     title, date_published = extract_title_and_date(doc_bytes_io=doc_bytes_io)
     text = extract_text(doc_bytes_io=doc_bytes_io)
     logger.debug(f'Extracted title: {title}'

@@ -4,8 +4,8 @@ import zipfile
 import xml.etree.ElementTree as ET
 
 import logging
-logger = logging.getLogger("Bulk_processing").addHandler(logging.StreamHandler())
-logger.setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("Bulk_processing")
 
 # Defining elements from openxml schema
 WORD_NAMESPACE = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
@@ -75,6 +75,7 @@ def write_text(text, document_uid, destination_bucket):
 
 def docx_converter(file_path, document_uid, save_path):
    
+    logger.info('--- Calling DOCX converter')
     docx_file = io.BytesIO(open(file_path).read())
     doc = docx.Document(docx_file)
     metadata = getMetaData(doc=doc)

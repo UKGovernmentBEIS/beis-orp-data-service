@@ -1,7 +1,7 @@
 import math
 import torch
 import torch.nn as nn
-from neural import MultiHeadedAttention, PositionwiseFeedForward
+from summarisation.neural import MultiHeadedAttention, PositionwiseFeedForward
 
 
 class PositionalEncoding(nn.Module):

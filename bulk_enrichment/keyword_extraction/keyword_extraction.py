@@ -7,22 +7,22 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from collections import defaultdict
 from smart_open import open as smart_open
-from word_forms_loc.lemmatizer import lemmatize
+from word_forms.lemmatizer import lemmatize
 from sklearn.feature_extraction.text import CountVectorizer
 from bs4 import BeautifulSoup
 
 
 import logging
-logger = logging.getLogger("Bulk_processing").addHandler(logging.StreamHandler())
-logger.setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("Bulk_processing")
 
 
-KW_MODEL='model_store/keybert.pt'
+KW_MODEL=  'keyword_extraction/model_store'
 
 def download_model(model_path,
                    key='keybert.pt'):
     '''Downloads the ML model for keyword extraction'''
-    with smart_open(os.path.join(model_path, key), 'rb') as f:
+    with smart_open(os.path.join(os.path.realpath(model_path), key), 'rb') as f:
         buffer = io.BytesIO(f.read())
         model = torch.load(buffer)
 
@@ -39,7 +39,7 @@ def pre_process_tokenization_function(documents: str):
     text = re.sub('[^a-zA-Z]', ' ', text)
 
     # Define stopwords
-    stopwords = open('./stopwords.txt', 'r')
+    stopwords = open('keyword_extraction/stopwords.txt', 'r')
     stopwords = stopwords.read()
     stopwords = [i for i in stopwords.split('\n')]
     stopwords.extend(['use', 'uses', 'used', 'www', 'gov',
