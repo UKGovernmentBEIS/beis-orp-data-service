@@ -1,9 +1,7 @@
 import re
 import os
 import boto3
-import pymongo
 import requests
-from http import HTTPStatus
 from bs4 import BeautifulSoup
 from htmldate import find_date
 from aws_lambda_powertools.logging.logger import Logger
