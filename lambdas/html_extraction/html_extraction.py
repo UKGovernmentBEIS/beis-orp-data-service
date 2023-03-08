@@ -10,11 +10,10 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
 
 
-def get_title_text(URL):
+def get_title_and_text(URL):
     """
     params: req: request URL
     returns: title, text: Str
@@ -64,24 +63,24 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
     return 
 
 
+@logger.inject_lambda_context(log_event=True)
 def handler(event, context: LambdaContext):
+    logger.set_correlation_id(context.aws_request_id)
 
     s3_client = boto3.client('s3')
 
-    logger.set_correlation_id(context.aws_request_id)
-
     # Getting metadata from event
-    document_uid = event['uuid']
+    document_uid = event['detail']['uuid']
     regulator_id = event['detail']['regulator_id']
     user_id = event['detail']['user_id']
     api_user = event['detail']['api_user']
     document_type = event['detail']['document_type']
     status = event['detail']['status']
-    URL = event['detail']['url']
+    url = event['detail']['url']
 
 
-    title, text = get_title_text(URL)
-    date_published = get_publication_modification_date(URL)
+    title, text = get_title_and_text(url)
+    date_published = get_publication_modification_date(url)
 
     logger.info(f"Document title is: {title} "
                 f"Publishing date is: {date_published}")
@@ -96,7 +95,7 @@ def handler(event, context: LambdaContext):
         'document_uid': document_uid,
         'regulator_id': regulator_id,
         'user_id': user_id,
-        'url': URL,
+        'url': url,
         'data':
         {
             'dates':
