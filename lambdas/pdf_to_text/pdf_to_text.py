@@ -132,6 +132,7 @@ def clean_text(text):
     text = text.strip()
     text = text.replace('\t', ' ')
     text = text.replace('_x000c_', '')
+    text = text.encode('ascii', 'ignore').decode("utf-8")
     text = re.sub('\\s+', ' ', text)
     text = re.sub('<.*?>', '', text)
     text = re.sub('\\.{4,}', '.', text)
