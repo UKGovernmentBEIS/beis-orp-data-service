@@ -7,8 +7,6 @@ import pandas as pd
 import pikepdf
 import fitz
 from PyPDF2 import PdfReader
-import pymongo
-from http import HTTPStatus
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -16,12 +14,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-DDB_USER = os.environ['DDB_USER']
-DDB_PASSWORD = os.environ['DDB_PASSWORD']
-DDB_DOMAIN = os.environ['DDB_DOMAIN']
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
-
-ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
 
 
 def download_text(s3_client, object_key, source_bucket):
@@ -64,10 +57,10 @@ def extract_title_and_date(doc_bytes_io):
         title = pdf.docinfo.get('/Title')
 
     # Get date
-    if "/ModDate" in dict_docinfo:
-        mod_date = re.search(r"\d{8}", str(docinfo["/ModDate"])).group()
-    elif "/CreationDate" in dict_docinfo:
-        mod_date = re.search(r"\d{8}", str(docinfo["/CreationDate"])).group()
+    if '/ModDate' in dict_docinfo:
+        mod_date = re.search(r'\d{8}', str(docinfo['/ModDate'])).group()
+    elif '/CreationDate' in dict_docinfo:
+        mod_date = re.search(r'\d{8}', str(docinfo['/CreationDate'])).group()
 
     date_published = pd.to_datetime(
         mod_date).isoformat()
@@ -82,9 +75,6 @@ def extract_text(doc_bytes_io):
         # creating a pdf reader object
         reader = PdfReader(doc_bytes_io)
 
-        # printing number of pages in pdf file
-        # print(len(reader.pages))
-
         totalPages = PdfReader.numPages
 
         # getting a specific page from the pdf file
@@ -95,7 +85,7 @@ def extract_text(doc_bytes_io):
             txt = page.extract_text()
             text.append(txt)
 
-        text = " ".join(text)
+        text = ' '.join(text)
 
     except BaseException:
         with fitz.open(stream=doc_bytes_io) as doc:
@@ -108,15 +98,15 @@ def extract_text(doc_bytes_io):
 
 
 def remove_excess_punctuation(text) -> str:
-    """
+    '''
     param: text: Str document text
     returns: text: Str cleaned document text
         Returns text without excess punctuation
-    """
+    '''
     # Clean punctuation spacing
-    text = text.replace(" .", "")
+    text = text.replace(' .', '')
     for punc in string.punctuation:
-        text = text.replace(punc + punc, "")
+        text = text.replace(punc + punc, '')
     return text
 
 
@@ -149,42 +139,6 @@ def clean_text(text):
     return text
 
 
-def mongo_connect_and_push(source_bucket,
-                           object_key,
-                           document_uid,
-                           title,
-                           date_published,
-                           database,
-                           tlsCAFile='./rds-combined-ca-bundle.pem'):
-    '''Connects to the DocumentDB and inserts extracted metadata from the PDF'''
-
-    # Create a MongoDB client and open a connection to Amazon DocumentDB
-    db_client = pymongo.MongoClient(
-        database,
-        tls=True,
-        tlsCAFile=tlsCAFile
-    )
-
-    db = db_client.bre_orp
-    collection = db.documents
-
-    doc = {
-        'title': title,
-        'date_published': date_published,
-        'document_uid': document_uid,
-        'uri': f's3://{source_bucket}/{object_key}',
-        'object_key': object_key
-    }
-
-    # Insert document to DB if it doesn't already exist
-    if not collection.find_one(doc):
-        collection.insert_one(doc)
-    logger.info(f'Document inserted: {collection.find_one(doc)}')
-
-    db_client.close()
-    return {**doc, 'mongoStatusCode': HTTPStatus.OK}
-
-
 def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUCKET):
     '''Write the extracted text to a .txt file in the staging bucket'''
 
@@ -197,8 +151,9 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
         }
     )
     logger.info('Saved text to data lake')
+    assert response['ResponseMetadata']['HTTPStatusCode'] == 200, 'Text did not successfully write to S3'
 
-    return response
+    return None
 
 
 @logger.inject_lambda_context(log_event=True)
@@ -208,40 +163,62 @@ def handler(event, context: LambdaContext):
     source_bucket = event['detail']['bucket']['name']
     object_key = event['detail']['object']['key']
     logger.info(
-        f'New document in {source_bucket}: {object_key}')
+        f'New document in {source_bucket}: {object_key}'
+    )
 
     s3_client = boto3.client('s3')
     doc_bytes_io = download_text(
-        s3_client=s3_client, object_key=object_key, source_bucket=source_bucket)
+        s3_client=s3_client,
+        object_key=object_key,
+        source_bucket=source_bucket
+    )
     doc_s3_metadata = get_s3_metadata(
-        s3_client=s3_client, object_key=object_key, source_bucket=source_bucket)
+        s3_client=s3_client,
+        object_key=object_key,
+        source_bucket=source_bucket
+    )
 
     # Raise an error if there is no UUID in the document's S3 metadata
     assert doc_s3_metadata.get('uuid'), 'Document must have a UUID attached'
-    document_uid = doc_s3_metadata['uuid']
 
-    logger.append_keys(document_uid=document_uid)
+    # Getting S3 metadata from S3 object
+    document_uid = doc_s3_metadata['uuid']
+    regulator_id = doc_s3_metadata.get('regulator_id')
+    user_id = doc_s3_metadata.get('user_id')
+    api_user = doc_s3_metadata.get('api_user')
+    document_type = doc_s3_metadata.get('document_type')
+    status = doc_s3_metadata.get('status')
 
     title, date_published = extract_title_and_date(doc_bytes_io=doc_bytes_io)
     text = extract_text(doc_bytes_io=doc_bytes_io)
-    logger.info(f'Extracted title: {title}'
-                f'UUID obtained is: {document_uid}'
-                f'Date published is: {date_published}')
+    write_text(s3_client=s3_client, text=text,
+               document_uid=document_uid, destination_bucket=DESTINATION_BUCKET)
 
-    mongo_response = mongo_connect_and_push(
-        source_bucket=source_bucket,
-        object_key=object_key,
-        document_uid=document_uid,
-        title=title,
-        date_published=date_published,
-        database=ddb_connection_uri)
+    logger.info(f'All data extracted e.g. Title extracted: {title}')
 
-    s3_response = write_text(
-        s3_client=s3_client,
-        text=text,
-        document_uid=document_uid,
-        destination_bucket=DESTINATION_BUCKET)
+    # Building metadata document
+    doc = {
+        'title': title,
+        'document_uid': document_uid,
+        'regulator_id': regulator_id,
+        'user_id': user_id,
+        'uri': f's3://{source_bucket}/{object_key}',
+        'data':
+        {
+            'dates':
+            {
+                'date_published': date_published,
+            }
+        },
+        'document_type': document_type,
+        # 'regulatory_topic': regulatory_topic,
+        'status': status,
+    }
 
-    handler_response = {**mongo_response, **s3_response}
+    handler_response = {
+        'document': doc,
+        'object_key': object_key,
+        'api_user': api_user,
+    }
 
     return handler_response

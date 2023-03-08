@@ -18,11 +18,9 @@ ENV MODEL_PATH=/tmp/modeldir/
 ADD postprocess ${LAMBDA_TASK_ROOT}/postprocess 
 ADD preprocess ${LAMBDA_TASK_ROOT}/preprocess
 ADD search_metadata_title ${LAMBDA_TASK_ROOT}/search_metadata_title 
-# ADD nltk_data/ /tmp/nltk_data
 
 # Copy function code
 COPY title_generation.py ${LAMBDA_TASK_ROOT}
-COPY rds-combined-ca-bundle.pem ${LAMBDA_TASK_ROOT}
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
 CMD [ "title_generation.handler" ]
