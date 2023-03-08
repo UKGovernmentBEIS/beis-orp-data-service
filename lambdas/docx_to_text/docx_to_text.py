@@ -3,9 +3,7 @@ import os
 import docx
 import boto3
 import zipfile
-import pymongo
 import pandas as pd
-from http import HTTPStatus
 import xml.etree.ElementTree as ET
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -13,12 +11,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-DDB_USER = os.environ['DDB_USER']
-DDB_PASSWORD = os.environ['DDB_PASSWORD']
-DDB_DOMAIN = os.environ['DDB_DOMAIN']
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
-
-ddb_connection_uri = f'mongodb://{DDB_USER}:{DDB_PASSWORD}@{DDB_DOMAIN}:27017/?directConnection=true'
 
 # Defining elements from openxml schema
 WORD_NAMESPACE = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
@@ -54,11 +47,11 @@ def get_s3_metadata(s3_client, object_key, source_bucket):
 
 
 def get_docx_text(path):
-    """
+    '''
     param: path Str: Take the path of a docx file as argument
     returns: paragraphs Str: text in unicode.
         Function from stackoverflow to pull text from a docx file
-    """
+    '''
     document = zipfile.ZipFile(path)
     xml_content = document.read('word/document.xml')
     document.close()
@@ -75,66 +68,31 @@ def get_docx_text(path):
     return '\n\n'.join(paragraphs)
 
 
-def getMetaData(doc):
-    """
-    param: doc docx
+def get_doc_metadata(doc):
+    '''
+    param: doc/docx
     returns: metadata
         Function from stackoverflow to get metadata from docx
-    """
+    '''
 
     prop = doc.core_properties
     metadata = {
-        "author": prop.author,
-        "category": prop.category,
-        "comments": prop.comments,
-        "content_status": prop.content_status,
-        "created": prop.created,
-        "identifier": prop.identifier,
-        "keywords": prop.keywords,
-        "last_modified_by": prop.last_modified_by,
-        "language": prop.language,
-        "modified": prop.modified,
-        "subject": prop.subject,
-        "title": prop.title,
-        "version": prop.version
+        'author': prop.author,
+        'category': prop.category,
+        'comments': prop.comments,
+        'content_status': prop.content_status,
+        'created': prop.created,
+        'identifier': prop.identifier,
+        'keywords': prop.keywords,
+        'last_modified_by': prop.last_modified_by,
+        'language': prop.language,
+        'modified': prop.modified,
+        'subject': prop.subject,
+        'title': prop.title,
+        'version': prop.version
     }
 
     return metadata
-
-
-def mongo_connect_and_push(source_bucket,
-                           object_key,
-                           document_uid,
-                           title,
-                           date_published,
-                           database,
-                           tlsCAFile='./rds-combined-ca-bundle.pem'):
-    '''Connects to the DocumentDB and inserts extracted metadata from the DOC'''
-
-    db_client = pymongo.MongoClient(
-        database,
-        tls=True,
-        tlsCAFile=tlsCAFile
-    )
-    logger.info(db_client.list_database_names())
-    db = db_client.bre_orp
-    collection = db.documents
-
-    doc = {
-        'title': title,
-        'date_published': date_published,
-        'document_uid': document_uid,
-        'uri': f's3://{source_bucket}/{object_key}',
-        'object_key': object_key
-    }
-
-    # Insert document to DB if it doesn't already exist
-    if not collection.find_one(doc):
-        collection.insert_one(doc)
-    logger.info(f'Document inserted: {collection.find_one(doc)}')
-
-    db_client.close()
-    return {**doc, 'mongoStatusCode': HTTPStatus.OK}
 
 
 def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUCKET):
@@ -150,7 +108,8 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
     )
     logger.info('Saved text to data lake')
 
-    return response
+    assert response['ResponseMetadata']['HTTPStatusCode'] == 200, 'Text did not successfully write to S3'
+    return None
 
 
 @logger.inject_lambda_context(log_event=True)
@@ -162,43 +121,63 @@ def handler(event, context: LambdaContext):
 
     s3_client = boto3.client('s3')
     doc_s3_metadata = get_s3_metadata(
-        s3_client=s3_client, object_key=object_key, source_bucket=source_bucket)
+        s3_client=s3_client,
+        object_key=object_key,
+        source_bucket=source_bucket
+    )
 
     # Raise an error if there is no UUID in the document's S3 metadata
     assert doc_s3_metadata.get('uuid'), 'Document must have a UUID attached'
+
+    # Getting S3 metadata from S3 object
     document_uid = doc_s3_metadata['uuid']
-    logger.append_keys(document_uid=document_uid)
+    regulator_id = doc_s3_metadata.get('regulator_id')
+    user_id = doc_s3_metadata.get('user_id')
+    api_user = doc_s3_metadata.get('api_user')
+    document_type = doc_s3_metadata.get('document_type')
+    status = doc_s3_metadata.get('status')
 
     docx_file = download_text(
-        s3_client=s3_client, object_key=object_key, source_bucket=source_bucket)
+        s3_client=s3_client,
+        object_key=object_key,
+        source_bucket=source_bucket
+    )
 
     doc = docx.Document(docx_file)
-    metadata = getMetaData(doc=doc)
-
-    # Get title and date published
-    title = metadata["title"]
-    date_published = pd.to_datetime(
-        metadata["created"]).isoformat()
+    metadata = get_doc_metadata(doc=doc)
 
     # Get and push text to destination bucket
     text = get_docx_text(path=docx_file)
     write_text(s3_client=s3_client, text=text, document_uid=document_uid)
 
-    logger.info(f"All data extracted. E.g. Title extracted: {title}")
+    # Get title and date published
+    title = metadata['title']
+    date_published = pd.to_datetime(metadata['created']).isoformat()
 
-    mongo_response = mongo_connect_and_push(
-        source_bucket=source_bucket,
-        object_key=object_key,
-        document_uid=document_uid,
-        title=title,
-        date_published=date_published,
-        database=ddb_connection_uri)
+    logger.info(f'All data extracted e.g. Title extracted: {title}')
 
-    s3_response = write_text(
-        s3_client=s3_client,
-        text=text,
-        document_uid=document_uid,
-        destination_bucket=DESTINATION_BUCKET)
+    # Building metadata document
+    doc = {
+        'title': title,
+        'document_uid': document_uid,
+        'regulator_id': regulator_id,
+        'user_id': user_id,
+        'uri': f's3://{source_bucket}/{object_key}',
+        'data':
+        {
+            'dates':
+            {
+                'date_published': date_published,
+            }
+        },
+        'document_type': document_type,
+        'status': status,
+    }
 
-    handler_response = {**mongo_response, **s3_response}
+    handler_response = {
+        'document': doc,
+        'object_key': object_key,
+        'api_user': api_user,
+    }
+
     return handler_response
