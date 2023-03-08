@@ -15,7 +15,7 @@ from itertools import groupby
 from word_forms_loc.word_forms_loc import get_word_forms
 from word_forms_loc.lemmatizer import lemmatize
 
-search_keys = {"id", "keyword", "title", "data_published",
+search_keys = {"id", "keyword", "title", "date_published",
                "regulator_id", "status", "regulatory_topic", "document_type",
                "legislation_href"}
 return_vals = ['title', 'summary', 'document_uid', 'regulator_id',
@@ -48,8 +48,8 @@ def format_datetime(date): return datetime.strftime(date, "%Y-%m-%dT%H:%M:%S")
 def get_select_dict(results: dict, selc: list): return {k: (format_datetime(
     v) if type(v) == datetime else v)for k, v in results.items() if k in selc}
 
-def remap(d:dict, mapd:dict):
-    return {mapd.get(k, k):v for k,v in d.items()}
+def remap(d:dict, mapd:dict):    return {mapd.get(k, k):v for k,v in d.items()}
+
 def group_attributes(attr):
     results = []
     for k, gp in groupby(attr, lambda x: x[0]):
@@ -60,11 +60,6 @@ def group_attributes(attr):
 def getUniqueResult(results):
     res = [(i.get_type().get_label().name(), i.get_value())
            for a in results for i in a.concepts() if i.is_attribute()]
-    # results = []
-    # for k, gp in groupby(res, lambda x: x[0]):
-    #     gpl = list(gp)
-    #     results.append((k, [i[1] for i in gpl] if len(gpl) > 1 else gpl[0][1]))
-    # return results
     return group_attributes(res)
 
 def group_of_group(results, id ='id', grouping='y', attribute='attribute'):
@@ -174,7 +169,7 @@ def search_reg_docs(ans):
         for rd in regdocs:
             rd['keyword'] = list(set([lemma2noun(kw) for kw in rd.get('keyword', [])]))
             # TODO  REMOVE THIS AFTER NEW BULK INGESTION
-            rd['uri'] = rd.pop('object_key')
+            # rd['uri'] = rd.pop('object_key')
             data.append(get_select_dict(rd, return_vals))
         doc['related_docs'] = data
         docs.append(doc)
@@ -197,11 +192,11 @@ def search_leg_orgs(ans, session):
 
         doc['keyword'] = list(set([lemma2noun(kw) for kw in doc.get('keyword', [])]))
         # TODO  REMOVE THIS AFTER NEW BULK INGESTION
-        doc['uri'] = doc.pop('object_key')
+        # doc['uri'] = doc.pop('object_key')
         legmap = {'leg_type':'type', 'leg_division':'division'}
         doc['legislative_origins'] = list(filter(None, [remap(get_select_dict(a, leg_vals), legmap) for a in ans]))
-        doc['regulator_id'] = list(
-            filter(None, [a.get('regulator_id') for a in ans]))[0]
+        # doc['regulator_id'] = list(
+            # filter(None, [a.get('regulator_id') for a in ans]))[0]
 
     return [get_select_dict(doc, return_vals) for doc in res]
     
@@ -221,7 +216,6 @@ def search_module(event, session):
         query = query_builder(event)
 
         # Query the graph database for reg. documents
-        LOGGER.info("Querying the graph for reg. documents")
         ans = matchquery(query, session)
         num_ret = len(ans)
 
@@ -229,8 +223,10 @@ def search_module(event, session):
 
         # second hop search
         if event.get('legislation_href'):
+            LOGGER.info("Querying the graph for related reg. documents")
             docs = search_reg_docs(ans)
         else:
+            LOGGER.info("Querying the graph for reg. documents")
             docs = search_leg_orgs(ans[page:page+RET_SIZE], session)
        
 
