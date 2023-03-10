@@ -2,6 +2,7 @@ import re
 import os
 import boto3
 import requests
+import pandas as pd
 from bs4 import BeautifulSoup
 from htmldate import find_date
 from aws_lambda_powertools.logging.logger import Logger
@@ -38,10 +39,13 @@ def get_publication_modification_date(URL):
 
     # If no concrete date is found, do extensive search
     if publication_date == "None":
-        publication_date = "Inferred " + str(find_date(URL, original_date=True))
+        publication_date = str(find_date(URL, original_date=True))
 
     if modification_date == "None":
-        modification_date = "Inferred " + str(find_date(URL))
+        modification_date = str(find_date(URL))
+
+    publication_date = pd.to_datetime(publication_date).isoformat()
+    modification_date = pd.to_datetime(modification_date).isoformat()
 
     return publication_date, modification_date
 
