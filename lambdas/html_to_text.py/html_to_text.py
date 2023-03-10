@@ -60,7 +60,7 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
     logger.info('Saved text to data lake')
     assert response['ResponseMetadata']['HTTPStatusCode'] == 200, 'Text did not successfully write to S3'
 
-    return 
+    return
 
 
 @logger.inject_lambda_context(log_event=True)
@@ -78,7 +78,6 @@ def handler(event, context: LambdaContext):
     status = event['detail']['status']
     url = event['detail']['url']
 
-
     title, text = get_title_and_text(url)
     date_published = get_publication_modification_date(url)
 
@@ -95,7 +94,7 @@ def handler(event, context: LambdaContext):
         'document_uid': document_uid,
         'regulator_id': regulator_id,
         'user_id': user_id,
-        'url': url,
+        'uri': url,
         'data':
         {
             'dates':
@@ -104,7 +103,7 @@ def handler(event, context: LambdaContext):
             }
         },
         'document_type': document_type,
-        # 'regulatory_topic': regulatory_topic,
+        'document_format': 'HTML',
         'status': status,
     }
 
@@ -114,4 +113,3 @@ def handler(event, context: LambdaContext):
     }
 
     return handler_response
-
