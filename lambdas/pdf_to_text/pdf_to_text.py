@@ -74,7 +74,7 @@ def extract_text_from_pdf(doc_bytes_io):
 
     text = extract_text(doc_bytes_io)
 
-    if (text == "") or (text == None):
+    if (text == "") or (text is None):
 
         try:
 
@@ -96,8 +96,7 @@ def extract_text_from_pdf(doc_bytes_io):
 
             text = " ".join(text)
 
-        except Exception as exc: 
-
+        except Exception:
             stream = bytearray(open(doc_bytes_io, "rb").read())
             with fitz.open(doc_bytes_io, stream) as doc:
                 text = ''
@@ -107,6 +106,7 @@ def extract_text_from_pdf(doc_bytes_io):
 
     else:
         return text
+
 
 def remove_excess_punctuation(text) -> str:
     '''
@@ -214,7 +214,7 @@ def handler(event, context: LambdaContext):
         'document_uid': document_uid,
         'regulator_id': regulator_id,
         'user_id': user_id,
-        'uri': f's3://{source_bucket}/{object_key}',
+        'uri': object_key,
         'data':
         {
             'dates':
@@ -223,7 +223,7 @@ def handler(event, context: LambdaContext):
             }
         },
         'document_type': document_type,
-        # 'regulatory_topic': regulatory_topic,
+        'document_format': 'PDF',
         'status': status,
     }
 
