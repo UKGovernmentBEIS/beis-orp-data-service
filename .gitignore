@@ -76,3 +76,6 @@ munging.ipynb
 *.DS_Store
 advent_of_code/
 .ipynb_checkpoints/
+
+# large files
+**/lo-x86-64-rpm.tar.gz
