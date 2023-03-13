@@ -39,7 +39,9 @@ for i, file in enumerate(flist):
         if not ref.empty:
             ref = ref.iloc[0]
             LEG_ORG['title'] = ref.title
+            LEG_ORG['ref'] = ref.ref
             LEG_ORG['href'] = ref.href
+            LEG_ORG['legNumber'] = ref.number
             LEG_ORG['legDivision'] = ref.legDivision
             LEG_ORG['legType'] = ref.legType
         tuple_file.write(json.dumps(LEG_ORG) + "\n")

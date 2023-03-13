@@ -48,7 +48,7 @@ if __name__ == "__main__":
                 prefix sd: <http://www.w3.org/ns/sparql-service-description#>
                 prefix prov: <http://www.w3.org/ns/prov#>
                 prefix leg: <http://www.legislation.gov.uk/def/legislation/>
-                select distinct ?ref  ?title ?href ?shorttitle ?citation ?acronymcitation ?year
+                select distinct ?ref  ?title ?href ?shorttitle ?citation ?acronymcitation ?year ?number
                 where {
                    ?activity prov:endedAtTime ?actTime .
                    ?graph prov:wasInfluencedBy ?activity .
@@ -61,10 +61,12 @@ if __name__ == "__main__":
                                         leg:interpretation ?href .
                                    OPTIONAL {?ref   leg:citation ?citation  } . 
                                    OPTIONAL {?ref   leg:acronymCitation ?acronymcitation} .
-                                   OPTIONAL {?href  leg:shortTitle ?shorttitle} .}
+                                   OPTIONAL {?href  leg:shortTitle ?shorttitle} .
+                                   OPTIONAL {?ref   leg:number ?number  } .}
                    FILTER(str(?actTime) > "%s")
                 }
                 """ % date)
+    
     results = sparql.query().convert()
     df = pd.read_csv(BytesIO(results))
     stitles = ['title', 'shorttitle', 'citation', 'acronymcitation']
