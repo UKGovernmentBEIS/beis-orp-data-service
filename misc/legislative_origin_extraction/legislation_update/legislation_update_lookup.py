@@ -22,8 +22,11 @@ Returns:
 import pandas as pd
 from SPARQLWrapper import SPARQLWrapper, CSV
 from io import BytesIO
-import sys, re
+import sys
 
+
+LEG_DIV = 'leg-division-list.csv'
+dff = pd.read_csv(LEG_DIV)
 
 if __name__ == "__main__":
     args = sys.argv[1:]
@@ -45,25 +48,28 @@ if __name__ == "__main__":
                 prefix sd: <http://www.w3.org/ns/sparql-service-description#>
                 prefix prov: <http://www.w3.org/ns/prov#>
                 prefix leg: <http://www.legislation.gov.uk/def/legislation/>
-                select distinct ?ref  ?title ?ref_version ?shorttitle ?citation ?acronymcitation 
+                select distinct ?ref  ?title ?href ?shorttitle ?citation ?acronymcitation ?year ?number
                 where {
                    ?activity prov:endedAtTime ?actTime .
                    ?graph prov:wasInfluencedBy ?activity .
                    ?activity rdf:type <http://www.legislation.gov.uk/def/provenance/Addition> .
                    ?dataUnitDataSet sd:namedGraph ?graph .
                    <http://www.legislation.gov.uk/id/dataset/topic/core> void:subset ?dataUnitDataSet .
-                   graph ?graph { ?ref a leg:Legislation; a leg:UnitedKingdomPublicGeneralAct ;
+                   graph ?graph { ?ref a leg:Legislation; 
                                         leg:title ?title ;
-                                        leg:interpretation ?ref_version .
-                                   OPTIONAL { ?ref leg:citation ?citation  } . 
-                                   OPTIONAL {?ref leg:acronymCitation ?acronymcitation} .
-                                   OPTIONAL {?ref_version   leg:shortTitle ?shorttitle} .}
-                   FILTER(str(?actTime) > %s)
+                                        leg:year ?year ;
+                                        leg:interpretation ?href .
+                                   OPTIONAL {?ref   leg:citation ?citation  } . 
+                                   OPTIONAL {?ref   leg:acronymCitation ?acronymcitation} .
+                                   OPTIONAL {?href  leg:shortTitle ?shorttitle} .
+                                   OPTIONAL {?ref   leg:number ?number  } .}
+                   FILTER(str(?actTime) > "%s")
                 }
                 """ % date)
+    
     results = sparql.query().convert()
     df = pd.read_csv(BytesIO(results))
-    stitles = ['shorttitle', 'citation', 'acronymcitation']
+    stitles = ['title', 'shorttitle', 'citation', 'acronymcitation']
     df['candidate_titles'] = df[stitles].apply(list, axis=1)
 # ====
     df['divAbbv']=df.ref.apply(lambda x: x.split('/')[4])
@@ -71,5 +77,4 @@ if __name__ == "__main__":
 # ====
     df = df.explode('candidate_titles')
     df = df[~df['candidate_titles'].isna()].drop_duplicates('candidate_titles')
-    df['for_fuzzy'] = df.candidate_titles.apply(lambda x: re.search(r'Act\s+(\d{4})', x)!=None)
     df.to_csv(savefile, index=None)
