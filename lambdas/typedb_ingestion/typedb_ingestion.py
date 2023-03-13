@@ -64,6 +64,7 @@ def sqs_connect_and_send(document, queue=DESTINATION_SQS_URL):
 def get_email_address(user_pool_id, user_sub):
     cognito_client = boto3.client('cognito-idp')
     try:
+        logger.info('Pulling email from Cognito')
         response = cognito_client.admin_get_user(
             UserPoolId=user_pool_id,
             Username=user_sub
@@ -78,6 +79,7 @@ def get_email_address(user_pool_id, user_sub):
 def send_email(sender_email, recipient_email, subject, body):
     ses_client = boto3.client('ses')
     try:
+        logger.info('Sending email')
         response = ses_client.send_email(
             Source=sender_email,
             Destination={
@@ -128,12 +130,15 @@ def handler(event, context: LambdaContext):
     # not an API user
     if response['ResponseMetadata']['HTTPStatusCode'] == 200 and not api_user:
         email_address = get_email_address(COGNITO_USER_POOL, user_id)
+        logger.info(f'Pulled email from Cognito: {email_address}')
+
         if email_address:
             document_uid = document['document_uid']
             title = document['title']
             document_type = document['document_type']
             regulator_id = document['regulator_id']
             date_published = document['data']['dates']['date_published']
+
             send_email(
                 sender_email=SENDER_EMAIL_ADDRESS,
                 recipient_email=email_address,
