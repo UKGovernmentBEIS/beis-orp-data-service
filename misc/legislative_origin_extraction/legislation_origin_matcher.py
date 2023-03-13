@@ -16,8 +16,6 @@ The matcher goes through two stages:
     
 """
 from spacy.matcher import  Matcher, PhraseMatcher 
-# from spaczz.matcher import FuzzyMatcher
-# from database.db_connection import get_hrefs, get_canonical_leg
 
 # User-defined params
 keys = ['detected_ref', 'start', 'end']
@@ -43,7 +41,7 @@ def exact_matcher(title, docobj, nlp):
         List of tuples of the form ('detected reference', 'start position', 'end position', 100)
 
     """
-    phrase_matcher = PhraseMatcher(nlp.vocab)
+    phrase_matcher = PhraseMatcher(nlp.vocab, attr='LOWER')
     phrase_list = [nlp(title)]
     phrase_matcher.add("Text Extractor", None, *phrase_list)
 
@@ -118,25 +116,27 @@ def detect_year_span(docobj, nlp):
     dates = [docobj[start:end].text for _, start, end in dm]
     dates = set([int(d) for d in dates if (len(d) == 4) & (d.isdigit())])
     return dates
+
 ######
 
 def leg_pipeline(leg_titles, nlp, docobj):
     dates = detect_year_span(docobj, nlp)
     # filter the legislation list down to the years detected above
-    sents = list(docobj.sents)
+    sents = docobj.sents
     for sent in sents:
         sdates = [year  for year in dates if str(year) in sent.text]
         titles = leg_titles[leg_titles.year.isin(sdates)]
         relevant_titles = titles.candidate_titles.drop_duplicates().tolist()
-        # print(f'\t Looking through {len(relevant_titles)} possible candidates...')
-        results = lookup_pipe(relevant_titles, docobj, nlp,
-                            exact_matcher)
-        if results:
-            break
+        print(f'\t Looking through {len(relevant_titles)} possible candidates...')
+        if relevant_titles:
+            results = lookup_pipe(relevant_titles, docobj, nlp,
+                                exact_matcher)
+            if results:
+                break
 
     results = dict([(k, [dict(zip(keys, j)) for j in v])
                     for k, v in results.items()])
-
+    
     refs = set(results.keys())
     print(f"\t Found [{len(refs)}] legislative origins.")
     return refs
