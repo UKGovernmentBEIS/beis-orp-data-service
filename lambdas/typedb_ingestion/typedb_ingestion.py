@@ -148,6 +148,6 @@ def handler(event, context: LambdaContext):
                     This is a system generated email, please do not reply.'''
             )
 
-            logger.info('Email sent')
+            logger.info(f'Email sent to {email_address}')
 
     return response
