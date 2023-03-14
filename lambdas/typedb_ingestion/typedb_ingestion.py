@@ -64,7 +64,6 @@ def sqs_connect_and_send(document, queue=DESTINATION_SQS_URL):
 def get_email_address(user_pool_id, user_sub):
     cognito_client = boto3.client('cognito-idp')
     try:
-        logger.info('Pulling email from Cognito')
         response = cognito_client.admin_get_user(
             UserPoolId=user_pool_id,
             Username=user_sub
@@ -79,7 +78,6 @@ def get_email_address(user_pool_id, user_sub):
 def send_email(sender_email, recipient_email, subject, body):
     ses_client = boto3.client('ses')
     try:
-        logger.info('Sending email')
         response = ses_client.send_email(
             Source=sender_email,
             Destination={
