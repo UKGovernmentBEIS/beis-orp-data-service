@@ -9,6 +9,8 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 logger = Logger()
 
 DESTINATION_SQS_URL = os.environ['DESTINATION_SQS_URL']
+COGNITO_USER_POOL = os.environ['COGNITO_USER_POOL']
+SENDER_EMAIL_ADDRESS = os.environ['SENDER_EMAIL_ADDRESS']
 
 
 def merge_dicts(dict_list):
@@ -33,14 +35,14 @@ def merge_dicts(dict_list):
 
 def assert_same_base_values(keys, dict_list):
     '''
-    Raises an assertion error if the inputs received from the parallel stage 
+    Raises an assertion error if the inputs received from the parallel stage
     don't have the same base values
     '''
     # Get the values of the specified keys in each dictionary
     values = set(itemgetter(*keys)(d['document']) for d in dict_list)
     # Check if all values are the same
     assert len(
-        values) == 1, f'The base values of the inputs received are not the same'
+        values) == 1, 'The base values of the inputs received are not the same'
 
     base_document = {k: v for k,
                      v in dict_list[0]['document'].items() if k in keys}
@@ -59,6 +61,47 @@ def sqs_connect_and_send(document, queue=DESTINATION_SQS_URL):
     return response
 
 
+def get_email_address(user_pool_id, user_sub):
+    cognito_client = boto3.client('cognito-idp')
+    try:
+        response = cognito_client.admin_get_user(
+            UserPoolId=user_pool_id,
+            Username=user_sub
+        )
+        for attribute in response['UserAttributes']:
+            if attribute['Name'] == 'email':
+                return attribute['Value']
+    except cognito_client.exceptions.UserNotFoundException:
+        return None
+
+
+def send_email(sender_email, recipient_email, subject, body):
+    ses_client = boto3.client('ses')
+    try:
+        response = ses_client.send_email(
+            Source=sender_email,
+            Destination={
+                'ToAddresses': [
+                    recipient_email,
+                ],
+            },
+            Message={
+                'Subject': {
+                    'Data': subject,
+                },
+                'Body': {
+                    'Text': {
+                        'Data': body,
+                    },
+                },
+            },
+        )
+        return response
+    except Exception as e:
+        logger.error(e)
+        raise e
+
+
 @logger.inject_lambda_context(log_event=True)
 def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
@@ -75,6 +118,39 @@ def handler(event, context: LambdaContext):
     logger.info({'document': document})
 
     response = sqs_connect_and_send(document=document)
-    logger.info({'sqs_response': response})
+
+    # Obtaining values for user_id and whether or not the user has uploaded
+    # via GUI or API
+    user_id = document['user_id']
+    api_user = event[0]['api_user']
+
+    # Send an email to the user if ingestion is successful and if the user is
+    # not an API user
+    if response['ResponseMetadata']['HTTPStatusCode'] == 200 and not api_user:
+        email_address = get_email_address(COGNITO_USER_POOL, user_id)
+        logger.info(f'Pulled email from Cognito: {email_address}')
+
+        if email_address:
+            document_uid = document['document_uid']
+            title = document['title']
+            document_type = document['document_type']
+            regulator_id = document['regulator_id']
+            date_published = document['data']['dates']['date_published']
+
+            send_email(
+                sender_email=SENDER_EMAIL_ADDRESS,
+                recipient_email=email_address,
+                subject='ORP Upload Complete',
+                body=f'''Your document (UUID: {document_uid}) has been ingested to the ORP.
+                    It will now be searchable.\n\n
+                    You can search using the following criteria:\n
+                    - Title: {title}\n
+                    - Document Type: {document_type}\n
+                    - Regulator: {regulator_id}\n
+                    - Date Published: {date_published}\n\n
+                    This is a system generated email, please do not reply.'''
+            )
+
+            logger.info(f'Email sent to {email_address}')
 
     return response
