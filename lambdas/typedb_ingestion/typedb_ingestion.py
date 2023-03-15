@@ -96,10 +96,12 @@ def send_email(sender_email, recipient_email, subject, body):
                 },
             },
         )
+
+        logger.info(f'Email sent to {sender_email}')
         return response
+
     except Exception as e:
-        logger.error(e)
-        raise e
+        logger.error(f'Email failed to send. Error message: \n{e}')
 
 
 @logger.inject_lambda_context(log_event=True)
@@ -150,7 +152,5 @@ def handler(event, context: LambdaContext):
                     - Date Published: {date_published}\n\n
                     This is a system generated email, please do not reply.'''
             )
-
-            logger.info(f'Email sent to {email_address}')
 
     return response
