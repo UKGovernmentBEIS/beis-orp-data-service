@@ -11,6 +11,7 @@ logger = Logger()
 DESTINATION_SQS_URL = os.environ['DESTINATION_SQS_URL']
 COGNITO_USER_POOL = os.environ['COGNITO_USER_POOL']
 SENDER_EMAIL_ADDRESS = os.environ['SENDER_EMAIL_ADDRESS']
+ENVIRONMENT = os.environ['ENVIRONMENT']
 
 
 def merge_dicts(dict_list):
@@ -101,7 +102,7 @@ def send_email(sender_email, recipient_email, subject, body):
         return response
 
     except Exception as e:
-        logger.error(f'Email failed to send. Error message: \n{e}')
+        logger.error(f'Email failed to send. Error message: {e}')
 
 
 @logger.inject_lambda_context(log_event=True)
@@ -143,13 +144,14 @@ def handler(event, context: LambdaContext):
                 sender_email=SENDER_EMAIL_ADDRESS,
                 recipient_email=email_address,
                 subject='ORP Upload Complete',
-                body=f'''Your document (UUID: {document_uid}) has been ingested to the ORP.
-                    It will now be searchable.\n\n
+                body=f'''Your document (UUID: {document_uid}) has been ingested to the ORP. 
+                    It can be viewed in the ORP at https://app.{ENVIRONMENT}.cannonband.com/document/view/{document_uid}?ingested=true
+                    It will now be searchable.\n
                     You can search using the following criteria:\n
                     - Title: {title}\n
                     - Document Type: {document_type}\n
                     - Regulator: {regulator_id}\n
-                    - Date Published: {date_published}\n\n
+                    - Date Published: {date_published}\n
                     This is a system generated email, please do not reply.'''
             )
 
