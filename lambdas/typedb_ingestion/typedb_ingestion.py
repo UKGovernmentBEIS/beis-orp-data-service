@@ -97,7 +97,7 @@ def send_email(sender_email, recipient_email, subject, body):
             },
         )
 
-        logger.info(f'Email sent to {sender_email}')
+        logger.info(f'Email sent from to {recipient_email}')
         return response
 
     except Exception as e:
