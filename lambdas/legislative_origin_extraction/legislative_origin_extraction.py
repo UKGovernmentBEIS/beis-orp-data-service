@@ -1,4 +1,4 @@
-import os
+# import os
 import boto3
 from boto3.dynamodb.conditions import Key
 import spacy
@@ -10,9 +10,13 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
-TABLE_NAME = os.environ['TABLE_NAME']
-YEAR_INDEX_NAME = os.environ['YEAR_INDEX_NAME']
+
+SOURCE_BUCKET = 'beis-orp-dev-datalake'
+TABLE_NAME = 'legislative_origin'
+YEAR_INDEX_NAME = 'year-candidate_titles-index'
+# SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
+# TABLE_NAME = os.environ['TABLE_NAME']
+# YEAR_INDEX_NAME = os.environ['YEAR_INDEX_NAME']
 
 
 @Language.component('custom_sentencizer')
