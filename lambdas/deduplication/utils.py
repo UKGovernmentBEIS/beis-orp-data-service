@@ -4,7 +4,7 @@ from nltk.tokenize import word_tokenize
 from datasketch import MinHash, MinHashLSH
 
 
-lsh = MinHashLSH(threshold=0.9)
+lsh = MinHashLSH()
 stop_words = set(stopwords.words('english'))
 
 
