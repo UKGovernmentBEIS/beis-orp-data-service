@@ -1,18 +1,19 @@
 import kshingle as ks
-from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from datasketch import MinHash, MinHashLSH
 
-
 lsh = MinHashLSH()
-stop_words = set(stopwords.words('english'))
 
+stopwords = open('./stopwords.txt', 'r')
+stopwords = stopwords.read()
+stopwords = [i for i in stopwords.split('\n')]
+stopwords = set(stopwords)
 
 # Preprocess text before shingling
 def preprocess(text):
     text = text.lower()
     word_tokens = word_tokenize(text)
-    filtered_sentence = " ".join([w for w in word_tokens if not w in stop_words])
+    filtered_sentence = " ".join([w for w in word_tokens if not w in stopwords])
     return filtered_sentence
     
     
