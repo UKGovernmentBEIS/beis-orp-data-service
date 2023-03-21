@@ -176,7 +176,7 @@ def handler(event, context: LambdaContext):
     text = download_text(s3_client=s3_client, document_uid=document_uid, bucket=SOURCE_BUCKET)
 
     # Get incoming metadata
-    incoming_metadata = dict(zip(return_vals, [event['document']['data'][idx] for idx in return_vals]))
+    incoming_metadata = dict(zip(return_vals, [event['document'][val] for val in return_vals]))
 
     # If search module returns a True i.e. duplicate text with different metadata, then replace existing metadata
     # The returned dictionary is the existing document's metadata
@@ -197,7 +197,7 @@ def handler(event, context: LambdaContext):
     #========== 2. If the document is a version (same text different metadata), update the metadata ========
     elif is_duplicate_results[0] == False:
         for i in range(0, len(incoming_metadata)):
-            handler_response['document']['data'][[*incoming_metadata][i]]= [*incoming_metadata.values()][i]
+            handler_response['document'][[*incoming_metadata][i]]= [*incoming_metadata.values()][i]
         return handler_response
 
     #========== 3. Else the document is a complete duplicate, and the user should be informed ========
