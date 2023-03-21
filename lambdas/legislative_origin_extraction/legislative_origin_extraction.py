@@ -18,7 +18,7 @@ YEAR_INDEX_NAME = os.environ['YEAR_INDEX_NAME']
 
 @Language.component('custom_sentencizer')
 def custom_sentencizer(doc):
-    ''' Look for sentence start tokens by scanning for periods only. '''
+    '''Look for sentence start tokens by scanning for periods only.'''
     for i, token in enumerate(doc[:-2]):  # The last token cannot start a sentence
         if token.text == ".":
             doc[i + 1].is_sent_start = True
@@ -29,6 +29,7 @@ def custom_sentencizer(doc):
 
 
 def NLPsetup():
+    '''Initialises the Spacy models'''
     nlp = spacy.load(
         "en_core_web_sm",
         exclude=[
@@ -54,17 +55,22 @@ def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
     return document
 
 
-def detect_year_span(docobj, nlp):
+def detect_year_span(nlp_text, nlp):
+    '''Detects mentions of years in the text'''
     pattern = [{"SHAPE": "dddd"}]
     dmatcher = Matcher(nlp.vocab)
     dmatcher.add('date matcher', [pattern])
-    dm = dmatcher(docobj)
-    dates = [docobj[start:end].text for _, start, end in dm]
+    dm = dmatcher(nlp_text)
+    dates = [nlp_text[start:end].text for _, start, end in dm]
     dates = set([int(d) for d in dates if (len(d) == 4) & (d.isdigit())])
     return dates
 
 
 def query_titles_from_years(table, index_name, dates):
+    '''
+    Finds the titles of all legislation from the years detected in the text
+    Queries a separate index which only holds the year and the title
+    '''
     all_titles = {}
     for date in dates:
         date = str(date)
@@ -74,7 +80,7 @@ def query_titles_from_years(table, index_name, dates):
         )
 
         candidate_titles = [i['candidate_titles'] for i in response['Items']]
-
+        # Paginating through the results as each results set must be <1MB
         while 'LastEvaluatedKey' in response:
             response = table.query(
                 KeyConditionExpression=Key('year').eq(date),
@@ -90,33 +96,55 @@ def query_titles_from_years(table, index_name, dates):
     return all_titles
 
 
-def exact_matcher(title, docobj, nlp):
+def exact_matcher(title, nlp_text, nlp):
+    '''
+    Finds instances of text within a larger piece of text
+    Used for finding references to legislation titles in document
+    '''
     phrase_matcher = PhraseMatcher(nlp.vocab)
     phrase_list = [nlp(title)]
     phrase_matcher.add("Text Extractor", None, *phrase_list)
 
-    matched_items = phrase_matcher(docobj)
+    matched_items = phrase_matcher(nlp_text)
 
     matched_text = []
     for _, start, end in matched_items:
-        span = docobj[start: end]
+        span = nlp_text[start: end]
         matched_text.append((span.text, start, end, 100))
     return matched_text
 
 
-def lookup_pipe(titles, docobj, nlp, method):
-    results = []
-    # for every legislation title in the table
-    for title in nlp.pipe(titles):
-        # detect legislation in the judgement body
-        matches = method(title.text, docobj, nlp)
-        if matches:
-            results.append(title.text)
+def find_legislation_in_text(nlp_text, nlp, titles, dates_in_text):
+    '''
+    Finds mentions of legislation titles in text
+    Returns the first set of results as this is indicative of the legislative origin
+    '''
+    sentences = list(nlp_text.sents)
+    for sentence in sentences:
+        years_in_sentence = [
+            year for year in dates_in_text if str(year) in sentence.text]
+        relevant_titles = []
+        for year in years_in_sentence:
+            relevant_titles.extend(titles[str(year)])
+
+        results = []
+        # for every legislation title in the table
+        for title in nlp.pipe(relevant_titles):
+            # detect legislation in the judgement body
+            matches = exact_matcher(title.text, nlp_text, nlp)
+            if matches:
+                results.append(title.text)
+
+        if results:
+            break
     return results
 
 
 def extract_legislative_origins(table, title_list):
-    # Query the table for the item with the specified key
+    '''
+    Query the table for the matched legislation in text
+    Returns relevant metadata of the legislation and attaches it to document metadata
+    '''
     for title in title_list:
         response = table.get_item(
             Key={
@@ -142,40 +170,43 @@ def handler(event, context: LambdaContext):
 
     document_uid = event['document']['document_uid']
 
+    # Fetches the raw text of the document matching the UID above
     s3_client = boto3.client('s3')
     raw_text = download_text(s3_client=s3_client, document_uid=document_uid)
 
+    # Intitialising model and text
     nlp = NLPsetup()
     nlp_text = nlp(raw_text)
 
+    # Find years mentioned in text
     dates_in_text = detect_year_span(nlp_text, nlp)
 
     # Set up the DynamoDB client
     dynamodb = boto3.resource('dynamodb', region_name='eu-west-2')
     table = dynamodb.Table(TABLE_NAME)
 
+    # Querying table for all titles in matched years
     titles = query_titles_from_years(
         table=table,
         index_name=YEAR_INDEX_NAME,
-        dates=dates_in_text)
+        dates=dates_in_text
+    )
 
-    sentences = list(nlp_text.sents)
-    for sentence in sentences:
-        years_in_sentence = [
-            year for year in dates_in_text if str(year) in sentence.text]
-        relevant_titles = []
-        for year in years_in_sentence:
-            relevant_titles.extend(titles[str(year)])
+    # Finding legislation referenced in text
+    legislative_origins = find_legislation_in_text(
+        nlp_text=nlp_text,
+        nlp=nlp,
+        title=titles,
+        dates_in_text=dates_in_text
+    )
 
-        results = lookup_pipe(relevant_titles, nlp_text, nlp, exact_matcher)
-        if results:
-            break
-
-    legislative_origins = extract_legislative_origins(table, results)
+    # Querying table for metadata of referenced legislation
+    legislative_origins_metadata = extract_legislative_origins(
+        table, legislative_origins)
 
     handler_response = event
     handler_response['lambda'] = 'legislative_origin_extraction'
     handler_response['document']['legislative_origins'] = [
-        *legislative_origins]
+        *legislative_origins_metadata]
 
     return handler_response
