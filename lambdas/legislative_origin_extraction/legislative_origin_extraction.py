@@ -81,7 +81,8 @@ def query_titles_from_years(table, index_name, dates):
                 ExclusiveStartKey=response['LastEvaluatedKey']
             )
 
-            candidate_titles.extend([i['candidate_titles'] for i in response['Items']])
+            candidate_titles.extend([i['candidate_titles']
+                                    for i in response['Items']])
 
         all_titles[date] = candidate_titles
 
@@ -173,6 +174,7 @@ def handler(event, context: LambdaContext):
 
     handler_response = event
     handler_response['lambda'] = 'legislative_origin_extraction'
-    handler_response['document']['legislative_origins'] = [*legislative_origins]
+    handler_response['document']['legislative_origins'] = [
+        *legislative_origins]
 
     return handler_response
