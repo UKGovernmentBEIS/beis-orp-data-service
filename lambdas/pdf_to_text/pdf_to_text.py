@@ -73,17 +73,10 @@ def extract_text_from_pdf(doc_bytes_io):
     '''Extracts text from PDF streaming input'''
 
     text = extract_text(doc_bytes_io)
-
-    if (text == "") or (text is None):
-
+    if text == "" or text is None:
         try:
-
             # creating a pdf reader object
             reader = PdfReader(doc_bytes_io)
-
-            # printing number of pages in pdf file
-            # print(len(reader.pages))
-
             totalPages = PdfReader.numPages
 
             # getting a specific page from the pdf file
@@ -103,7 +96,6 @@ def extract_text_from_pdf(doc_bytes_io):
                 for page in doc:
                     text += page.get_text()
         return text
-
     else:
         return text
 
@@ -202,8 +194,9 @@ def handler(event, context: LambdaContext):
     status = doc_s3_metadata.get('status')
 
     title, date_published = extract_title_and_date(doc_bytes_io=doc_bytes_io)
-    text = clean_text(extract_text_from_pdf(doc_bytes_io=doc_bytes_io))
-    write_text(s3_client=s3_client, text=text,
+    text = extract_text_from_pdf(doc_bytes_io=doc_bytes_io)
+    cleaned_text = clean_text(text=text)
+    write_text(s3_client=s3_client, text=cleaned_text,
                document_uid=document_uid, destination_bucket=DESTINATION_BUCKET)
 
     logger.info(f'All data extracted e.g. Title extracted: {title}')
