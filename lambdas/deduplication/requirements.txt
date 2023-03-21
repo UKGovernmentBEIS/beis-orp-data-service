@@ -1,0 +1,5 @@
+boto3==1.21.32
+datasketch==1.5.9
+kshingle==0.10.0
+nltk==3.7
+numpy==1.21.5

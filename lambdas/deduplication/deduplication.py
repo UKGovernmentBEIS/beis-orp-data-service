@@ -3,10 +3,10 @@ import json
 import boto3
 import logging
 import numpy as np
-from email import get_email_address, send_email
-from utils import getHash
+from utils import create_hash_list
 from typedb.client import *
 from numpy.linalg import norm
+from email import send_email
 from typedb.client import TransactionType, SessionType, TypeDB
 
 
@@ -45,14 +45,10 @@ def download_text(s3_client, document_uid, bucket):
     return text
 
 
-def create_hash_list(text):
-    """
-    param: text: Str
-    returns: hash_list: list of hashes
-    """
-    hash_np = getHash(text)
-    hash_list = hash_np.tolist()
-    return hash_np, hash_list
+def getUniqueResult(results):
+    res = [(i.get_type().get_label().name(), i.get_value())
+           for a in results for i in a.concepts() if i.is_attribute()]
+    return res
 
 
 def read_transaction(session, hash_list):
@@ -60,44 +56,29 @@ def read_transaction(session, hash_list):
     params: session: TypeDB session opened
     params: hash_list: list of integers in hash list
         returns: matching_hash_list: list of hashes from the database that matched an integer in the hash_list
-        metadata_dict: dictionary of the metadata of all the shortlisted documents
+                metadata_dict: dictionary of the metadata of all the shortlisted documents
     """
+    contains = " or ".join(['{$h contains "%s";}'%hash for hash in hash_list])
 
+    query = f"""
+    match 
+        $u isa legalDocument, 
+        has node_id $n,
+        has attribute $a,
+        has hash_text $h;
+        {contains}; group $u;
+    """
     ## Read the person using a READ only transaction
     with session.transaction(TransactionType.READ) as read_transaction:
 
-        contains = " or ".join(['{$h contains "%s";}'%hash for hash in hash_list])
-
-        query = f"""
-        match 
-            $u isa legalDocument, 
-            has node_id $n,
-            has document_type $d,
-            has status $s,
-            has regulatory_topic $rt,
-            has regulator_id $r,
-            has date_published $dp,
-            has title $t,
-            has document_uid $uuid,
-            has hash_text $h;
-            {contains}; 
-        """
-
-        answer_iterator = read_transaction.query().match(query)
+        answer_iterator = read_transaction.query().match_group(query)
 
         # Get matches on hash
         ans_list = [ans for ans in answer_iterator]
+        metadata_dict = [dict(getUniqueResult(a.concept_maps()))
+               for a in ans_list]
 
-        matching_hash_list = [np.array(getattr(ans.get("h"), "_value").split("_"), dtype="uint64") for ans in ans_list]
-
-        metadata_dict = {"node_id" : [ans.get("n") for ans in ans_list],
-                        "title" : [ans.get("t") for ans in ans_list],
-                        "status" : [ans.get("s") for ans in ans_list],
-                        "regulator_id" : [ans.get("r") for ans in ans_list],
-                        "document_type" : [ans.get("dt") for ans in ans_list],
-                        "regulatory_topic" : [ans.get("rt") for ans in ans_list],
-                        "date_published" : [ans.get("dp") for ans in ans_list],
-                        "document_uid" : [ans.get("uuid") for ans in ans_list]}
+        matching_hash_list = [np.array(hash['hash_text'].split("_"), dtype="uint64") for hash in metadata_dict]
 
         LOGGER.info("Number of returned hashes: " + str(len(matching_hash_list)))
 
@@ -108,19 +89,17 @@ def get_similarity_score(hash_np, matching_hash_list):
     """
     params: hash_np: numpy hash of the incoming document
     params: matching_hash_list: list of hashes from the database that matched an integer in the hash_list
-    returns: index or None: index is returned if an exact duplicate is found, otherwise None is returned
+        returns: index or None: index is returned if an exact duplicate is found, otherwise None is returned
     """
     scores = []
-    indeces = []
-    for i,v in enumerate(matching_hash_list):
+    for v in matching_hash_list:
         cosine = np.dot(hash_np,v)/(norm(hash_np)*norm(v))
         scores.append(cosine)
-        indeces.append(i)
 
     if (len(scores) > 0) and (max(scores) >= 0.95):
         if max(scores) == 1:
             LOGGER.info("Duplicate text detected")
-            index = indeces[scores.index(max(scores))]
+            index = scores.index(max(scores))
             return index
         else:
             LOGGER.info("Possible version detected, no current process for versioning.")
@@ -142,7 +121,7 @@ def is_duplicate(index, incoming_metadata, complete_existing_metadata, return_va
     """
 
     incoming_dict = {k:incoming_metadata[k] for k in return_vals if k in incoming_metadata.keys()}
-    existing_dict = {k:getattr(complete_existing_metadata[k][index], "_value") for k in return_vals if k in complete_existing_metadata.keys()}
+    existing_dict = {k:complete_existing_metadata[index][k] for k in return_vals if k in complete_existing_metadata[index].keys()}
 
     if incoming_dict == existing_dict:
         LOGGER.info("Duplicate document with identical metadata - discard incoming document")
@@ -222,7 +201,7 @@ def handler(ev):
         handler_response = event
         handler_response['lambda'] = 'deduplication'
         for i in range(0, len(incoming_metadata)):
-            handler_response['document']['data'][*incoming_metadata][i] = [*incoming_metadata.values()][i]
+            handler_response['document']['data'][[*incoming_metadata][i]]= [*incoming_metadata.values()][i]
             handler_response = handler_response
         return handler_response
 
@@ -230,32 +209,7 @@ def handler(ev):
     else:
         # Get the existing metadata of the matching document
         complete_existing_metadata = is_duplicate_results[1]
-
-        email_address = get_email_address(COGNITO_USER_POOL, user_id)
-        LOGGER.info(f'Pulled email from Cognito: {email_address}')
-
-        if email_address:
-            user_id = complete_existing_metadata['user_id']
-            document_uid = complete_existing_metadata['document_uid']
-            title = complete_existing_metadata['title']
-            document_type = complete_existing_metadata['document_type']
-            regulator_id = complete_existing_metadata['regulator_id']
-            date_published = complete_existing_metadata['date_published']
-
-            send_email(
-                sender_email=SENDER_EMAIL_ADDRESS,
-                recipient_email=email_address,
-                subject='ORP Upload Rejected',
-                body=f'''Your document (UUID: {document_uid}) has been flagged as a duplicate. 
-                    The existing document can be viewed in the ORP at https://app.{ENVIRONMENT}.cannonband.com/document/view/{document_uid}?ingested=true
-                    It is currently searchable.\n
-                    You can search using the following criteria:\n
-                    - Title: {title}\n
-                    - Document Type: {document_type}\n
-                    - Regulator: {regulator_id}\n
-                    - Date Published: {date_published}\n
-                    This is a system generated email, please do not reply.'''
-            )
+        send_email(COGNITO_USER_POOL, SENDER_EMAIL_ADDRESS, complete_existing_metadata)
 
     return handler_response
 

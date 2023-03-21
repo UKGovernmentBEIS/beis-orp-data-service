@@ -1,4 +1,3 @@
-import re
 import kshingle as ks
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
@@ -27,3 +26,13 @@ def getHash(doc, k=5):
         hash.update(s.encode('utf8'))
 
     return hash.hashvalue
+
+
+def create_hash_list(text):
+    """
+    param: text: Str
+    returns: hash_list: list of hashes
+    """
+    hash_np = getHash(text)
+    hash_list = hash_np.tolist()
+    return hash_np, hash_list
