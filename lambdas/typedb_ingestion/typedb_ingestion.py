@@ -32,7 +32,8 @@ def merge_dicts(dict_list):
             merged_dict.setdefault(
                 'data', {})['legislative_origins'] = dictionary['document']['data']['legislative_origins']
         else:
-            raise UserWarning('Unexpected lambda input received')
+            raise UserWarning(
+                f'Unexpected lambda input received: {dictionary["lambda"]}')
 
     return merged_dict
 
