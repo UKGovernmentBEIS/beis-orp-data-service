@@ -14,6 +14,7 @@ SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
 TABLE_NAME = 'legislative_origin'
 # TABLE_NAME = os.environ['TABLE_NAME']
 YEAR_INDEX_NAME = os.environ['YEAR_INDEX_NAME']
+CUTOFF = 0.2
 
 
 @Language.component('custom_sentencizer')
@@ -174,9 +175,14 @@ def handler(event, context: LambdaContext):
     s3_client = boto3.client('s3')
     raw_text = download_text(s3_client=s3_client, document_uid=document_uid)
 
+    # Retrieving the first fifth of the text - this reduces the query space
+    # and improves performance
+    doc_cutoff_point = int(len(raw_text) * CUTOFF)
+    top_text = raw_text[:doc_cutoff_point]
+
     # Intitialising model and text
     nlp = NLPsetup()
-    nlp_text = nlp(raw_text)
+    nlp_text = nlp(top_text)
 
     # Find years mentioned in text
     dates_in_text = detect_year_span(nlp_text, nlp)
