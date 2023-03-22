@@ -1,6 +1,6 @@
 from typing import List
 from nltk.corpus import stopwords
-
+import re
 
 def delete_repeated_ngrams(text_list: List) -> List:
     """
@@ -67,12 +67,27 @@ def remove_trailing_stopwords_and_single_chars(text_list: List) -> List:
     return text_list
 
 
+def remove_other_patterns(title: str) -> str:
+    """
+    param: title: Str
+    returns: title: Str
+        Title without set patterns
+        Pattern 1: page %d of %d
+    """    
+    pattern = re.compile(r'page (\d+) of (\d+)')
+    match = pattern.search(title)
+    if match:
+        return title[:match.start()] + title[match.end():]
+    else:
+        return title
+
 def postprocess_title(title: str) -> str:
     """
     param: title: Str
     returns: title: Str
         Fully processes generated title and capital cases
     """
+    title = remove_other_patterns(title)
     title = remove_open_brackets(title)
     text_list = delete_repeated_ngrams(title.strip().split(" "))
     text_list = remove_trailing_stopwords_and_single_chars(text_list)

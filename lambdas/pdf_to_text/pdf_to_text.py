@@ -7,6 +7,7 @@ import pandas as pd
 import pikepdf
 import fitz
 from PyPDF2 import PdfReader
+from pdfminer.high_level import extract_text
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -68,33 +69,35 @@ def extract_title_and_date(doc_bytes_io):
     return str(title), date_published
 
 
-def extract_text(doc_bytes_io):
+def extract_text_from_pdf(doc_bytes_io):
     '''Extracts text from PDF streaming input'''
 
-    try:
-        # creating a pdf reader object
-        reader = PdfReader(doc_bytes_io)
+    text = extract_text(doc_bytes_io)
+    if text == "" or text is None:
+        try:
+            # creating a pdf reader object
+            reader = PdfReader(doc_bytes_io)
+            totalPages = PdfReader.numPages
 
-        totalPages = PdfReader.numPages
+            # getting a specific page from the pdf file
+            text = []
+            for page in range(0, totalPages):
+                page = reader.pages[page]
+                # extracting text from page
+                txt = page.extract_text()
+                text.append(txt)
 
-        # getting a specific page from the pdf file
-        text = []
-        for page in range(0, totalPages):
-            page = reader.pages[page]
-            # extracting text from page
-            txt = page.extract_text()
-            text.append(txt)
+            text = " ".join(text)
 
-        text = ' '.join(text)
-
-    except BaseException:
-        with fitz.open(stream=doc_bytes_io) as doc:
-            text = ''
-            for page in doc:
-                text += page.get_text()
-
-    text = clean_text(text)
-    return text
+        except Exception:
+            stream = bytearray(open(doc_bytes_io, "rb").read())
+            with fitz.open(doc_bytes_io, stream) as doc:
+                text = ''
+                for page in doc:
+                    text += page.get_text()
+        return text
+    else:
+        return text
 
 
 def remove_excess_punctuation(text) -> str:
@@ -114,7 +117,7 @@ def clean_text(text):
     '''Clean the text by removing illegal characters and excess whitespace'''
     pattern = re.compile(r'\s+')
 
-    text = text.replace('\n', ' ')
+    text = str(text).replace('\n', ' ')
     text = text.replace(' .', '. ')
     text = re.sub('(\\d+(\\.\\d+)?)', r' \1 .', text)
     text = re.sub(pattern, ' ', text)
@@ -132,6 +135,7 @@ def clean_text(text):
     text = text.strip()
     text = text.replace('\t', ' ')
     text = text.replace('_x000c_', '')
+    text = text.encode('ascii', 'ignore').decode("utf-8")
     text = re.sub('\\s+', ' ', text)
     text = re.sub('<.*?>', '', text)
     text = re.sub('\\.{4,}', '.', text)
@@ -190,8 +194,9 @@ def handler(event, context: LambdaContext):
     status = doc_s3_metadata.get('status')
 
     title, date_published = extract_title_and_date(doc_bytes_io=doc_bytes_io)
-    text = extract_text(doc_bytes_io=doc_bytes_io)
-    write_text(s3_client=s3_client, text=text,
+    text = extract_text_from_pdf(doc_bytes_io=doc_bytes_io)
+    cleaned_text = clean_text(text=text)
+    write_text(s3_client=s3_client, text=cleaned_text,
                document_uid=document_uid, destination_bucket=DESTINATION_BUCKET)
 
     logger.info(f'All data extracted e.g. Title extracted: {title}')
@@ -202,7 +207,7 @@ def handler(event, context: LambdaContext):
         'document_uid': document_uid,
         'regulator_id': regulator_id,
         'user_id': user_id,
-        'uri': f's3://{source_bucket}/{object_key}',
+        'uri': object_key,
         'data':
         {
             'dates':
@@ -211,7 +216,7 @@ def handler(event, context: LambdaContext):
             }
         },
         'document_type': document_type,
-        # 'regulatory_topic': regulatory_topic,
+        'document_format': 'PDF',
         'status': status,
     }
 

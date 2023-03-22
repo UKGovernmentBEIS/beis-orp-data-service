@@ -160,7 +160,7 @@ def handler(event, context: LambdaContext):
         'document_uid': document_uid,
         'regulator_id': regulator_id,
         'user_id': user_id,
-        'uri': f's3://{source_bucket}/{object_key}',
+        'uri': object_key,
         'data':
         {
             'dates':
@@ -169,6 +169,7 @@ def handler(event, context: LambdaContext):
             }
         },
         'document_type': document_type,
+        'document_format': 'ODF',
         'status': status,
     }
 
