@@ -217,6 +217,6 @@ def handler(event, context: LambdaContext):
 
     handler_response = event
     handler_response['lambda'] = 'legislative_origin_extraction'
-    handler_response['document']['legislative_origins'] = deduped_legislative_origins_metadata
+    handler_response['document']['data']['legislative_origins'] = deduped_legislative_origins_metadata
 
     return handler_response
