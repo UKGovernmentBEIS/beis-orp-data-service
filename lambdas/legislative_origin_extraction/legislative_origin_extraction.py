@@ -202,7 +202,7 @@ def handler(event, context: LambdaContext):
     legislative_origins = find_legislation_in_text(
         nlp_text=nlp_text,
         nlp=nlp,
-        title=titles,
+        titles=titles,
         dates_in_text=dates_in_text
     )
 
