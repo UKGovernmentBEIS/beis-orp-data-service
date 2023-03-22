@@ -28,6 +28,9 @@ def merge_dicts(dict_list):
             merged_dict['subject_keywords'] = dictionary['document']['subject_keywords']
         elif dictionary['lambda'] == 'summarisation':
             merged_dict['summary'] = dictionary['document']['summary']
+        elif dictionary['lambda'] == 'legislative_origin_extraction':
+            merged_dict.setdefault(
+                'data', {})['legislative_origins'] = dictionary['document']['data']['legislative_origins']
         else:
             raise UserWarning('Unexpected lambda input received')
 
@@ -144,8 +147,9 @@ def handler(event, context: LambdaContext):
                 sender_email=SENDER_EMAIL_ADDRESS,
                 recipient_email=email_address,
                 subject='ORP Upload Complete',
-                body=f'''Your document (UUID: {document_uid}) has been ingested to the ORP. 
-                    It can be viewed in the ORP at https://app.{ENVIRONMENT}.cannonband.com/document/view/{document_uid}?ingested=true
+                body=f'''Your document (UUID: {document_uid}) has been ingested to the ORP.
+                    It can be viewed in the ORP at
+                    https://app.{ENVIRONMENT}.cannonband.com/document/view/{document_uid}?ingested=true
                     It will now be searchable.\n
                     You can search using the following criteria:\n
                     - Title: {title}\n
