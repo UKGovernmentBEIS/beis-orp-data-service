@@ -210,9 +210,13 @@ def handler(event, context: LambdaContext):
     legislative_origins_metadata = extract_legislative_origins(
         table, legislative_origins)
 
+    # Unpacking and deduping the output of the above function
+    unpacked_legislative_origins_metadata = [*legislative_origins_metadata]
+    deduped_legislative_origins_metadata = list(
+        {frozenset(d.items()): d for d in unpacked_legislative_origins_metadata}.values())
+
     handler_response = event
     handler_response['lambda'] = 'legislative_origin_extraction'
-    handler_response['document']['legislative_origins'] = [
-        *legislative_origins_metadata]
+    handler_response['document']['legislative_origins'] = deduped_legislative_origins_metadata
 
     return handler_response
