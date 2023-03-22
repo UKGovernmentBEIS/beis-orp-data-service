@@ -13,7 +13,7 @@ LEGISLATION_DATA_PATH = "legislation_data_ALL.p"
 leg_titles = pd.read_pickle(LEGISLATION_DATA_PATH)
 leg_titles = leg_titles[leg_titles.legType.isin(['Primary', 'Secondary'])]
 
-# setup nlp module with custom sententiser 
+# setup nlp module with custom sententiser
 nlp = NLPsetup()
 
 tuple_file = open(OUTPUT_FILE, "w+")
@@ -27,7 +27,7 @@ for i, file in enumerate(flist):
         # get top section of text
         TOP_DOC_CUTOFF = int(len(reg_doc_text) * cutoff)
         doc = nlp(reg_doc_text[:TOP_DOC_CUTOFF])
-    
+
     # run pipeline to detect legislation references
     LEG_ORGs = leg_pipeline(leg_titles, nlp, doc)
 
