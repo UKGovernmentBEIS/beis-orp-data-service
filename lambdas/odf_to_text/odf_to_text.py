@@ -119,6 +119,10 @@ def handler(event, context: LambdaContext):
         f'New document in {source_bucket}: {object_key}'
     )
 
+    # Finding the time the object was uploaded
+    date_uploaded = event['time']
+    date_uploaded_iso = pd.to_datetime(date_uploaded).isoformat()
+
     s3_client = boto3.client('s3')
     doc_bytes_io = download_text(
         s3_client=s3_client,
@@ -166,6 +170,7 @@ def handler(event, context: LambdaContext):
             'dates':
             {
                 'date_published': date_published,
+                'date_uploaded': date_uploaded_iso
             }
         },
         'document_type': document_type,
