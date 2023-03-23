@@ -68,6 +68,10 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
 def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
+    # Finding the time the object was uploaded
+    date_uploaded = event['time']
+    date_uploaded_iso = pd.to_datetime(date_uploaded).isoformat()
+
     s3_client = boto3.client('s3')
 
     # Getting metadata from event
@@ -101,6 +105,7 @@ def handler(event, context: LambdaContext):
             'dates':
             {
                 'date_published': date_published,
+                'date_uploaded': date_uploaded_iso
             }
         },
         'document_type': document_type,
