@@ -48,7 +48,7 @@ def send_email_structure(sender_email, recipient_email, subject, body):
         LOGGER.error(f'Email failed to send. Error message: {e}')
 
 
-def send_email(COGNITO_USER_POOL, SENDER_EMAIL_ADDRESS, complete_existing_metadata):
+def send_email(COGNITO_USER_POOL, SENDER_EMAIL_ADDRESS, user_id, complete_existing_metadata):
     email_address = get_email_address(COGNITO_USER_POOL, user_id)
     LOGGER.info(f'Pulled email from Cognito: {email_address}')
 

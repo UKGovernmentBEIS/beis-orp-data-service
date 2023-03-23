@@ -26,7 +26,7 @@ def getHash(doc, k=5):
     for s in shingles:
         hash.update(s.encode('utf8'))
 
-    return hash.hashvalue
+    return hash.hashvalues
 
 
 def create_hash_list(text):
@@ -35,5 +35,5 @@ def create_hash_list(text):
     returns: hash_list: list of hashes
     """
     hash_np = getHash(text)
-    hash_list = hash_np.tolist()
+    hash_list = map(str, hash_np.tolist())
     return hash_np, hash_list

@@ -1,8 +1,10 @@
 import os
+import nltk
 import boto3
 import numpy as np
 from typedb.client import *
 from numpy.linalg import norm
+from botocore.client import Config
 from utils import create_hash_list
 from notification_email import send_email
 from typedb.client import TransactionType, SessionType, TypeDB
@@ -15,7 +17,7 @@ logger = Logger()
 search_keys = {"id", "status", 
                "regulatory_topic", "document_type"}
 
-return_vals = ["regulatory_topic", 'document_type', 'status']
+return_vals = ['regulatory_topic', 'document_type', 'status']
 
 
 def validate_env_variable(env_var_name):
@@ -38,6 +40,7 @@ def download_text(s3_client, document_uid, bucket):
         Key=f'processed/{document_uid}.txt'
 
     )['Body'].read().decode('utf-8')
+
     logger.info('Downloaded text')
 
     return text
@@ -56,7 +59,8 @@ def read_transaction(session, hash_list):
         returns: matching_hash_list: list of hashes from the database that matched an integer in the hash_list
                 metadata_dict: dictionary of the metadata of all the shortlisted documents
     """
-    contains = " or ".join(['{$h contains "%s";}'%hash for hash in hash_list])
+    logger.info(f"Incoming document hash: {hash_list}")
+    contains = " or ".join(['{$h contains "%s";}'%str(hash) for hash in hash_list])
 
     query = f"""
     match 
@@ -73,7 +77,7 @@ def read_transaction(session, hash_list):
         # Get matches on hash
         ans_list = [ans for ans in answer_iterator]
         metadata_dict = [dict(getUniqueResult(a.concept_maps()))
-               for a in ans_list]
+            for a in ans_list]
 
         matching_hash_list = [np.array(hash['hash_text'].split("_"), dtype="uint64") for hash in metadata_dict]
         logger.info("Number of returned hashes: " + str(len(matching_hash_list)))
@@ -123,34 +127,34 @@ def is_duplicate(index, incoming_metadata, complete_existing_metadata, return_va
         return True, complete_existing_metadata
     else:
         logger.info("Different metadata detected")
+        logger.info(f"Existing metadata {existing_dict} | Incoming metadata {incoming_dict}")
         return False, existing_dict
 
         
-def search_module(event, session, hash_np, hash_list, incoming_metadata):
-    keyset = set(event.keys()) & search_keys
+def search_module(session, hash_np, hash_list, incoming_metadata):
+    """
+    params: session: TypeDB session
+    params: hash_np: numpy hash of incoming document text
+    params: hash_list: list of candidate matching hashes in the database
+    params: incoming_metadata: metadata of the incoming document
+        returns: is_duplicate_results / False: if is_duplicate_results is returned, the incoming document is a version or
+        duplicate of the incoming document. Otherwise, the document is new.
+    """
+    matching_hash_list, complete_existing_metadata = read_transaction(session, hash_list)
+    index = get_similarity_score(hash_np=hash_np, matching_hash_list=matching_hash_list)
 
-    if len(keyset) == 0:
-        return {
-            "status_code": 400,
-            "status_description": "Bad Request - Unsupported search parameter(s)."
-        }
+    # 1. If index != None, i.e. text with similarity > 0.95 found
+    # 2. Test for exact duplicates and return the results
+    # 3. Otherwise return false
 
+    if index != None:
+        is_duplicate_results = is_duplicate(index=index, incoming_metadata = incoming_metadata, 
+                                        complete_existing_metadata=complete_existing_metadata)
+        return is_duplicate_results
+
+    # No index returned, hence there are no similar documents
     else:
-        matching_hash_list, complete_existing_metadata = read_transaction(session, hash_list)
-        index = get_similarity_score(hash_np=hash_np, matching_hash_list=matching_hash_list)
-
-        # 1. If index != None, i.e. text with similarity > 0.95 found
-        # 2. Test for exact duplicates and return the results
-        # 3. Otherwise return false
-
-        if index != None:
-            is_duplicate_results = is_duplicate(index=index, incoming_metadata = incoming_metadata, 
-                                            complete_existing_metadata=complete_existing_metadata)
-            return is_duplicate_results
-
-        # No index returned, hence there are no similar documents
-        else:
-            return False
+        return False
 
 
 @logger.inject_lambda_context(log_event=True)
@@ -167,21 +171,28 @@ def handler(event, context: LambdaContext):
     TYPEDB_DATABASE_NAME = validate_env_variable('TYPEDB_DATABASE_NAME')
     SENDER_EMAIL_ADDRESS = validate_env_variable('SENDER_EMAIL_ADDRESS')
 
+    # Download punkt for tokenizer
+    NLTK_DATA = validate_env_variable('NLTK_DATA')
+    os.makedirs(NLTK_DATA, exist_ok=True)
+    nltk.download('punkt', download_dir=NLTK_DATA)
+
     # Open TypeDB session
     client = TypeDB.core_client(TYPEDB_IP + ':'+TYPEDB_PORT)
     session = client.session(TYPEDB_DATABASE_NAME, SessionType.DATA)
 
     # Call S3 and download processed text
-    s3_client = boto3.client('s3')
+    config = Config(connect_timeout=5, retries={'max_attempts': 0})
+    s3_client = boto3.client('s3', config=config)
     text = download_text(s3_client=s3_client, document_uid=document_uid, bucket=SOURCE_BUCKET)
 
     # Get incoming metadata
     incoming_metadata = dict(zip(return_vals, [event['document'][val] for val in return_vals]))
+    user_id = event['document']['user_id']
 
     # If search module returns a True i.e. duplicate text with different metadata, then replace existing metadata
     # The returned dictionary is the existing document's metadata
     hash_np, hash_list = create_hash_list(text)
-    is_duplicate_results = search_module(event, session, hash_np, hash_list, incoming_metadata)
+    is_duplicate_results = search_module(session, hash_np, hash_list, incoming_metadata)
 
     # Close TypeDB session and define handler response
     session.close()
@@ -189,21 +200,25 @@ def handler(event, context: LambdaContext):
     handler_response = event
     handler_response['lambda'] = 'deduplication'
 
+    logger.info(is_duplicate_results)
+
     #========== 1. If it is not a duplicate, insert hash and pass the document through as usual ========
     if is_duplicate_results == False:
-        handler_response['document']['hash_text'] = "_".join(hash_np.tolist())
+        handler_response['document']['hash_text'] = "_".join(map(str, hash_np.tolist()))
+        logger.info("Hash inserted into graph")
         return handler_response
 
     #========== 2. If the document is a version (same text different metadata), update the metadata ========
     elif is_duplicate_results[0] == False:
         for i in range(0, len(incoming_metadata)):
             handler_response['document'][[*incoming_metadata][i]]= [*incoming_metadata.values()][i]
+            logger.info("Metadata updated")
         return handler_response
 
     #========== 3. Else the document is a complete duplicate, and the user should be informed ========
     else:
         # Get the existing metadata of the matching document
         complete_existing_metadata = is_duplicate_results[1]
-        send_email(COGNITO_USER_POOL, SENDER_EMAIL_ADDRESS, complete_existing_metadata)
+        send_email(COGNITO_USER_POOL, SENDER_EMAIL_ADDRESS, user_id, complete_existing_metadata)
         return handler_response
 
