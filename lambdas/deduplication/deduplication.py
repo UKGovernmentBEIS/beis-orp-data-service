@@ -2,7 +2,6 @@ import os
 import nltk
 import boto3
 import numpy as np
-from typedb.client import *
 from numpy.linalg import norm
 from botocore.client import Config
 from utils import create_hash_list
@@ -14,7 +13,7 @@ from aws_lambda_powertools.logging.logger import Logger
 
 logger = Logger()
 
-search_keys = {"id", "status", 
+search_keys = {"id", "status",
                "regulatory_topic", "document_type"}
 
 return_vals = ['regulatory_topic', 'document_type', 'status']
@@ -60,26 +59,29 @@ def read_transaction(session, hash_list):
                 metadata_dict: dictionary of the metadata of all the shortlisted documents
     """
     logger.info(f"Incoming document hash: {hash_list}")
-    contains = " or ".join(['{$h contains "%s";}'%str(hash) for hash in hash_list])
+    contains = " or ".join(['{$h contains "%s";}' % str(hash) for hash in hash_list])
 
     query = f"""
-    match 
-        $u isa legalDocument, 
+    match
+        $u isa legalDocument,
         has node_id $n,
         has attribute $a,
         has hash_text $h;
         {contains}; group $u;
     """
-    ## Read the person using a READ only transaction
+    # Read the person using a READ only transaction
     with session.transaction(TransactionType.READ) as read_transaction:
         answer_iterator = read_transaction.query().match_group(query)
 
         # Get matches on hash
         ans_list = [ans for ans in answer_iterator]
         metadata_dict = [dict(getUniqueResult(a.concept_maps()))
-            for a in ans_list]
+                         for a in ans_list]
 
-        matching_hash_list = [np.array(hash['hash_text'].split("_"), dtype="uint64") for hash in metadata_dict]
+        matching_hash_list = [
+            np.array(
+                hash['hash_text'].split("_"),
+                dtype="uint64") for hash in metadata_dict]
         logger.info("Number of returned hashes: " + str(len(matching_hash_list)))
         return matching_hash_list, metadata_dict
 
@@ -92,7 +94,7 @@ def get_similarity_score(hash_np, matching_hash_list):
     """
     scores = []
     for v in matching_hash_list:
-        cosine = np.dot(hash_np,v)/(norm(hash_np)*norm(v))
+        cosine = np.dot(hash_np, v) / (norm(hash_np) * norm(v))
         scores.append(cosine)
 
     if (len(scores) > 0) and (max(scores) >= 0.95):
@@ -108,48 +110,55 @@ def get_similarity_score(hash_np, matching_hash_list):
         return None
 
 
-def is_duplicate(index, incoming_metadata, complete_existing_metadata, return_vals=return_vals):
+def is_duplicate(index, incoming_metadata, complete_existing_metadata,
+                 return_vals=return_vals):
     """
     params: index int:
     params: incoming_metadata dict:
     params: complete_existing_metadata dict:
-    params: return_vals List: 
-        returns: Boolean, Dictionary: (True / False) if (is / is not) a duplicate. 
-        complete_existing_metadata: All associated metadata so that the user can be given details of the existing document
+    params: return_vals List:
+        returns: Boolean, Dictionary: (True / False) if (is / is not) a duplicate.
+        complete_existing_metadata: All associated metadata so that the user can be given details of the existing
+        document
         existing_dict: A smaller selection of the metadata to be replaced if document is found to be a version
     """
 
-    incoming_dict = {k:incoming_metadata[k] for k in return_vals if k in incoming_metadata.keys()}
-    existing_dict = {k:complete_existing_metadata[index][k] for k in return_vals if k in complete_existing_metadata[index].keys()}
+    incoming_dict = {k: incoming_metadata[k]
+                     for k in return_vals if k in incoming_metadata.keys()}
+    existing_dict = {k: complete_existing_metadata[index][k]
+                     for k in return_vals if k in complete_existing_metadata[index].keys()}
 
     if incoming_dict == existing_dict:
-        logger.info("Duplicate document with identical metadata - discard incoming document")
+        logger.info(
+            "Duplicate document with identical metadata - discard incoming document")
         return True, complete_existing_metadata
     else:
         logger.info("Different metadata detected")
-        logger.info(f"Existing metadata {existing_dict} | Incoming metadata {incoming_dict}")
+        logger.info(
+            f"Existing metadata {existing_dict} | Incoming metadata {incoming_dict}")
         return False, existing_dict
 
-        
+
 def search_module(session, hash_np, hash_list, incoming_metadata):
     """
     params: session: TypeDB session
     params: hash_np: numpy hash of incoming document text
     params: hash_list: list of candidate matching hashes in the database
     params: incoming_metadata: metadata of the incoming document
-        returns: is_duplicate_results / False: if is_duplicate_results is returned, the incoming document is a version or
-        duplicate of the incoming document. Otherwise, the document is new.
+        returns: is_duplicate_results / False: if is_duplicate_results is returned, the incoming document is a
+        version or duplicate of the incoming document. Otherwise, the document is new.
     """
-    matching_hash_list, complete_existing_metadata = read_transaction(session, hash_list)
+    matching_hash_list, complete_existing_metadata = read_transaction(
+        session, hash_list)
     index = get_similarity_score(hash_np=hash_np, matching_hash_list=matching_hash_list)
 
     # 1. If index != None, i.e. text with similarity > 0.95 found
     # 2. Test for exact duplicates and return the results
     # 3. Otherwise return false
 
-    if index != None:
-        is_duplicate_results = is_duplicate(index=index, incoming_metadata = incoming_metadata, 
-                                        complete_existing_metadata=complete_existing_metadata)
+    if index is not None:
+        is_duplicate_results = is_duplicate(index=index, incoming_metadata=incoming_metadata,
+                                            complete_existing_metadata=complete_existing_metadata)
         return is_duplicate_results
 
     # No index returned, hence there are no similar documents
@@ -165,7 +174,7 @@ def handler(event, context: LambdaContext):
 
     logger.info("Event Body: ", event)
     TYPEDB_IP = validate_env_variable('TYPEDB_SERVER_IP')
-    SOURCE_BUCKET = validate_env_variable('SOURCE_BUCKET')   
+    SOURCE_BUCKET = validate_env_variable('SOURCE_BUCKET')
     TYPEDB_PORT = validate_env_variable('TYPEDB_SERVER_PORT')
     COGNITO_USER_POOL = validate_env_variable('COGNITO_USER_POOL')
     TYPEDB_DATABASE_NAME = validate_env_variable('TYPEDB_DATABASE_NAME')
@@ -177,16 +186,20 @@ def handler(event, context: LambdaContext):
     nltk.download('punkt', download_dir=NLTK_DATA)
 
     # Open TypeDB session
-    client = TypeDB.core_client(TYPEDB_IP + ':'+TYPEDB_PORT)
+    client = TypeDB.core_client(TYPEDB_IP + ':' + TYPEDB_PORT)
     session = client.session(TYPEDB_DATABASE_NAME, SessionType.DATA)
 
     # Call S3 and download processed text
     config = Config(connect_timeout=5, retries={'max_attempts': 0})
     s3_client = boto3.client('s3', config=config)
-    text = download_text(s3_client=s3_client, document_uid=document_uid, bucket=SOURCE_BUCKET)
+    text = download_text(
+        s3_client=s3_client,
+        document_uid=document_uid,
+        bucket=SOURCE_BUCKET)
 
     # Get incoming metadata
-    incoming_metadata = dict(zip(return_vals, [event['document'][val] for val in return_vals]))
+    incoming_metadata = dict(
+        zip(return_vals, [event['document'][val] for val in return_vals]))
     user_id = event['document']['user_id']
 
     # If search module returns a True i.e. duplicate text with different metadata, then replace existing metadata
@@ -202,23 +215,27 @@ def handler(event, context: LambdaContext):
 
     logger.info(is_duplicate_results)
 
-    #========== 1. If it is not a duplicate, insert hash and pass the document through as usual ========
-    if is_duplicate_results == False:
+    # ========== 1. If it is not a duplicate, insert hash and pass the documen
+    if not is_duplicate_results:
         handler_response['document']['hash_text'] = "_".join(map(str, hash_np.tolist()))
         logger.info("Hash inserted into graph")
         return handler_response
 
-    #========== 2. If the document is a version (same text different metadata), update the metadata ========
-    elif is_duplicate_results[0] == False:
+    # ========== 2. If the document is a version (same text different metadata
+    elif not is_duplicate_results[0]:
         for i in range(0, len(incoming_metadata)):
-            handler_response['document'][[*incoming_metadata][i]]= [*incoming_metadata.values()][i]
+            handler_response['document'][[*incoming_metadata]
+                                         [i]] = [*incoming_metadata.values()][i]
             logger.info("Metadata updated")
         return handler_response
 
-    #========== 3. Else the document is a complete duplicate, and the user should be informed ========
+    # ========== 3. Else the document is a complete duplicate, and the user sh
     else:
         # Get the existing metadata of the matching document
         complete_existing_metadata = is_duplicate_results[1]
-        send_email(COGNITO_USER_POOL, SENDER_EMAIL_ADDRESS, user_id, complete_existing_metadata)
+        send_email(
+            COGNITO_USER_POOL,
+            SENDER_EMAIL_ADDRESS,
+            user_id,
+            complete_existing_metadata)
         return handler_response
-

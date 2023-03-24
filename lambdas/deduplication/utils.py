@@ -10,13 +10,15 @@ stopwords = [i for i in stopwords.split('\n')]
 stopwords = set(stopwords)
 
 # Preprocess text before shingling
+
+
 def preprocess(text):
     text = text.lower()
     word_tokens = word_tokenize(text)
-    filtered_sentence = " ".join([w for w in word_tokens if not w in stopwords])
+    filtered_sentence = " ".join([w for w in word_tokens if w not in stopwords])
     return filtered_sentence
-    
-    
+
+
 def getHash(doc, k=5):
     # Generate shingle sets for each document as documents are lengthy
 
