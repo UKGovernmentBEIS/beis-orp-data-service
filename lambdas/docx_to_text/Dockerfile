@@ -1,4 +1,16 @@
-FROM openjdk:slim
+### 1. Get Linux
+FROM alpine:3.7
+
+### 2. Get Java via the package manager
+RUN apk update \
+&& apk upgrade \
+&& apk add --no-cache bash \
+&& apk add --no-cache --virtual=build-dependencies unzip \
+&& apk add --no-cache curl \
+&& apk add --no-cache openjdk8-jre \
+
+ENV JAVA_HOME=/opt/java/openjdk \
+    PATH="/opt/java/openjdk/bin:$PATH"
 
 FROM public.ecr.aws/lambda/python:3.9
 
@@ -10,22 +22,4 @@ RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 COPY docx_to_text.py ${LAMBDA_TASK_ROOT}
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
-CMD [ "docx_to_text.handler" ]
-
-# # Install OpenJDK-8
-# ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
-
-# RUN apt-get update && \
-#     apt-get install -y openjdk-8-jdk && \
-#     apt-get install -y ant && \
-#     apt-get clean;
-    
-# # Fix certificate issues
-# RUN apt-get update && \
-#     apt-get install ca-certificates-java && \
-#     apt-get clean && \
-#     update-ca-certificates -f;
-
-# # Setup JAVA_HOME -- useful for docker commandline
-# RUN export JAVA_HOME
-
+CMD [ "python3", "docx_to_text.handler" ]
