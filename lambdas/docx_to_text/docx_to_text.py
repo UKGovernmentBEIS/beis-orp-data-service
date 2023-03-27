@@ -30,7 +30,7 @@ def download_text(s3_client, object_key, source_bucket):
     document = io.BytesIO(s3_client.get_object(
         Bucket=source_bucket,
         Key=object_key,
-    )['Body'].read(), 'rb')
+    )['Body'].read())
 
     logger.info('Downloaded text')
 
@@ -179,11 +179,13 @@ def handler(event, context: LambdaContext):
 
     # If file type is .doc
     if filetype.guess(docx_file).extension == "doc":
+        logger.info("File is a doc file")
         # Text, title, date_published
         text, title, date_published = extract_all_from_doc_file(docx_file)
 
     # Else file type is .docx
     else:
+        logger.info("File is a docx file")
         docx = docx.Document(docx_file)
         metadata = get_docx_metadata(docx=docx)
         # Text, title, date_published
