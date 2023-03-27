@@ -1,5 +1,10 @@
-FROM openjdk:slim
-COPY --from=public.ecr.aws/lambda/python:3.9 / /
+FROM public.ecr.aws/lambda/java:11
+
+FROM public.ecr.aws/lambda/python:3.9
+
+# RUN apt-get update && apt-get install -y tika
+
+# RUN java -jar tika-app.jar
 
 # Install the function's dependencies using requirements.txt
 COPY requirements.txt  .
