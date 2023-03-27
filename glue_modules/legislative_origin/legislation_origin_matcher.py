@@ -123,10 +123,11 @@ def leg_pipeline(leg_titles, nlp, docobj):
     dates = detect_year_span(docobj, nlp)
     # filter the legislation list down to the years detected above
     sents = docobj.sents
+    results = {}
     for sent in sents:
         sdates = [year  for year in dates if str(year) in sent.text]
         titles = leg_titles[leg_titles.year.isin(sdates)]
-        relevant_titles = titles.candidate_titles.drop_duplicates().tolist()
+        relevant_titles = titles.candidate_titles.tolist()
         print(f'\t Looking through {len(relevant_titles)} possible candidates...')
         if relevant_titles:
             results = lookup_pipe(relevant_titles, docobj, nlp,

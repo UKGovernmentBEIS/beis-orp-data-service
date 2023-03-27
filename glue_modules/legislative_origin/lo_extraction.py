@@ -1,11 +1,16 @@
 import pandas as pd
 from legislative_origin.helpers import NLPsetup
 from legislative_origin.legislation_origin_matcher import leg_pipeline
+from pyspark import SparkFiles
 
 CUTOFF = 0.1  # Top section of document to look into
 
-def lo_extraction(text, leg_titles):
+def lo_extraction(text):
 
+    path = SparkFiles.get('resources/legislation_data_2023_03_12.csv')
+    
+    leg_titles = pd.read_csv(path)
+    leg_titles = leg_titles[leg_titles.legType.isin(['Primary', 'Secondary'])]
     # setup nlp module with custom sententiser 
     nlp = NLPsetup()
 
@@ -19,15 +24,13 @@ def lo_extraction(text, leg_titles):
     # append metadata to found legislations
     LEGS = []
     for leg in LEG_ORGs:
-        LEG_ORG = {}
         ref = leg_titles[leg_titles.candidate_titles == leg]
         if not ref.empty:
             ref = ref.iloc[0]
-        LEG_ORG['title'] = ref.title
-        LEG_ORG['ref'] = ref.ref
-        LEG_ORG['href'] = ref.href
-        LEG_ORG['legNumber'] = int(ref.number)
-        LEG_ORG['legDivision'] = ref.legDivision
-        LEG_ORG['legType'] = ref.legType
-        LEGS.append(LEG_ORG)
+            LEGS.append([ref.title,
+                         ref.ref,
+                         ref.href,
+                         str(ref.number),
+                         ref.legDivision,
+                         ref.legType])
     return LEGS

@@ -1,9 +1,9 @@
 import string
 import wordninja
-import os
+from pyspark import SparkFiles
 
-path = os.path.dirname(os.path.realpath(__file__))
-with open(path+"/regulator_name_list.txt", "r") as f:
+path = SparkFiles.get('resources/regulator_name_list.txt')
+with open(path, "r") as f:
     fileObject = f.read()
     regulator_name_list = fileObject.split("\n")
 

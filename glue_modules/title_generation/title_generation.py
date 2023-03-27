@@ -9,6 +9,8 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("Bulk_processing")
 
+from pyspark import SparkFiles
+nltk.data.path.append(SparkFiles.get('resources/nltk_data'))
 
 # Define predictor function
 def title_predictor(text: str) -> str:

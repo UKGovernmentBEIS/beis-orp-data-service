@@ -79,10 +79,7 @@ def check_metadata_date_in_doc(metadata_date, date_list):
     returns: date / metadata_date: either date from text or metadata date
         If any date extracted from the text is within 3 months of the metadata date, return this date
     """
-    if date_list is None:
-        return metadata_date
-
-    else:
+    if date_list:
         margin = relativedelta(months=3)
 
         datetime_obj = datetime.datetime.fromisoformat(metadata_date).date()
@@ -97,6 +94,8 @@ def check_metadata_date_in_doc(metadata_date, date_list):
             return pd.to_datetime(closest_date).isoformat()
         else:
             return metadata_date
+    else:
+        return metadata_date
 
 def date_generation(text, metadata_date):
     clean_text = preprocess_text(text=text)

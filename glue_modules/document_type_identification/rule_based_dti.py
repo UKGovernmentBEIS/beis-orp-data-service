@@ -24,5 +24,7 @@ def dti(text, title, nlp):
     full_text = text if title.lower() in text.lower() else title+'. '+ text
 
     possible_types = extract_DT(nlp, full_text[:max(2000, int(len(full_text) * DTI_CHUNK_PERC))])
-    return dti_map[inv_dtd[max(map(dtd.get, possible_types))]]
- 
+    if possible_types:
+        return dti_map[inv_dtd[max(map(dtd.get, possible_types))]] 
+    else:
+        return 'NA' 

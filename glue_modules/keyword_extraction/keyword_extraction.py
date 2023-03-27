@@ -3,6 +3,7 @@ import os
 import re
 import wordninja
 import torch
+import nltk
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from collections import defaultdict
@@ -16,8 +17,10 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("Bulk_processing")
 
+from pyspark import SparkFiles
+KW_MODEL=  SparkFiles.get('resources')
 
-KW_MODEL=  'keyword_extraction/model_store'
+# nltk.data.path.append(SparkFiles.get('resources/nltk_data'))
 
 def download_model(model_path,
                    key='keybert.pt'):
@@ -39,7 +42,8 @@ def pre_process_tokenization_function(documents: str):
     text = re.sub('[^a-zA-Z]', ' ', text)
 
     # Define stopwords
-    stopwords = open('keyword_extraction/stopwords.txt', 'r')
+    stopwords_path=SparkFiles.get('resources/stopwords.txt')
+    stopwords = open(stopwords_path, 'r')
     stopwords = stopwords.read()
     stopwords = [i for i in stopwords.split('\n')]
     stopwords.extend(['use', 'uses', 'used', 'www', 'gov',
