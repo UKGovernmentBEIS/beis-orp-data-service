@@ -11,8 +11,8 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 logger = Logger()
 
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
-TABLE_NAME = 'legislative_origin'
-# TABLE_NAME = os.environ['TABLE_NAME']
+# TABLE_NAME = 'legislative_origin'
+TABLE_NAME = os.environ['TABLE_NAME']
 YEAR_INDEX_NAME = os.environ['YEAR_INDEX_NAME']
 CUTOFF = 0.2
 
