@@ -1,12 +1,11 @@
 import io
 import os
-from datetime import datetime
-import docx
 import boto3
 import zipfile
 import filetype
 import pandas as pd
 from tika import parser
+from datetime import datetime
 import xml.etree.ElementTree as ET
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -26,7 +25,7 @@ CELL = WORD_NAMESPACE + 'tc'
 
 
 def download_text(s3_client, object_key, source_bucket):
-    '''Downloads the raw text from S3 ready for keyword extraction'''
+    '''Downloads the doc from S3 for data extraction'''
 
     document = io.BytesIO(s3_client.get_object(
         Bucket=source_bucket,
@@ -123,8 +122,19 @@ def extract_all_from_doc_file(doc_file):
     parsed = parser.from_file(doc_file)
 
     text = str(parsed["content"])
-    title = str(parsed["metadata"]["dc:title"])
-    date_published = pd.to_datetime(parsed["metadata"]["dcterms:modified"]).isoformat()
+
+    try:
+        title = str(parsed["metadata"]["dc:title"])
+    except:
+        title = ""
+    
+    date_published = parsed["metadata"]["dcterms:modified"]
+
+    if type(date_published) == list:
+        date_published = pd.to_datetime(date_published[0]).isoformat()
+
+    else:
+        date_published = pd.to_datetime(date_published).isoformat()
 
     return text, title, date_published
 
