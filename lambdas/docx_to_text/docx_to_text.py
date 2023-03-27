@@ -30,7 +30,7 @@ def download_text(s3_client, object_key, source_bucket):
     document = io.BytesIO(s3_client.get_object(
         Bucket=source_bucket,
         Key=object_key,
-    )['Body'].read())
+    )['Body'].read(), 'rb')
 
     logger.info('Downloaded text')
 
