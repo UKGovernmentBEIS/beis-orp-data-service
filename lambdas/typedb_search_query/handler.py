@@ -28,9 +28,9 @@ LOGGER = logging.getLogger()
 LOGGER.setLevel(int(os.environ.get("LOGGING_LEVEL", logging.INFO)))
 
 
-############################################
+###########################################
 # HELPER FUNCTIONS
-############################################
+###########################################
 
 def validate_env_variable(env_var_name):
     LOGGER.debug(
