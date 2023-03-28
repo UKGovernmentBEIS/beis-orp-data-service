@@ -177,7 +177,8 @@ def handler(event, context: LambdaContext):
         source_bucket=source_bucket
     )
     doc_bytes_io = io.BytesIO(docx_file)
-    logger.info(f"from io.BytesIO: {doc_bytes_io}")
+    logger.info(f" io.BytesIO: {doc_bytes_io}")
+    logger.info("adding another logger just to push")
 
     # If file type is .doc
     if filetype.guess(doc_bytes_io).extension == "doc":
