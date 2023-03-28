@@ -30,7 +30,7 @@ def download_text(s3_client, object_key, source_bucket):
     document = s3_client.get_object(
             Bucket=source_bucket,
             Key=object_key
-        )['Body']
+        )['Body'].read()
 
     return document
 
@@ -174,8 +174,8 @@ def handler(event, context: LambdaContext):
         object_key=object_key,
         source_bucket=source_bucket
     )
-    doc_bytes_io = io.BytesIO(docx_file.read())
-
+    doc_bytes_io = io.BytesIO(docx_file)
+    logger.info(type(doc_bytes_io))
     # If file type is .doc
     if filetype.guess(doc_bytes_io).extension == "doc":
         logger.info("File is a doc file")
