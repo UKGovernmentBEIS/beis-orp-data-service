@@ -5,7 +5,6 @@ FROM public.ecr.aws/lambda/python:3.9
 COPY requirements.txt  .
 RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
-ENV NLTK_DATA=./nltk_data
 # Copy function code and certificates
 ADD word_forms_loc.tar.gz ${LAMBDA_TASK_ROOT}
 RUN chown root:root -R ${LAMBDA_TASK_ROOT}/word_forms_loc

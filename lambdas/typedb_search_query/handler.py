@@ -19,7 +19,7 @@ search_keys = {"id", "keyword", "title", "date_published",
                "regulator_id", "status", "regulatory_topic", "document_type",
                "legislation_href"}
 return_vals = ['title', 'summary', 'document_uid', 'regulator_id',
-               'document_type', 'keyword',  'uri','status',
+               'document_type', 'keyword', 'uri', 'status',
                'date_published', 'date_uploaded', 'legislative_origins', 'version']
 leg_vals = ['url', 'title', 'leg_type', 'leg_division']
 RET_SIZE = 10
@@ -43,12 +43,17 @@ def validate_env_variable(env_var_name):
         raise Exception(f"Please, provide environment variable {env_var_name}")
     return env_variable
 
-def format_datetime(date): return datetime.strftime(date, "%Y-%m-%dT%H:%M:%S") 
+
+def format_datetime(date): return datetime.strftime(date, "%Y-%m-%dT%H:%M:%S")
+
 
 def get_select_dict(results: dict, selc: list): return {k: (format_datetime(
     v) if type(v) == datetime else v)for k, v in results.items() if k in selc}
 
-def remap(d:dict, mapd:dict):    return {mapd.get(k, k):v for k,v in d.items()}
+
+def remap(d: dict, mapd: dict): return {
+    mapd.get(k, k): v for k, v in d.items()}
+
 
 def group_attributes(attr):
     results = []
@@ -57,21 +62,25 @@ def group_attributes(attr):
         results.append((k, [i[1] for i in gpl] if len(gpl) > 1 else gpl[0][1]))
     return dict(results)
 
+
 def getUniqueResult(results):
     res = [(i.get_type().get_label().name(), i.get_value())
            for a in results for i in a.concepts() if i.is_attribute()]
     return group_attributes(res)
 
-def group_of_group(results, id ='id', grouping='y', attribute='attribute'):
+
+def group_of_group(results, id='id', grouping='y', attribute='attribute'):
     ret = {}
     for res in results:
-        a=[]
+        a = []
         gp1 = res.concept_maps()[0].map()[id].get_value()
         for _, gp2 in groupby(res.concept_maps(), lambda x: x.map()[grouping]):
-            attr= [i.map()[attribute] for i in gp2]
-            a.append(group_attributes([(i.get_type().get_label().name(), i.get_value()) for i in attr]))
+            attr = [i.map()[attribute] for i in gp2]
+            a.append(group_attributes(
+                [(i.get_type().get_label().name(), i.get_value()) for i in attr]))
         ret[gp1] = a
     return ret
+
 
 def matchquery(query, session, group=True):
     with session.transaction(TransactionType.READ) as transaction:
@@ -92,18 +101,20 @@ def get_lemma(word):
         else:
             raise ValueError(err)
 
+
 def lemma2noun(lemma):
     # return lemma
     nn = list(get_word_forms(lemma).get('n', []))
     return sorted(nn, key=len)[0] if nn else lemma
-   
+
 ############################################
 # LAMBDA HANDLER
 ############################################
 
+
 def query_builder(event):
 
-    ### Build TQL query from search params
+    # Build TQL query from search params
     subq = ""
     query = 'match $x isa regulatoryDocument, has attribute $attribute'
     # Document API
@@ -118,7 +129,7 @@ def query_builder(event):
             (issuedFor:$x,issued:$regdoc) isa publication;
             group $x;'''
         return query
-    
+
     # Search API
     else:
         # simple filters
@@ -133,7 +144,7 @@ def query_builder(event):
         if event.get('document_type'):
             query += ', has document_type $document_type'
             subq += f"; $document_type like \"{'|'.join([i for i in event['document_type']])}\""
-        
+
         if event.get('status'):
             query += ', has status $status'
             subq += f"; $status like \"{'|'.join([i for i in event['status']])}\""
@@ -143,8 +154,10 @@ def query_builder(event):
             date = event["date_published"]
             st = date.get('start_date')
             ed = date.get('end_date')
-            if st: query += f', has date_published >= {st}'
-            if ed: query += f', has date_published <= {ed}'
+            if st:
+                query += f', has date_published >= {st}'
+            if ed:
+                query += f', has date_published <= {ed}'
 
         if event.get('title'):
             query += ', has title $title'
@@ -158,16 +171,18 @@ def query_builder(event):
     query += '; get $attribute, $x; group $x;'
     return query
 
+
 def search_reg_docs(ans):
     # -> [{leg_href:string, related_docs:[]}]
     res = group_of_group(ans, grouping='regdoc')
     # res = group_of_group(ans,id='q',attribute='a')
     docs = []
     for leg, regdocs in res.items():
-        doc = {'legislation_href':leg}
-        data=[]
+        doc = {'legislation_href': leg}
+        data = []
         for rd in regdocs:
-            rd['keyword'] = list(set([lemma2noun(kw) for kw in rd.get('keyword', [])]))
+            rd['keyword'] = list(set([lemma2noun(kw)
+                                 for kw in rd.get('keyword', [])]))
             # TODO  REMOVE THIS AFTER NEW BULK INGESTION
             # rd['uri'] = rd.pop('object_key')
             data.append(get_select_dict(rd, return_vals))
@@ -175,10 +190,11 @@ def search_reg_docs(ans):
         docs.append(doc)
     return docs
 
+
 def search_leg_orgs(ans, session):
     # TODO  redo the query to send a single query instead of multiple
     res = [dict(getUniqueResult(a.concept_maps()))
-               for a in ans]
+           for a in ans]
 
     # Query the graph database for legislative origins
     LOGGER.info("Querying the graph for legislative origins")
@@ -188,18 +204,21 @@ def search_leg_orgs(ans, session):
             ' ($x,$y) isa publication;' + \
             ' get $attribute, $y; group $y;'
         ans = [dict(getUniqueResult(a.concept_maps()))
-                for a in matchquery(query, session)]
+               for a in matchquery(query, session)]
 
-        doc['keyword'] = list(set([lemma2noun(kw) for kw in doc.get('keyword', [])]))
+        doc['keyword'] = list(set([lemma2noun(kw)
+                              for kw in doc.get('keyword', [])]))
         # TODO  REMOVE THIS AFTER NEW BULK INGESTION
         # doc['uri'] = doc.pop('object_key')
-        legmap = {'leg_type':'type', 'leg_division':'division'}
-        doc['legislative_origins'] = list(filter(None, [remap(get_select_dict(a, leg_vals), legmap) for a in ans]))
+        legmap = {'leg_type': 'type', 'leg_division': 'division'}
+        doc['legislative_origins'] = list(
+            filter(None, [remap(get_select_dict(a, leg_vals), legmap) for a in ans]))
         # doc['regulator_id'] = list(
-            # filter(None, [a.get('regulator_id') for a in ans]))[0]
+        # filter(None, [a.get('regulator_id') for a in ans]))[0]
 
     return [get_select_dict(doc, return_vals) for doc in res]
-    
+
+
 def search_module(event, session):
     keyset = set(event.keys()) & search_keys
     page_size = int(event.get('page_size', RET_SIZE))
@@ -227,8 +246,7 @@ def search_module(event, session):
             docs = search_reg_docs(ans)
         else:
             LOGGER.info("Querying the graph for reg. documents")
-            docs = search_leg_orgs(ans[page:page+RET_SIZE], session)
-       
+            docs = search_leg_orgs(ans[page:page + RET_SIZE], session)
 
         return {
             "status_code": 200,
@@ -236,6 +254,7 @@ def search_module(event, session):
             "total_search_results": num_ret,
             "documents": docs
         }
+
 
 def lambda_handler(ev, context):
     LOGGER.info("Received event: " + json.dumps(ev, indent=2))
@@ -247,7 +266,7 @@ def lambda_handler(ev, context):
     TYPEDB_PORT = validate_env_variable('TYPEDB_SERVER_PORT')
     TYPEDB_DATABASE_NAME = validate_env_variable('TYPEDB_DATABASE_NAME')
 
-    client = TypeDB.core_client(TYPEDB_IP + ':'+TYPEDB_PORT)
+    client = TypeDB.core_client(TYPEDB_IP + ':' + TYPEDB_PORT)
     session = client.session(TYPEDB_DATABASE_NAME, SessionType.DATA)
     result = search_module(event, session)
     return result
