@@ -1,5 +1,6 @@
 import io
 import os
+import docx
 import boto3
 import zipfile
 import filetype
