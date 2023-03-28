@@ -178,6 +178,8 @@ def handler(event, context: LambdaContext):
     # If file type is .doc
     if filetype.guess(docx_file).extension == "doc":
         logger.info("File is a doc file")
+        logger.info(docx_file)
+        logger.info(type(docx_file))
         # Text, title, date_published
         text, title, date_published = extract_all_from_doc_file(docx_file)
 
