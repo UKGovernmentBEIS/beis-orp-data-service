@@ -27,12 +27,10 @@ CELL = WORD_NAMESPACE + 'tc'
 def download_text(s3_client, object_key, source_bucket):
     '''Downloads the doc from S3 for data extraction'''
 
-    document = io.BytesIO(s3_client.get_object(
-        Bucket=source_bucket,
-        Key=object_key,
-    )['Body'].read())
-
-    logger.info('Downloaded text')
+    document = s3_client.get_object(
+            Bucket=source_bucket,
+            Key=object_key
+        )['Body'].read()
 
     return document
 
@@ -186,7 +184,8 @@ def handler(event, context: LambdaContext):
     # Else file type is .docx
     else:
         logger.info("File is a docx file")
-        docx = docx.Document(docx_file)
+        doc_bytes_io = io.BytesIO(docx_file)
+        docx = docx.Document(doc_bytes_io)
         metadata = get_docx_metadata(docx=docx)
         # Text, title, date_published
         text = get_docx_text(path=docx_file)
