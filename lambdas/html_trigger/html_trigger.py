@@ -16,7 +16,7 @@ def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
     # Get the JSON payload from the POST request
-    payload = json.loads(event['body'])
+    payload = event['body']
 
     # Create a Step Functions client
     sf_client = boto3.client('stepfunctions')
