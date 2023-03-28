@@ -175,7 +175,8 @@ def handler(event, context: LambdaContext):
         source_bucket=source_bucket
     )
     doc_bytes_io = io.BytesIO(docx_file)
-    logger.info(type(doc_bytes_io))
+    logger.info(doc_bytes_io)
+
     # If file type is .doc
     if filetype.guess(doc_bytes_io).extension == "doc":
         logger.info("File is a doc file")
