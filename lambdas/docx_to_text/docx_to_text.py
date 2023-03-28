@@ -183,7 +183,8 @@ def handler(event, context: LambdaContext):
         logger.info(docx_file)
         logger.info(type(docx_file))
         # Text, title, date_published
-        text, title, date_published = extract_all_from_doc_file(docx_file)
+        docx = docx.Document(doc_bytes_io)
+        text, title, date_published = extract_all_from_doc_file(docx)
 
     # Else file type is .docx
     else:
