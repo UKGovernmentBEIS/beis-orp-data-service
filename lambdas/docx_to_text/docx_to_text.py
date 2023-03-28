@@ -6,6 +6,7 @@ import zipfile
 import filetype
 import pandas as pd
 from tika import parser
+from utils import clean_text
 from datetime import datetime
 import xml.etree.ElementTree as ET
 from aws_lambda_powertools.logging.logger import Logger
@@ -196,6 +197,9 @@ def handler(event, context: LambdaContext):
         text = get_docx_text(path=docx_file)
         title = metadata['title']
         date_published = pd.to_datetime(metadata['created']).isoformat()
+
+    # Clean text
+    text = clean_text(text)
 
     # Push text to s3 bucket
     write_text(s3_client=s3_client, text=text, document_uid=document_uid)
