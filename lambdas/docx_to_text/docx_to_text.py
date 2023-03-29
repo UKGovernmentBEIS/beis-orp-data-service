@@ -9,6 +9,7 @@ import pandas as pd
 from tika import parser
 from utils import clean_text
 from datetime import datetime
+from smart_open import open as op
 import xml.etree.ElementTree as ET
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -120,7 +121,7 @@ def extract_all_from_doc_file(file):
     params: doc_file: doc file
         returns: text, title, date_published
     """
-    file_obj = open(file, 'rb')
+    file_obj = op(file, 'rb')
     parsed = parser.from_buffer(zlib.compress(file_obj.read()))
 
     text = str(parsed["content"])
@@ -189,7 +190,7 @@ def handler(event, context: LambdaContext):
         logger.info(type(docx_file))
         # Text, title, date_published
         # doc = docx.Document(doc_bytes_io)
-        text, title, date_published = extract_all_from_doc_file(docx_file)
+        text, title, date_published = extract_all_from_doc_file(doc_bytes_io)
 
     # Else file type is .docx
     else:
