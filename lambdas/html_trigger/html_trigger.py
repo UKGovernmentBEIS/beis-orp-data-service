@@ -36,4 +36,6 @@ def handler(event, context: LambdaContext):
         input=input
     )
 
+    logger.info(f'Received response: {handler_response}')
+
     return handler_response
