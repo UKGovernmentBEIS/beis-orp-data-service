@@ -76,13 +76,14 @@ def handler(event, context: LambdaContext):
     s3_client = boto3.client('s3')
 
     # Getting metadata from event
-    document_uid = event['detail']['uuid']
-    regulator_id = event['detail']['regulator_id']
-    user_id = event['detail']['user_id']
-    api_user = event['detail']['api_user']
-    document_type = event['detail']['document_type']
-    status = event['detail']['status']
-    url = event['detail']['url']
+    document_uid = event['body']['uuid']
+    regulator_id = event['body']['regulator_id']
+    user_id = event['body']['user_id']
+    api_user = event['body'].get('api_user')
+    document_type = event['body']['document_type']
+    status = event['body']['status']
+    url = event['body']['uri']
+    regulatory_topic = event['body']['topics']
 
     title, text = get_title_and_text(url)
     date_published = get_publication_modification_date(url)
@@ -111,6 +112,7 @@ def handler(event, context: LambdaContext):
         },
         'document_type': document_type,
         'document_format': 'HTML',
+        'regulatory_topic': regulatory_topic,
         'status': status,
     }
 
