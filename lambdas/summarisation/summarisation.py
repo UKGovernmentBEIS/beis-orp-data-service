@@ -2,8 +2,8 @@ import os
 import io
 import boto3
 import torch
-import smart_open
 from langdetect import detect
+from smart_open import open
 from utils import smart_postprocessor, smart_shortener
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -31,7 +31,7 @@ def download_model(
     s3_client.download_file(bucket, key, os.path.join('/tmp/modeldir', key))
 
     # Load the model in
-    with smart_open(os.path.join('/tmp/modeldir', key), 'rb') as f:
+    with open(os.path.join('/tmp/modeldir', key), 'rb') as f:
         model = io.BytesIO(f.read())
         summarizer = torch.load(model, map_location=torch.device('cpu'))
         return summarizer
