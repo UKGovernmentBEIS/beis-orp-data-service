@@ -12,6 +12,6 @@ torch==1.12.1
 # torch_xla==1.0
 # tqdm==4.64.0
 # torch-neuron==1.0
-transformers==4.26.0
+transformers==4.20.1
 langdetect==1.0.9
 smart-open==5.2.1
