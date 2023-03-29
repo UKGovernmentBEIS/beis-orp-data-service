@@ -27,13 +27,21 @@ def handler(event, context: LambdaContext):
 
     # Define the input for the state machine execution as the payload received
     # in the POST request
-    input = json.dumps(payload)
+    input = {
+        'body': payload,
+        'detail': {
+            'object': {
+                'key': 'HTML'
+            }
+        }
+    }
+    input_str = json.dumps(input)
 
     # Trigger the state machine execution
     logger.info('Triggering Step Functions')
     sf_response = sf_client.start_execution(
         stateMachineArn=state_machine_arn,
-        input=input
+        input=input_str
     )
 
     handler_response = sf_response['ResponseMetadata']
