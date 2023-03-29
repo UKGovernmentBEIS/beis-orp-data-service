@@ -31,11 +31,11 @@ def handler(event, context: LambdaContext):
 
     # Trigger the state machine execution
     logger.info('Triggering Step Functions')
-    handler_response = sf_client.start_execution(
+    sf_response = sf_client.start_execution(
         stateMachineArn=state_machine_arn,
         input=input
     )
 
-    logger.info(f'Received response: {handler_response}')
+    handler_response = sf_response['ResponseMetadata']
 
     return handler_response
