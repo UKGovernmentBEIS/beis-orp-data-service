@@ -86,7 +86,7 @@ def handler(event, context: LambdaContext):
 
     # Shorten text after summarising
     summary = smart_postprocessor(
-                    summarizer(text=text))
+                    summarizer(text))
 
     logger.info(f'Langauge: {lang}')
     logger.info(f'Summary: {summary}')
