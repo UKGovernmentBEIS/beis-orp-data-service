@@ -22,7 +22,7 @@ def preprocess(text):
 def getHash(doc, k=5):
     # Generate shingle sets for each document as documents are lengthy
 
-    shingles = set(ks.shingleset_k(preprocess(doc), k))
+    shingles = set(ks.shingleset_k(preprocess(text=doc), k))
     hash = MinHash(num_perm=256, seed=1)
 
     for s in shingles:

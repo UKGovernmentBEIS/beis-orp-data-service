@@ -75,7 +75,7 @@ def read_transaction(session, hash_list):
 
         # Get matches on hash
         ans_list = [ans for ans in answer_iterator]
-        metadata_dict = [dict(getUniqueResult(a.concept_maps()))
+        metadata_dict = [dict(getUniqueResult(results=a.concept_maps()))
                          for a in ans_list]
 
         matching_hash_list = [
