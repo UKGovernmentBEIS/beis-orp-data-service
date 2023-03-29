@@ -1,11 +1,12 @@
 import io
 import os
 import docx
+import tika
+import zlib
 import boto3
 import zipfile
 import filetype
 import pandas as pd
-from tika import parser
 from utils import clean_text
 from datetime import datetime
 import xml.etree.ElementTree as ET
@@ -114,12 +115,12 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
     return None
 
 
-def extract_all_from_doc_file(doc_file):
+def extract_all_from_doc_file(file_obj):
     """
     params: doc_file: doc file
         returns: text, title, date_published
     """
-    parsed = parser.from_file(doc_file)
+    parsed = tika.parser.from_buffer(zlib.compress(file_obj.read()))
 
     text = str(parsed["content"])
 
@@ -187,7 +188,7 @@ def handler(event, context: LambdaContext):
         logger.info(type(docx_file))
         # Text, title, date_published
         # doc = docx.Document(doc_bytes_io)
-        text, title, date_published = extract_all_from_doc_file(docx_file.decode('utf8', 'ignore'))
+        text, title, date_published = extract_all_from_doc_file(docx_file)
 
     # Else file type is .docx
     else:
