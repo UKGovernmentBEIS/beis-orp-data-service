@@ -75,9 +75,10 @@ def handler(event, context: LambdaContext):
     document_uid = event['document']['document_uid']
 
     initialisation()
-    summarizer= download_model()
-
     s3_client = boto3.client('s3')
+
+    summarizer= download_model(s3_client=s3_client, bucket=MODEL_BUCKET)
+
     text = download_text(s3_client=s3_client, document_uid=document_uid, bucket=SOURCE_BUCKET)
 
     # Detect language
