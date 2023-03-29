@@ -1,4 +1,4 @@
-import os
+# import os
 import json
 import boto3
 from aws_lambda_powertools.logging.logger import Logger
@@ -16,7 +16,8 @@ def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
     # Get the JSON payload from the POST request
-    payload = event['body']
+    payload = event['payload']
+    logger.info(f'Received event with a payload: {payload}')
 
     # Create a Step Functions client
     sf_client = boto3.client('stepfunctions')
@@ -24,10 +25,12 @@ def handler(event, context: LambdaContext):
     # Define the ARN of the Step Functions state machine to trigger
     state_machine_arn = STATE_MACHINE
 
-    # Define the input for the state machine execution as the payload received in the POST request
+    # Define the input for the state machine execution as the payload received
+    # in the POST request
     input = json.dumps(payload)
 
     # Trigger the state machine execution
+    logger.info('Triggering Step Functions')
     handler_response = sf_client.start_execution(
         stateMachineArn=state_machine_arn,
         input=input
