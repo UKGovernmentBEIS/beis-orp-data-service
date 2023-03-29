@@ -5,15 +5,17 @@
 {"label":"HS1", "pattern":[{"LEMMA": "technical"},{"LEMMA": "note"}]}
 {"label":"HS1", "pattern":[{"ORTH": "this"},{"LEMMA": "paper"}]}
 {"label":"HS1", "pattern":[{"ORTH": "this"},{"OP": "?"},  {"OP": "?"},{"LEMMA": "report"}]}
-{"label":"HS1", "pattern":[{"ORTH": "this"},{"LEMMA": "publication"}]}
+{"label":"HS0", "pattern":[{"ORTH": "this"},{"LEMMA": "publication"}]}
 {"label":"HS1", "pattern":[{"LEMMA":"summary"}, {"ORTH":"of"},{"LEMMA": "response"}]}
 {"label":"HS1", "pattern":[{"LEMMA": "draft"},{"ORTH": "for"}, {"LEMMA": "comment"}]}
 {"label":"HS1", "pattern":[{"LEMMA": "this"},{"OP": "?"},{"LEMMA": "draft"}]}
 {"label":"GD1", "pattern":[{"LEMMA": "this"},{"OP": "?"},{"OP": "?"},{"LEMMA": "guidance"}]}
 {"label":"GD1", "pattern":[{"LEMMA": "guidance"},{"LEMMA": "note"}]}
 {"label":"GD1", "pattern":[{"LEMMA": "supplementary"},{"LEMMA": "guidance"}]}
+{"label":"GD1", "pattern":[{"LEMMA": "statutory"},{"LEMMA": "guidance"}]}
 {"label":"GD1", "pattern":[{"LEMMA": "this"},{"LEMMA": "leaflet"}]}
 {"label":"GD1", "pattern":[{"LEMMA": "this"},{"OP": "?"},{"LEMMA": "guideline"}]}
+{"label":"GD1", "pattern":[{"LEMMA": "technical"},{"LEMMA": "assessment"},{"LEMMA": "guide"}]}
 {"label":"GD1", "pattern":[{"LEMMA": "this"},{"OP": "?"},{"LEMMA": "guide"}]}
 {"label":"GD1", "pattern":[{"LEMMA": "this"},{"OP": "?"},{"LEMMA": "guidebook"}]}
 {"label":"GD1", "pattern":[{"ORTH":"user"}, {"LEMMA": "manual"}]}
@@ -31,8 +33,12 @@
 {"label":"GD1", "pattern":[{"ORTH":"this"},{"LEMMA": "factsheet"}]}
 {"label":"MSI0", "pattern":[{"LEMMA": "decision"},{"ORTH": "on"}]}
 {"label":"MSI0", "pattern":[{"LEMMA": "decision"},{"LEMMA": "letter"}]}
+{"label":"MSI0", "pattern":[{"LEMMA": "permitting"},{"LEMMA": "decision"}]}
+{"label":"MSI0", "pattern":[{"LEMMA": "your"},{"LEMMA": "permit"}]}
+{"label":"MSI0", "pattern":[{"LEMMA": "permit"},{"LEMMA": "number"}]}
 {"label":"MSI0", "pattern":[{"LEMMA": "document"},{"LEMMA": "decision"}]}
 {"label":"MSI0", "pattern":[{"LEMMA": "this"},{"LEMMA": "decision"}]}
+{"label":"MSI0", "pattern":[{"LEMMA": "notice"}]}
 {"label":"HS0", "pattern":[{"ORTH": "this"},{"LEMMA": "letter"}]}
 {"label":"HS0", "pattern":[{"ORTH": "open"},{"LEMMA": "letter"}]}
 {"label":"HS0", "pattern":[{"LEMMA": "consultation"}]}
@@ -43,4 +49,5 @@
 {"label":"GD0", "pattern":[{"LEMMA": "general"},{"LEMMA": "guidance"}]}
 {"label":"GD0", "pattern":[{"LEMMA": "guidance"},{"ORTH": "for"}]}
 {"label":"GD0", "pattern":[{"LEMMA": "checklist"}]}
+{"label":"GD0", "pattern":[{"ORTH":"HSE"}, {"LEMMA":"guidance"},{"LEMMA": "topic"}]}
 {"label":"HS-1", "pattern":[{"LEMMA": "draft"}]}
