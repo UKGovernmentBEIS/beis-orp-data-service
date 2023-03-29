@@ -1,4 +1,5 @@
 import os
+import torch
 import boto3
 from langdetect import detect
 from transformers import pipeline
