@@ -70,9 +70,8 @@ def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
     # Finding the time the object was uploaded
-    date_uploaded = event['time']
-    date_obj = datetime.strptime(date_uploaded, "%Y-%m-%dT%H:%M:%SZ")
-    date_uploaded_formatted = date_obj.strftime("%Y-%m-%dT%H:%M:%S")
+    date_uploaded = datetime.now()
+    date_uploaded_formatted = date_uploaded.strftime("%Y-%m-%dT%H:%M:%S")
 
     s3_client = boto3.client('s3')
 
