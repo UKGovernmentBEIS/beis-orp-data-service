@@ -4,6 +4,7 @@ import boto3
 import requests
 from bs4 import BeautifulSoup
 from htmldate import find_date
+from govuk_extraction import get_content
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
@@ -78,9 +79,12 @@ def handler(event, context: LambdaContext):
     status = event['detail']['status']
     url = event['detail']['url']
 
+    if "https://gov.uk/" in url:
+        text, title, date_published = get_content(url)
 
-    title, text = get_title_and_text(url)
-    date_published = get_publication_modification_date(url)
+    else:
+        title, text = get_title_and_text(url)
+        date_published = get_publication_modification_date(url)
 
     logger.info(f"Document title is: {title} "
                 f"Publishing date is: {date_published}")
