@@ -1,7 +1,7 @@
 aws_lambda_powertools==2.9.0
 boto3==1.21.32
 docx==0.2.4
-pandas==1.5.2
+pandas==1.5.3
 python_docx==0.8.11
 tika==2.6.0
 filetype==1.2.0

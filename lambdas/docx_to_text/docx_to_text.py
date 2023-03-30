@@ -1,15 +1,9 @@
 import io
 import os
 import docx
-import zlib
 import boto3
 import zipfile
-import filetype
 import pandas as pd
-from tika import parser
-from utils import clean_text
-from datetime import datetime
-from smart_open import open as op
 import xml.etree.ElementTree as ET
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -29,12 +23,14 @@ CELL = WORD_NAMESPACE + 'tc'
 
 
 def download_text(s3_client, object_key, source_bucket):
-    '''Downloads the doc from S3 for data extraction'''
+    '''Downloads the raw text from S3 ready for keyword extraction'''
 
-    document = s3_client.get_object(
-            Bucket=source_bucket,
-            Key=object_key
-        )['Body'].read()
+    document = io.BytesIO(s3_client.get_object(
+        Bucket=source_bucket,
+        Key=object_key,
+    )['Body'].read())
+
+    logger.info('Downloaded text')
 
     return document
 
@@ -72,14 +68,14 @@ def get_docx_text(path):
     return '\n\n'.join(paragraphs)
 
 
-def get_docx_metadata(docx):
+def get_docx_metadata(doc):
     '''
-    param: docx
+    param: doc/docx
     returns: metadata
         Function from stackoverflow to get metadata from docx
     '''
 
-    prop = docx.core_properties
+    prop = doc.core_properties
     metadata = {
         'author': prop.author,
         'category': prop.category,
@@ -110,36 +106,9 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
             'uuid': document_uid
         }
     )
-    logger.info('Saved text to data lake')
 
     assert response['ResponseMetadata']['HTTPStatusCode'] == 200, 'Text did not successfully write to S3'
     return None
-
-
-def extract_all_from_doc_file(file):
-    """
-    params: doc_file: doc file
-        returns: text, title, date_published
-    """
-    file_obj = op(file, 'rb')
-    parsed = parser.from_buffer(zlib.compress(file_obj.read()))
-
-    text = str(parsed["content"])
-
-    try:
-        title = str(parsed["metadata"]["dc:title"])
-    except:
-        title = ""
-    
-    date_published = parsed["metadata"]["dcterms:modified"]
-
-    if type(date_published) == list:
-        date_published = pd.to_datetime(date_published[0]).isoformat()
-
-    else:
-        date_published = pd.to_datetime(date_published).isoformat()
-
-    return text, title, date_published
 
 
 @logger.inject_lambda_context(log_event=True)
@@ -148,13 +117,6 @@ def handler(event, context: LambdaContext):
 
     source_bucket = event['detail']['bucket']['name']
     object_key = event['detail']['object']['key']
-
-    logger.info(source_bucket, object_key)
-
-    # Finding the time the object was uploaded
-    date_uploaded = event['time']
-    date_obj = datetime.strptime(date_uploaded, "%Y-%m-%dT%H:%M:%SZ")
-    date_uploaded_formatted = date_obj.strftime("%Y-%m-%dT%H:%M:%S")
 
     s3_client = boto3.client('s3')
     doc_s3_metadata = get_s3_metadata(
@@ -179,34 +141,18 @@ def handler(event, context: LambdaContext):
         object_key=object_key,
         source_bucket=source_bucket
     )
-    doc_bytes_io = io.BytesIO(docx_file)
-    logger.info(f" io.BytesIO: {doc_bytes_io}")
-    logger.info("adding another logger just to push")
 
-    # If file type is .doc
-    if filetype.guess(doc_bytes_io).extension == "doc":
-        logger.info("File is a doc file")
-        logger.info(docx_file)
-        logger.info(type(docx_file))
-        # Text, title, date_published
-        # doc = docx.Document(doc_bytes_io)
-        text, title, date_published = extract_all_from_doc_file(doc_bytes_io)
+    doc = docx.Document(docx_file)
+    metadata = get_docx_metadata(doc=doc)
 
-    # Else file type is .docx
-    else:
-        logger.info("File is a docx file")
-        docxDoc = docx.Document(doc_bytes_io)
-        metadata = get_docx_metadata(docx=docxDoc)
-        # Text, title, date_published
-        text = get_docx_text(path=docx_file)
-        title = metadata['title']
-        date_published = pd.to_datetime(metadata['created']).isoformat()
-
-    # Clean text
-    text = clean_text(text)
-
-    # Push text to s3 bucket
+    # Get and push text to destination bucket
+    text = get_docx_text(path=docx_file)
     write_text(s3_client=s3_client, text=text, document_uid=document_uid)
+    logger.info('Saved text to data lake')
+
+    # Get title and date published
+    title = metadata['title']
+    date_published = pd.to_datetime(metadata['created']).isoformat()
 
     logger.info(f'All data extracted e.g. Title extracted: {title}')
 
@@ -222,7 +168,6 @@ def handler(event, context: LambdaContext):
             'dates':
             {
                 'date_published': date_published,
-                'date_uploaded': date_uploaded_formatted
             }
         },
         'document_type': document_type,
