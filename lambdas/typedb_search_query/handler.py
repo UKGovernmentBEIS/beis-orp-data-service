@@ -13,11 +13,8 @@ from typedb.client import TransactionType, SessionType, TypeDB
 from datetime import datetime
 from itertools import groupby
 import pandas as pd
-# from word_forms_loc.word_forms_loc import get_word_forms
-# from word_forms_loc.lemmatizer import lemmatize
-
-from word_forms.word_forms import get_word_forms
-from word_forms.lemmatizer import lemmatize
+from word_forms_loc.word_forms_loc import get_word_forms
+from word_forms_loc.lemmatizer import lemmatize
 
 search_keys = {"id", "keyword", "title", "date_published",
                "regulator_id", "status", "regulatory_topic", "document_type",
@@ -282,9 +279,3 @@ def lambda_handler(ev, context):
     result = search_module(event, session)
     return result
 
-
-def main(event):
-    client = TypeDB.core_client('localhost:1729')
-    session = client.session('orp-pbeta-demo', SessionType.DATA)
-    result = search_module(event, session)
-    return result
