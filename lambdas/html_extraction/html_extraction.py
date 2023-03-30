@@ -79,7 +79,7 @@ def handler(event, context: LambdaContext):
     status = event['detail']['status']
     url = event['detail']['url']
 
-    if "https://gov.uk/" in url:
+    if "https://www.gov.uk/" in url:
         text, title, date_published = get_content(url)
 
     else:
