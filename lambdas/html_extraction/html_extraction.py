@@ -23,7 +23,7 @@ def get_title_and_text(URL):
     soup = BeautifulSoup(req.text, "html.parser")
 
     title = str(soup.head.title.get_text())
-    text = re.sub("\\s+", " ", str(soup.get_text()).replace("\n", " "))
+    text = re.sub("\\s+", " ", str(soup.body.find(id="contentContainer").get_text()).replace("\n", " "))
 
     return title, text
 

@@ -42,7 +42,7 @@ def get_content(url):
     for v in find_key("body", js):
         text = " ".join([p.get_text() for p in BeautifulSoup(v, features="html.parser")])
         content.append(text)
-    text = re.sub('\s+', " ", " ".join(content)).strip()
+    text = re.sub('\s+', " ", " ".join(content)).strip().replace("\n", " ")
 
     # Date
     date_published = js["public_updated_at"]
