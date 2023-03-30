@@ -1,6 +1,7 @@
 import io
 import re
 import os
+from datetime import datetime
 import boto3
 import zipfile
 import pandas as pd
@@ -119,6 +120,11 @@ def handler(event, context: LambdaContext):
         f'New document in {source_bucket}: {object_key}'
     )
 
+    # Finding the time the object was uploaded
+    date_uploaded = event['time']
+    date_obj = datetime.strptime(date_uploaded, "%Y-%m-%dT%H:%M:%SZ")
+    date_uploaded_formatted = date_obj.strftime("%Y-%m-%dT%H:%M:%S")
+
     s3_client = boto3.client('s3')
     doc_bytes_io = download_text(
         s3_client=s3_client,
@@ -160,15 +166,17 @@ def handler(event, context: LambdaContext):
         'document_uid': document_uid,
         'regulator_id': regulator_id,
         'user_id': user_id,
-        'uri': f's3://{source_bucket}/{object_key}',
+        'uri': object_key,
         'data':
         {
             'dates':
             {
                 'date_published': date_published,
+                'date_uploaded': date_uploaded_formatted
             }
         },
         'document_type': document_type,
+        'document_format': 'ODF',
         'status': status,
     }
 

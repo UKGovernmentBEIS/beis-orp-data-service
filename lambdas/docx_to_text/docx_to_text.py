@@ -68,7 +68,7 @@ def get_docx_text(path):
     return '\n\n'.join(paragraphs)
 
 
-def get_doc_metadata(doc):
+def get_docx_metadata(doc):
     '''
     param: doc/docx
     returns: metadata
@@ -106,7 +106,6 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
             'uuid': document_uid
         }
     )
-    logger.info('Saved text to data lake')
 
     assert response['ResponseMetadata']['HTTPStatusCode'] == 200, 'Text did not successfully write to S3'
     return None
@@ -144,11 +143,12 @@ def handler(event, context: LambdaContext):
     )
 
     doc = docx.Document(docx_file)
-    metadata = get_doc_metadata(doc=doc)
+    metadata = get_docx_metadata(doc=doc)
 
     # Get and push text to destination bucket
     text = get_docx_text(path=docx_file)
     write_text(s3_client=s3_client, text=text, document_uid=document_uid)
+    logger.info('Saved text to data lake')
 
     # Get title and date published
     title = metadata['title']
@@ -162,7 +162,7 @@ def handler(event, context: LambdaContext):
         'document_uid': document_uid,
         'regulator_id': regulator_id,
         'user_id': user_id,
-        'uri': f's3://{source_bucket}/{object_key}',
+        'uri': object_key,
         'data':
         {
             'dates':
@@ -171,6 +171,7 @@ def handler(event, context: LambdaContext):
             }
         },
         'document_type': document_type,
+        'document_format': 'DOCX',
         'status': status,
     }
 
