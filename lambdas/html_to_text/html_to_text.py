@@ -25,11 +25,8 @@ def get_title_and_text(URL):
     soup = BeautifulSoup(req.text, 'html.parser')
 
     title = str(soup.head.title.get_text())
-<<<<<<< HEAD:lambdas/html_extraction/html_extraction.py
-    text = re.sub("\\s+", " ", str(soup.body.find(id="contentContainer").get_text()).replace("\n", " "))
-=======
-    text = re.sub('\\s+', ' ', str(soup.get_text()).replace('\n', ' '))
->>>>>>> develop:lambdas/html_to_text/html_to_text.py
+    text = re.sub(
+        "\\s+", " ", str(soup.body.find(id="contentContainer").get_text()).replace("\n", " "))
 
     return title, text
 
@@ -90,17 +87,12 @@ def handler(event, context: LambdaContext):
     status = event['detail']['status']
     url = event['detail']['url']
 
-<<<<<<< HEAD:lambdas/html_extraction/html_extraction.py
     if "https://www.gov.uk/" in url:
         text, title, date_published = get_content(url)
 
     else:
         title, text = get_title_and_text(url)
         date_published = get_publication_modification_date(url)
-=======
-    title, text = get_title_and_text(url)
-    date_published = get_publication_modification_date(url)
->>>>>>> develop:lambdas/html_to_text/html_to_text.py
 
     logger.info(f'Document title is: {title}'
                 f'Publishing date is: {date_published}')

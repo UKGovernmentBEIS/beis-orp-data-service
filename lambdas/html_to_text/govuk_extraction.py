@@ -2,6 +2,7 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
+
 def find_key(key, dictionary):
     """
     Recursive function to find all text in body elements of the api/content
@@ -40,9 +41,10 @@ def get_content(url):
     # Text
     content = []
     for v in find_key("body", js):
-        text = " ".join([p.get_text() for p in BeautifulSoup(v, features="html.parser")])
+        text = " ".join([p.get_text()
+                        for p in BeautifulSoup(v, features="html.parser")])
         content.append(text)
-    text = re.sub('\s+', " ", " ".join(content)).strip().replace("\n", " ")
+    text = re.sub('\\s+', " ", " ".join(content)).strip().replace("\n", " ")
 
     # Date
     date_published = js["public_updated_at"]

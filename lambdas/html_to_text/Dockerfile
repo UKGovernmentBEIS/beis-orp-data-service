@@ -4,12 +4,8 @@ COPY requirements.txt  .
 RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
 # Copy function code
-<<<<<<< HEAD:lambdas/html_extraction/Dockerfile
-COPY html_extraction.py ${LAMBDA_TASK_ROOT}
 COPY govuk_extraction.py ${LAMBDA_TASK_ROOT}
-=======
 COPY html_to_text.py ${LAMBDA_TASK_ROOT}
->>>>>>> develop:lambdas/html_to_text/Dockerfile
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
 CMD [ "html_to_text.handler"]
