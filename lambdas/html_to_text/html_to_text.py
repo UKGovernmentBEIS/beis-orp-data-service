@@ -71,7 +71,7 @@ def handler(event, context: LambdaContext):
 
     # Finding the time the object was uploaded
     date_uploaded = datetime.now()
-    date_uploaded_formatted = date_uploaded.strftime("%Y-%m-%dT%H:%M:%S")
+    date_uploaded_formatted = date_uploaded.strftime('%Y-%m-%dT%H:%M:%S')
 
     s3_client = boto3.client('s3')
 
