@@ -8,6 +8,7 @@
 {"label":"HS0", "pattern":[{"ORTH": "this"},{"LEMMA": "publication"}]}
 {"label":"HS1", "pattern":[{"LEMMA":"summary"}, {"ORTH":"of"},{"LEMMA": "response"}]}
 {"label":"HS1", "pattern":[{"LEMMA": "draft"},{"ORTH": "for"}, {"LEMMA": "comment"}]}
+{"label":"HS1", "pattern":[{"LEMMA": "safety"},{"LEMMA": "alert"}]}
 {"label":"HS1", "pattern":[{"LEMMA": "this"},{"OP": "?"},{"LEMMA": "draft"}]}
 {"label":"GD1", "pattern":[{"LEMMA": "this"},{"OP": "?"},{"OP": "?"},{"LEMMA": "guidance"}]}
 {"label":"GD1", "pattern":[{"LEMMA": "guidance"},{"LEMMA": "note"}]}
@@ -29,6 +30,7 @@
 {"label":"GD1", "pattern":[{"LEMMA":"performance", "OP":"?"},{"LEMMA": "standard"}]}
 {"label":"GD1", "pattern":[{"ORTH":"this"},{"LEMMA": "book"}]}
 {"label":"GD1", "pattern":[{"ORTH":"this"},{"LEMMA": "booklet"}]}
+{"label":"GD1", "pattern":[{"LEMMA":"talking"},{"LEMMA": "toolkit"}]}
 {"label":"GD1", "pattern":[{"ORTH":"this"},{"LEMMA": "sheet"}]}
 {"label":"GD1", "pattern":[{"ORTH":"this"},{"LEMMA": "factsheet"}]}
 {"label":"MSI0", "pattern":[{"LEMMA": "decision"},{"ORTH": "on"}]}
@@ -39,6 +41,7 @@
 {"label":"MSI0", "pattern":[{"LEMMA": "document"},{"LEMMA": "decision"}]}
 {"label":"MSI0", "pattern":[{"LEMMA": "this"},{"LEMMA": "decision"}]}
 {"label":"MSI0", "pattern":[{"LEMMA": "notice"}]}
+{"label":"HS0", "pattern":[{"LEMMA": "annual"},{"LEMMA": "statistic"}]}
 {"label":"HS0", "pattern":[{"ORTH": "this"},{"LEMMA": "letter"}]}
 {"label":"HS0", "pattern":[{"ORTH": "open"},{"LEMMA": "letter"}]}
 {"label":"HS0", "pattern":[{"LEMMA": "consultation"}]}
