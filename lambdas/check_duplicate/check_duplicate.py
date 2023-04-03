@@ -169,11 +169,12 @@ def handler(event, context: LambdaContext):
     document_uid = event['document']['document_uid']
 
     logger.info('Event Body: ', event)
-    TYPEDB_IP = validate_env_variable('TYPEDB_SERVER_IP')
     SOURCE_BUCKET = validate_env_variable('SOURCE_BUCKET')
-    TYPEDB_PORT = validate_env_variable('TYPEDB_SERVER_PORT')
-    COGNITO_USER_POOL = validate_env_variable('COGNITO_USER_POOL')
+    TYPEDB_SERVER_IP = validate_env_variable('TYPEDB_SERVER_IP')
+    SOURCE_BUCKET = validate_env_variable('SOURCE_BUCKET')
+    TYPEDB_SERVER_PORT = validate_env_variable('TYPEDB_SERVER_PORT')
     TYPEDB_DATABASE_NAME = validate_env_variable('TYPEDB_DATABASE_NAME')
+    COGNITO_USER_POOL = validate_env_variable('COGNITO_USER_POOL')
     SENDER_EMAIL_ADDRESS = validate_env_variable('SENDER_EMAIL_ADDRESS')
 
     # Download punkt for tokenizer
@@ -182,7 +183,7 @@ def handler(event, context: LambdaContext):
     nltk.download('punkt', download_dir=NLTK_DATA)
 
     # Open TypeDB session
-    client = TypeDB.core_client(TYPEDB_IP + ':' + TYPEDB_PORT)
+    client = TypeDB.core_client(TYPEDB_SERVER_IP + ':' + TYPEDB_SERVER_PORT)
     session = client.session(TYPEDB_DATABASE_NAME, SessionType.DATA)
 
     # Call S3 and download processed text
