@@ -37,9 +37,7 @@ def extract_text_from_pdf(doc_bytes_io):
     '''Extracts text from PDF streaming input'''
 
     text = extract_text(doc_bytes_io)
-
-    if (text == "") or (text is None):
-
+    if text == "" or text is None:
         try:
 
             # creating a pdf reader object

@@ -20,7 +20,6 @@ logger = logging.getLogger("Bulk_processing")
 from pyspark import SparkFiles
 KW_MODEL=  SparkFiles.get('resources')
 
-# nltk.data.path.append(SparkFiles.get('resources/nltk_data'))
 
 def download_model(model_path,
                    key='keybert.pt'):
@@ -113,7 +112,6 @@ def get_relevant_keywords(x):
 
 
 def keyword_extraction(document, title):
-    # nltk.data.path.append('./nltk_data')
     logger.debug("Started initialisation...")
     kw_model = download_model(KW_MODEL)
     keywords = extract_keywords(text=document, kw_model=kw_model)

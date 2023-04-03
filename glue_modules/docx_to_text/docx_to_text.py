@@ -39,7 +39,7 @@ def get_docx_text(path):
     return '\n\n'.join(paragraphs)
 
 
-def get_doc_metadata(doc):
+def get_docx_metadata(doc):
     """
     param: doc docx
     returns: metadata
@@ -66,16 +66,9 @@ def get_doc_metadata(doc):
     return metadata
 
 
-def write_text(text, document_uid, destination_bucket):
-    '''Write the extracted text to a .txt file in the staging bucket'''
-
-    open(f'{destination_bucket}/{document_uid}.txt', 'w+').write(text)
-    logger.debug(f'Saved text to {destination_bucket}')
-
-
 def docx_converter(docx_file):
     doc = docx.Document(docx_file)
-    metadata = get_doc_metadata(doc=doc)
+    metadata = get_docx_metadata(doc=doc)
 
     # Get title and date published
     title = metadata["title"]

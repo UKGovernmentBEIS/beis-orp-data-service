@@ -21,7 +21,7 @@ def get_title_and_text(URL):
 def get_publication_modification_date(URL):
     '''
     params: URL: Str
-    returns: publication_date, modification_date: Str
+    returns: publication_date: Str
     '''
     # Initally disable extensive search
     publication_date = str(
@@ -29,14 +29,10 @@ def get_publication_modification_date(URL):
     modification_date = str(find_date(URL, extensive_search=False))
 
     # If no concrete date is found, do extensive search
-    if publication_date == 'None':
+    if (publication_date == 'None') and (modification_date == 'None'):
         publication_date = str(find_date(URL, original_date=True))
 
-    if modification_date == 'None':
-        modification_date = str(find_date(URL))
-
     publication_date = pd.to_datetime(publication_date).isoformat()
-    modification_date = pd.to_datetime(modification_date).isoformat()
 
     return publication_date
 

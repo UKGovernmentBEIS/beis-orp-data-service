@@ -25,7 +25,6 @@ pattern4 = [{"TEXT": {"IN" :digit_day_list}, "OP": "?"}, {"IS_PUNCT" : True, "OP
 # All numbers - no zero
 pattern5 = [{"TEXT": {"IN" :digit_day_list_nozero}, "OP": "?"}, {"IS_PUNCT" : True, "OP": "?"}, {"TEXT": {"IN" :digit_month_list_nozero}}, {"IS_PUNCT" : True}, {"IS_DIGIT": True}]
 
-from pyspark import SparkFiles
 def initialise_matcher():
     """
     Initalises nlp and matcher from Spacy
