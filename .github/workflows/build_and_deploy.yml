@@ -49,7 +49,7 @@ jobs:
 
       - name: Update Lambda function
         if: ${{ env.CHANGED_LAMBDA != '' }}
-        uses: appleboy/lambda-action@master
+        uses: appleboy/lambda-action@390dab2546e6c97ca3b94fc5f3863d0e15bec0ee
         with:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
