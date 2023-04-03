@@ -18,7 +18,7 @@ return_vals = ['regulatory_topic', 'document_type', 'status']
 
 
 def validate_env_variable(env_var_name):
-    '''Checks existence of environment variables'''
+    '''Check existence of environment variables'''
     logger.debug(
         f'Getting the value of the environment variable: {env_var_name}')
     try:
