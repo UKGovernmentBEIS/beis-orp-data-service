@@ -70,20 +70,20 @@ def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
     # Finding the time the object was uploaded
-    date_uploaded = event['time']
-    date_obj = datetime.strptime(date_uploaded, "%Y-%m-%dT%H:%M:%SZ")
-    date_uploaded_formatted = date_obj.strftime("%Y-%m-%dT%H:%M:%S")
+    date_uploaded = datetime.now()
+    date_uploaded_formatted = date_uploaded.strftime('%Y-%m-%dT%H:%M:%S')
 
     s3_client = boto3.client('s3')
 
     # Getting metadata from event
-    document_uid = event['detail']['uuid']
-    regulator_id = event['detail']['regulator_id']
-    user_id = event['detail']['user_id']
-    api_user = event['detail']['api_user']
-    document_type = event['detail']['document_type']
-    status = event['detail']['status']
-    url = event['detail']['url']
+    document_uid = event['body']['uuid']
+    regulator_id = event['body']['regulator_id']
+    user_id = event['body']['user_id']
+    api_user = event['body'].get('api_user')
+    document_type = event['body']['document_type']
+    status = event['body']['status']
+    url = event['body']['uri']
+    regulatory_topic = event['body']['topics']
 
     title, text = get_title_and_text(url)
     date_published = get_publication_modification_date(url)
@@ -112,6 +112,7 @@ def handler(event, context: LambdaContext):
         },
         'document_type': document_type,
         'document_format': 'HTML',
+        'regulatory_topic': regulatory_topic,
         'status': status,
     }
 
