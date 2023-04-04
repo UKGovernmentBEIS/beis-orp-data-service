@@ -3,6 +3,7 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 from htmldate import find_date
+from html_to_text.govuk_extraction import get_content
 
 def get_title_and_text(URL):
     '''
@@ -13,7 +14,8 @@ def get_title_and_text(URL):
     soup = BeautifulSoup(req.text, 'html.parser')
 
     title = str(soup.head.title.get_text())
-    text = re.sub('\\s+', ' ', str(soup.get_text()).replace('\n', ' '))
+    text = re.sub(
+        "\\s+", " ", str(soup.body.find(id="contentContainer").get_text()).replace("\n", " "))
 
     return title, text
 
@@ -37,10 +39,13 @@ def get_publication_modification_date(URL):
     return publication_date
 
 
-
 def html_converter(url):
 
-    title, text = get_title_and_text(url)
-    date_published = get_publication_modification_date(url)
+    if "https://www.gov.uk/" in url:
+        text, title, date_published = get_content(url)
+
+    else:
+        title, text = get_title_and_text(url)
+        date_published = get_publication_modification_date(url)
 
     return text, title, date_published

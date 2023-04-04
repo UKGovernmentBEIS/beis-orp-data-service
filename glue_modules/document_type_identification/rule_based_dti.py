@@ -8,15 +8,15 @@ Created on Mon Jan 16 16:54:23 2023
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-
+from pyspark import SparkFiles
 dtypes = ['HS-1', 'GD0', 'HS0', 'MSI0', 'GD1', 'HS1']
 dti_map = dict(zip(dtypes, ['HS', 'GD', 'HS', 'MSI', 'GD', 'HS']))
 inv_dtd = dict(enumerate(dtypes))
 dtd = {v: k for k, v in inv_dtd.items()}
 
 DTI_CHUNK_PERC = 0.1
-# TODO  add this to resources 
-DTI_GOV_MAP_PATH = '/Users/imane.hafnaoui/gitpod/MXTrepos/beis-orp-data-service/glue_modules/document_type_identification/govuk_document_type.csv'
+# DTI_GOV_MAP_PATH = '/Users/imane.hafnaoui/gitpod/MXTrepos/beis-orp-data-service/glue_modules/document_type_identification/govuk_document_type.csv'
+DTI_GOV_MAP_PATH = SparkFiles.get('resources/govuk_document_type.csv')
 df = pd.read_csv(DTI_GOV_MAP_PATH).fillna('NA')
 
 
@@ -37,28 +37,32 @@ def dti_text(text, title, nlp):
         return 'NA'
 
 
-def dti_web(url):
-    gov = 'https://www.gov.uk/'
-    hse = 'https://www.hse.gov.uk/'
-    if url.startswith(hse):
-        possible_dt = BeautifulSoup(requests.get(url).content,features="lxml").findAll('body')[
-            0].attrs.get('class')
-    elif url.startswith(gov):
-        furl = f'{gov}api/content/{url.split(gov)[-1]}'
-        js = requests.get(furl).json()
-        pt = js['links'].get('parent')
-        pdt = [i['document_type'] for i in pt] if pt else []
-        possible_dt = [js['document_type']]+pdt
-    else: 
-        # TODO  add section to look into parent pages if available
-        possible_dt = ['NA']
+def dti_web(url, parent_url):
+    try:
+        gov = 'https://www.gov.uk/'
+        hse = 'https://www.hse.gov.uk/'
+        if url.startswith(hse):
+            possible_dt = BeautifulSoup(requests.get(url).content,features="lxml").findAll('body')[
+                0].attrs.get('class')
+        elif url.startswith(gov):
+            furl = f'{gov}api/content/{url.split(gov)[-1]}'
+            js = requests.get(furl).json()
+            pt = js['links'].get('parent')
+            pdt = [i['document_type'] for i in pt] if pt else []
+            possible_dt = [js['document_type']]+pdt
+        elif parent_url:
+            possible_dt = dti_web(parent_url, None)
+        else: 
+            possible_dt = []
 
-    dt = df[df.document_type.isin(possible_dt)].orp_dt
-    return dt.iloc[0] if len(dt) > 0 else 'NA'
+        dt = df[df.document_type.isin(possible_dt)].orp_dt
+        return dt.iloc[0] if len(dt) > 0 else 'NA'
+    except Exception as e:
+        print(f'ERROR [DTI]: {url}\n {e}')
+        return 'NA'
 
-
-def dti(url,  text, title, nlp):
-    dt = dti_web(url)
+def dti(url,parent_url,  text, title, nlp):
+    dt = dti_web(url, parent_url)
     if dt == 'NA':
         dt = dti_text(text, title, nlp)
     return dt
