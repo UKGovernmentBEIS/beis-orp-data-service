@@ -93,7 +93,9 @@ def get_similarity_score(hash_np, matching_hash_list):
         cosine = np.dot(hash_np, v) / (norm(hash_np) * norm(v))
         scores.append(cosine)
 
-    if (len(scores) > 0) and (max(scores) >= 0.95):
+    max_score = max(scores)
+    logger.info(f"Max score: {max_score}")
+    if (len(scores) > 0) and (max_score >= 0.95):
         if max(scores) == 1:
             logger.info('Duplicate text detected')
             index = scores.index(max(scores))
