@@ -79,6 +79,7 @@ def read_transaction(session, hash_list):
                 hash['hash_text'].split('_'),
                 dtype='uint64') for hash in metadata_dict]
         logger.info('Number of returned hashes: ' + str(len(matching_hash_list)))
+        logger.info(matching_hash_list)
         return matching_hash_list, metadata_dict
 
 
@@ -94,6 +95,7 @@ def get_similarity_score(hash_np, matching_hash_list):
         scores.append(cosine)
 
     max_score = max(scores)
+    logger.info(f"Incoming hash: {hash_np}")
     logger.info(f"Max score: {max_score}")
     if (len(scores) > 0) and (max_score >= 0.95):
         if max(scores) == 1:
