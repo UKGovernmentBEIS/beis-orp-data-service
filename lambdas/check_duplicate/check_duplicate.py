@@ -60,7 +60,6 @@ def read_transaction(session, hash_list):
     query = f'''
     match
         $u isa legalDocument,
-        has node_id $n,
         has attribute $a,
         has hash_text $h;
         {contains}; group $u;
