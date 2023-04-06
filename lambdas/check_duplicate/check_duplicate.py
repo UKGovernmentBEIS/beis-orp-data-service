@@ -77,9 +77,13 @@ def read_transaction(session, hash_list):
             np.array(
                 hash['hash_text'].split('_'),
                 dtype='uint64') for hash in metadata_dict]
+
+        # Node IDs
+        node_id_list = [node['node_id'] for node in metadata_dict]
+
         logger.info('Number of returned hashes: ' + str(len(matching_hash_list)))
         logger.info(matching_hash_list)
-        return matching_hash_list, metadata_dict
+        return matching_hash_list, metadata_dict, node_id_list
 
 
 def get_similarity_score(hash_np, matching_hash_list):
@@ -147,7 +151,7 @@ def search_module(session, hash_np, hash_list, incoming_metadata):
         returns: is_duplicate_results / False: if is_duplicate_results is returned, the incoming document is a
         version or duplicate of the incoming document. Otherwise, the document is new.
     '''
-    matching_hash_list, complete_existing_metadata = read_transaction(
+    matching_hash_list, complete_existing_metadata, node_id_list = read_transaction(
         session, hash_list)
     index = get_similarity_score(hash_np=hash_np, matching_hash_list=matching_hash_list)
 
@@ -158,7 +162,7 @@ def search_module(session, hash_np, hash_list, incoming_metadata):
     if index:
         is_duplicate_results = is_duplicate(index=index, incoming_metadata=incoming_metadata,
                                             complete_existing_metadata=complete_existing_metadata)
-        return is_duplicate_results
+        return is_duplicate_results + (node_id_list[index],)
 
     # No index returned, hence there are no similar documents
     else:
@@ -217,20 +221,18 @@ def handler(event, context: LambdaContext):
     logger.info(is_duplicate_results)
 
     # ========== 1. If it is not a duplicate, insert hash and pass the document
-    if not is_duplicate_results:
+    if is_duplicate_results is False:
         handler_response['document']['hash_text'] = '_'.join(map(str, hash_np.tolist()))
         logger.info('Hash inserted into graph')
         return handler_response
 
-    # ========== 2. If the document is a version (same text different metadata
-    elif not is_duplicate_results[0]:
-        for i in range(0, len(incoming_metadata)):
-            handler_response['document'][[*incoming_metadata]
-                                         [i]] = [*incoming_metadata.values()][i]
-            logger.info('Metadata updated')
+    # ========== 2. If the document is a version (same text different metadata) return node ID
+    elif is_duplicate_results[0] is False:
+        node_id = is_duplicate_results[2]
+        handler_response['document']['node_id'] = node_id
         return handler_response
 
-    # ========== 3. Else the document is a complete duplicate, and the user sh
+    # ========== 3. Else the document is a complete duplicate, and the user is informed
     else:
         # Get the existing metadata of the matching document
         complete_existing_metadata = is_duplicate_results[1]
