@@ -1,6 +1,7 @@
 import io
 import re
 import os
+import json
 from datetime import datetime
 import boto3
 import zipfile
@@ -147,7 +148,7 @@ def handler(event, context: LambdaContext):
     api_user = doc_s3_metadata.get('api_user')
     document_type = doc_s3_metadata.get('document_type')
     status = doc_s3_metadata.get('status')
-    regulatory_topics = doc_s3_metadata.get('topics')
+    regulatory_topics = json.loads(doc_s3_metadata.get('topics'))
 
     # Extract the content and metadata xml
     contentXML, metadataXML = convert2xml(odf=doc_bytes_io)
