@@ -5,7 +5,7 @@ Created on Mon Mar 3 10:48:33 2022
 @author: Imane.Hafnaoui
 
 
-Detects legislation origin by searching through a lookup table of existing acts. We do this through exact matching.
+Detects legislation origin by searching through a lookup table of existing acts. We do this through exact matching. 
 The matcher goes through two stages:
     Stage 1:
         - Narrows down the search space to candidate legislation in the document text by year of publication;
@@ -13,7 +13,7 @@ The matcher goes through two stages:
     Stage 2:
         - Runs exact matching against the entries in the table per sentence and stop when legislation is mentionned.
 
-
+    
 """
 from spacy.matcher import  Matcher, PhraseMatcher 
 
@@ -21,7 +21,6 @@ from spacy.matcher import  Matcher, PhraseMatcher
 keys = ['detected_ref', 'start', 'end']
 
 # EXACT MATCHING
-
 
 def exact_matcher(title, docobj, nlp):
     """
@@ -75,8 +74,8 @@ def lookup_pipe(titles, docobj, nlp, method):
     -------
     results : list(dict)
         List of dictionaries of the form {
-            'detected_ref'(string): 'detected reference in the judgement body',
-            'ref'(string): 'matched legislation title',
+            'detected_ref'(string): 'detected reference in the judgement body', 
+            'ref'(string): 'matched legislation title', 
             'canonical'(string): 'canonical form of legislation act',
             'start'(int): 'start position of reference',
             'end'(int): 'end positin of reference',
@@ -120,15 +119,15 @@ def detect_year_span(docobj, nlp):
 
 ######
 
-
 def leg_pipeline(leg_titles, nlp, docobj):
     dates = detect_year_span(docobj, nlp)
     # filter the legislation list down to the years detected above
     sents = docobj.sents
+    results = {}
     for sent in sents:
-        sdates = [year for year in dates if str(year) in sent.text]
+        sdates = [year  for year in dates if str(year) in sent.text]
         titles = leg_titles[leg_titles.year.isin(sdates)]
-        relevant_titles = titles.candidate_titles.drop_duplicates().tolist()
+        relevant_titles = titles.candidate_titles.tolist()
         print(f'\t Looking through {len(relevant_titles)} possible candidates...')
         if relevant_titles:
             results = lookup_pipe(relevant_titles, docobj, nlp,
