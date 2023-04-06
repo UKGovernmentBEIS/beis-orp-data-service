@@ -65,19 +65,19 @@ def get_similarity_scores(title: str, candidate_titles: List) -> float:
     """
     similarity_scores = []
 
-    # nlp = download_model(s3_client)
-
     nlp = spacy.load("en_core_web_lg")
 
     title = nlp(re.sub(r'[^\w\s]', '', title.lower()))
 
     for sent in tqdm(candidate_titles):
-
         score = title.similarity(nlp(re.sub(r'[^\w\s]', '', sent.lower())))
         similarity_scores.append(score * 100)
 
     # Get score of match
-    score = max(similarity_scores)
+    if not similarity_scores:
+        score = max(similarity_scores)
+    else:
+        score = 0
 
     return score
 
