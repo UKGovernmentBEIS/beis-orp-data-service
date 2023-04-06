@@ -232,7 +232,7 @@ def handler(event, context: LambdaContext):
     elif is_duplicate_results[0] is False:
         node_id = is_duplicate_results[2]
         handler_response['document']['node_id'] = node_id
-        logger.info(f"Node_id of existing version to be changed")
+        logger.info(f"Node_id of existing version to be changed {node_id}")
         return handler_response
 
     # ========== 3. Else the document is a complete duplicate, and the user is informed
