@@ -1,5 +1,6 @@
 import io
 import os
+import json
 import docx
 import boto3
 import zipfile
@@ -135,6 +136,7 @@ def handler(event, context: LambdaContext):
     api_user = doc_s3_metadata.get('api_user')
     document_type = doc_s3_metadata.get('document_type')
     status = doc_s3_metadata.get('status')
+    regulatory_topics = json.loads(doc_s3_metadata.get('topics'))
 
     docx_file = download_text(
         s3_client=s3_client,
@@ -172,6 +174,7 @@ def handler(event, context: LambdaContext):
         },
         'document_type': document_type,
         'document_format': 'DOCX',
+        'regulatory_topic': regulatory_topics,
         'status': status,
     }
 
