@@ -160,12 +160,14 @@ def search_module(session, hash_np, hash_list, incoming_metadata):
     # 3. Otherwise return false
 
     if index:
+        logger.info(f"Index returned: {index}")
         is_duplicate_results = is_duplicate(index=index, incoming_metadata=incoming_metadata,
                                             complete_existing_metadata=complete_existing_metadata)
         return is_duplicate_results + (node_id_list[index],)
 
     # No index returned, hence there are no similar documents
     else:
+        logger.info(f"No index returned - hence no similar documents")
         return False
 
 
@@ -230,6 +232,7 @@ def handler(event, context: LambdaContext):
     elif is_duplicate_results[0] is False:
         node_id = is_duplicate_results[2]
         handler_response['document']['node_id'] = node_id
+        logger.info(f"Node_id of existing version to be changed")
         return handler_response
 
     # ========== 3. Else the document is a complete duplicate, and the user is informed
