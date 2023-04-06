@@ -20,7 +20,7 @@ search_keys = {"id", "keyword", "title", "date_published",
                "regulator_id", "status", "regulatory_topic", "document_type",
                "legislation_href"}
 return_vals = ['title', 'summary', 'document_uid', 'regulator_id',"regulatory_topic",
-               'document_type', 'keyword', 'uri', 'status',
+               'document_type', 'keyword', 'uri', 'status', 'language',
                'date_published', 'date_uploaded', 'legislative_origins', 'version']
 leg_vals = ['url', 'title', 'leg_type', 'leg_division']
 sp_chars = r'"|,|;'
