@@ -6,6 +6,7 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 from htmldate import find_date
+from govuk_extraction import get_content
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
@@ -24,7 +25,8 @@ def get_title_and_text(URL):
     soup = BeautifulSoup(req.text, 'html.parser')
 
     title = str(soup.head.title.get_text())
-    text = re.sub('\\s+', ' ', str(soup.get_text()).replace('\n', ' '))
+    text = re.sub(
+        "\\s+", " ", str(soup.body.find(id="contentContainer").get_text()).replace("\n", " "))
 
     return title, text
 
@@ -85,8 +87,12 @@ def handler(event, context: LambdaContext):
     url = event['body']['uri']
     regulatory_topic = event['body']['topics']
 
-    title, text = get_title_and_text(url)
-    date_published = get_publication_modification_date(url)
+    if "https://www.gov.uk/" in url:
+        text, title, date_published = get_content(url)
+
+    else:
+        title, text = get_title_and_text(url)
+        date_published = get_publication_modification_date(url)
 
     logger.info(f'Document title is: {title}'
                 f'Publishing date is: {date_published}')
