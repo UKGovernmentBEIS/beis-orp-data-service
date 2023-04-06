@@ -1,6 +1,7 @@
 import io
 import os
 import re
+import json
 import boto3
 import string
 from datetime import datetime
@@ -198,7 +199,7 @@ def handler(event, context: LambdaContext):
     api_user = doc_s3_metadata.get('api_user')
     document_type = doc_s3_metadata.get('document_type')
     status = doc_s3_metadata.get('status')
-    regulatory_topics = doc_s3_metadata.get('topics')
+    regulatory_topics = json.loads(doc_s3_metadata.get('topics'))
 
     title, date_published = extract_title_and_date(doc_bytes_io=doc_bytes_io)
     text = extract_text_from_pdf(doc_bytes_io=doc_bytes_io)
