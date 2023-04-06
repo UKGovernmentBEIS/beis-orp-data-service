@@ -159,7 +159,7 @@ def search_module(session, hash_np, hash_list, incoming_metadata):
     # 2. Test for exact duplicates and return the results
     # 3. Otherwise return false
 
-    if index:
+    if index is not None:
         logger.info(f"Index returned: {index}")
         is_duplicate_results = is_duplicate(index=index, incoming_metadata=incoming_metadata,
                                             complete_existing_metadata=complete_existing_metadata)
@@ -167,7 +167,7 @@ def search_module(session, hash_np, hash_list, incoming_metadata):
 
     # No index returned, hence there are no similar documents
     else:
-        logger.info(f"No index returned - hence no similar documents")
+        logger.info(f"No index returned - no similar documents")
         return False
 
 
