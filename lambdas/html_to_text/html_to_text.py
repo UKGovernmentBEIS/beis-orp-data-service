@@ -1,10 +1,12 @@
 import re
 import os
+from datetime import datetime
 import boto3
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 from htmldate import find_date
+from govuk_extraction import get_content
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
@@ -23,7 +25,8 @@ def get_title_and_text(URL):
     soup = BeautifulSoup(req.text, 'html.parser')
 
     title = str(soup.head.title.get_text())
-    text = re.sub('\\s+', ' ', str(soup.get_text()).replace('\n', ' '))
+    text = re.sub(
+        "\\s+", " ", str(soup.body.find(id="contentContainer").get_text()).replace("\n", " "))
 
     return title, text
 
@@ -68,19 +71,28 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
 def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
+    # Finding the time the object was uploaded
+    date_uploaded = datetime.now()
+    date_uploaded_formatted = date_uploaded.strftime('%Y-%m-%dT%H:%M:%S')
+
     s3_client = boto3.client('s3')
 
     # Getting metadata from event
-    document_uid = event['detail']['uuid']
-    regulator_id = event['detail']['regulator_id']
-    user_id = event['detail']['user_id']
-    api_user = event['detail']['api_user']
-    document_type = event['detail']['document_type']
-    status = event['detail']['status']
-    url = event['detail']['url']
+    document_uid = event['body']['uuid']
+    regulator_id = event['body']['regulator_id']
+    user_id = event['body']['user_id']
+    api_user = event['body'].get('api_user')
+    document_type = event['body']['document_type']
+    status = event['body']['status']
+    url = event['body']['uri']
+    regulatory_topic = event['body']['topics']
 
-    title, text = get_title_and_text(url)
-    date_published = get_publication_modification_date(url)
+    if "https://www.gov.uk/" in url:
+        text, title, date_published = get_content(url)
+
+    else:
+        title, text = get_title_and_text(url)
+        date_published = get_publication_modification_date(url)
 
     logger.info(f'Document title is: {title}'
                 f'Publishing date is: {date_published}')
@@ -101,10 +113,12 @@ def handler(event, context: LambdaContext):
             'dates':
             {
                 'date_published': date_published,
+                'date_uploaded': date_uploaded_formatted
             }
         },
         'document_type': document_type,
         'document_format': 'HTML',
+        'regulatory_topic': regulatory_topic,
         'status': status,
     }
 

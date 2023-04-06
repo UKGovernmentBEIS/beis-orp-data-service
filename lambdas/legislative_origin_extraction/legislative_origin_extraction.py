@@ -11,8 +11,8 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 logger = Logger()
 
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
-TABLE_NAME = 'legislative_origin'
-# TABLE_NAME = os.environ['TABLE_NAME']
+# TABLE_NAME = 'legislative_origin'
+TABLE_NAME = os.environ['TABLE_NAME']
 YEAR_INDEX_NAME = os.environ['YEAR_INDEX_NAME']
 CUTOFF = 0.2
 
@@ -121,6 +121,7 @@ def find_legislation_in_text(nlp_text, nlp, titles, dates_in_text):
     Returns the first set of results as this is indicative of the legislative origin
     '''
     sentences = list(nlp_text.sents)
+    results = []
     for sentence in sentences:
         years_in_sentence = [
             year for year in dates_in_text if str(year) in sentence.text]
@@ -128,7 +129,6 @@ def find_legislation_in_text(nlp_text, nlp, titles, dates_in_text):
         for year in years_in_sentence:
             relevant_titles.extend(titles[str(year)])
 
-        results = []
         # for every legislation title in the table
         for title in nlp.pipe(relevant_titles):
             # detect legislation in the judgement body

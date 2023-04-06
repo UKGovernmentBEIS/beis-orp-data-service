@@ -22,10 +22,9 @@ def merge_dicts(dict_list):
         if dictionary['lambda'] == 'date_generation':
             merged_dict.setdefault('data', {}).setdefault('dates', {})[
                 'date_published'] = dictionary['document']['data']['dates']['date_published']
-        elif dictionary['lambda'] == 'title_generation':
-            merged_dict['title'] = dictionary['document']['title']
         elif dictionary['lambda'] == 'keyword_extraction':
             merged_dict['subject_keywords'] = dictionary['document']['subject_keywords']
+            merged_dict['title'] = dictionary['document']['title']
         elif dictionary['lambda'] == 'summarisation':
             merged_dict['summary'] = dictionary['document']['summary']
         elif dictionary['lambda'] == 'legislative_origin_extraction':
