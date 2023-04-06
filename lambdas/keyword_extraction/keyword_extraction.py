@@ -88,7 +88,7 @@ def pre_process_tokenization_function(documents: str):
     return lemmatised_sentence
 
 
-def extract_keywords(text, kw_model):
+def extract_keywords(text, kw_model, n=15):
     # TODO: replace the hardcoded regulator references
     '''Extracts the keywords from the downloaded text using the downloaded model'''
 
@@ -105,7 +105,7 @@ def extract_keywords(text, kw_model):
     keywords = kw_model.extract_keywords(
         text,
         vectorizer=vectorizer_model,
-        top_n=15
+        top_n=n
     )
     logger.info({'keywords': keywords})
 
@@ -137,6 +137,7 @@ def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
     document_uid = event['document']['document_uid']
+    title = event['document']['title']
 
     logger.info('Started initialisation...')
     os.makedirs(MODEL_PATH, exist_ok=True)
@@ -148,9 +149,14 @@ def handler(event, context: LambdaContext):
     s3_client = boto3.client('s3')
     document = download_text(s3_client=s3_client, document_uid=document_uid)
     kw_model = download_model(s3_client=s3_client)
-    keywords = extract_keywords(text=document, kw_model=kw_model)
+    title_keywords = extract_keywords(text=title, kw_model=kw_model, n=2)
+    doc_keywords = extract_keywords(text=document, kw_model=kw_model)
+    # Combine keywords
+    keywords = list(set(title_keywords + doc_keywords))
     keywords = get_relevant_keywords(x=keywords)
-    logger.info({'relevant keywords': keywords})
+
+    logger.info({'title keywords': title_keywords})
+    logger.info({'doc and title keywords': keywords})
 
     subject_keywords = [i[0] for i in keywords]
 
