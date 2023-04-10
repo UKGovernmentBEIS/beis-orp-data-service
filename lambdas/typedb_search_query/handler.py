@@ -128,7 +128,7 @@ def query_builder(event):
 
     # Related reg docs (links to legislation search)
     elif event.get('legislation_href'):
-        query = 'match $x isa legislation, has url $id; $id like "'
+        query = 'match $x isa legislation, has URL $id; $id like "'
         query += '|'.join([leg for leg in event.get('legislation_href', [])])
         query += '''";  $regdoc isa regulatoryDocument, has attribute $attribute;
             (issuedFor:$x,issued:$regdoc) isa publication;
@@ -189,6 +189,7 @@ def search_reg_docs(ans):
                                  for kw in rd.get('keyword', [])]))
             if rd.get('assigned_orp_topic'):
                 rd['regulatory_topic'] = rd.get('assigned_orp_topic')
+            # TODO handle uri vs url
             data.append(get_select_dict(rd, return_vals))
         doc['related_docs'] = data
         docs.append(doc)
@@ -212,7 +213,7 @@ def search_leg_orgs(ans, session):
 
     # Merging leg.orgs info with reg document
     df = res.merge(legs,on='node_id', how='left')
-    legmap = {'leg_type': 'type', 'leg_division': 'division'}
+    legmap = {'leg_type': 'type', 'leg_division': 'division', 'href':'url'}
     df.legislative_origins = df.legislative_origins.fillna("").apply(list).apply(lambda x: list(
             filter(None, [remap(get_select_dict(a, leg_vals), legmap) for a in x])))
 
