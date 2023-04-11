@@ -10,7 +10,7 @@ RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 # Set environment variables
 ENV NUMBA_CACHE_DIR=/tmp/
 ENV TRANSFORMERS_CACHE=/tmp/
-ENV NLTK_DATA=./nltk_data
+ENV NLTK_DATA=/tmp/nltk_data/
 ENV SPACY_PATH=/tmp/spacy_model/
 ENV MODEL_PATH=/tmp/modeldir/
 
@@ -18,20 +18,19 @@ ENV MODEL_PATH=/tmp/modeldir/
 RUN python -m spacy download en_core_web_lg
 
 # Create directory and download NLTK
-# RUN mkdir -p ${LAMBDA_TASK_ROOT}/nltk_data
+RUN mkdir -p /tmp/nltk_data/
 # RUN python -m nltk.downloader -d /tmp/nltk_data/ punkt
 # RUN python -m nltk.downloader -d /tmp/nltk_data/ wordnet
 # RUN python -m nltk.downloader -d /tmp/nltk_data/ omw-1.4
 # RUN python -m nltk.downloader -d /tmp/nltk_data/ stopwords
 
-
 # RUN [ "python3", "-c", "import os; os.makedirs('/tmp/nltk_data', exist_ok=True)" ]
-RUN [ "python3", "-c", "import nltk; nltk.download('punkt', download_dir='nltk_data/')" ]
-RUN [ "python3", "-c", "import nltk; nltk.download('wordnet', download_dir='nltk_data/')" ]
-RUN [ "python3", "-c", "import nltk; nltk.download('omw-1.4', download_dir='nltk_data/')" ]
-RUN [ "python3", "-c", "import nltk; nltk.download('stopwords', download_dir='nltk_data/')" ]
+RUN [ "python3", "-c", "import nltk; nltk.download('punkt', download_dir='/tmp/nltk_data/')" ]
+RUN [ "python3", "-c", "import nltk; nltk.download('wordnet', download_dir='/tmp/nltk_data/')" ]
+RUN [ "python3", "-c", "import nltk; nltk.download('omw-1.4', download_dir='/tmp/nltk_data/')" ]
+RUN [ "python3", "-c", "import nltk; nltk.download('stopwords', download_dir='/tmp/nltk_data/')" ]
 
-COPY nltk_data ${LAMBDA_TASK_ROOT}/nltk_data
+# COPY nltk_data ${LAMBDA_TASK_ROOT}/nltk_data
 
 # Unzip
 # RUN unzip /tmp/nltk_data/punkt.zip && rm -f /tmp/nltk_data/punkt.zip
