@@ -18,12 +18,6 @@ MODEL_BUCKET = os.environ['MODEL_BUCKET']
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
 NLTK_DATA = os.environ['NLTK_DATA']
 
-os.makedirs(NLTK_DATA, exist_ok=True)
-nltk.download('wordnet', download_dir=NLTK_DATA)
-nltk.download('omw-1.4', download_dir=NLTK_DATA)
-nltk.download('punkt', download_dir=NLTK_DATA)
-nltk.download('stopwords', download_dir=NLTK_DATA)
-
 
 def title_predictor(text: str) -> str:
     '''
