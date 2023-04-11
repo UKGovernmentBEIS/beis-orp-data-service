@@ -2,6 +2,7 @@ FROM public.ecr.aws/lambda/python:3.9
 
 RUN yum -y update
 RUN yum -y install gcc-c++
+RUN apt-get update && apt-get install unzip
 
 COPY requirements.txt  .
 RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
@@ -23,11 +24,14 @@ RUN mkdir -p /tmp/nltk_data/
 # RUN python -m nltk.downloader -d /tmp/nltk_data/ omw-1.4
 # RUN python -m nltk.downloader -d /tmp/nltk_data/ stopwords
 
-# RUN [ "python3", "-c", "import os; os.makedirs(/tmp/nltk_data, exist_ok=True)" ]
+# RUN [ "python3", "-c", "import os; os.makedirs('/tmp/nltk_data', exist_ok=True)" ]
 RUN [ "python3", "-c", "import nltk; nltk.download('punkt', download_dir='/tmp/nltk_data')" ]
 RUN [ "python3", "-c", "import nltk; nltk.download('wordnet', download_dir='/tmp/nltk_data')" ]
 RUN [ "python3", "-c", "import nltk; nltk.download('omw-1.4', download_dir='/tmp/nltk_data')" ]
 RUN [ "python3", "-c", "import nltk; nltk.download('stopwords', download_dir='/tmp/nltk_data')" ]
+
+# Unzip
+RUN unzip /tmp/nltk_data/punkt.zip && rm -f /tmp/nltk_data/punkt.zip
 
 # Add utilities for the script
 ADD postprocess ${LAMBDA_TASK_ROOT}/postprocess 
