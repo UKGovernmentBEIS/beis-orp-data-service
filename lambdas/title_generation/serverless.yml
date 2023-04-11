@@ -1,0 +1,9 @@
+# serverless.yaml
+service: python-nltk-layer
+
+provider:
+  name: aws
+
+layers:
+  nltk:
+    path: layer
