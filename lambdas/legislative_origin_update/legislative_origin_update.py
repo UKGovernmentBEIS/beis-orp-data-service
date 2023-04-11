@@ -38,8 +38,6 @@ def handler(event, context: LambdaContext):
     sparql = SPARQLWrapper("https://www.legislation.gov.uk/sparql")
     sparql.setCredentials(user=username, passwd=password)
     sparql.setReturnFormat(CSV)
-
-    df = pd.DataFrame()
     sparql.setQuery("""
                 prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -74,8 +72,8 @@ def handler(event, context: LambdaContext):
     df['candidate_titles'] = df[stitles].apply(list, axis=1)
 # ====
     df['divAbbv'] = df.ref.apply(lambda x: x.split('/')[4])
-    df = df.merge(dff[['legDivision', 'legType', 'divAbbv']], how='left')
-# ====
-    df = df.explode('candidate_titles')
-    df = df[~df['candidate_titles'].isna()].drop_duplicates('candidate_titles')
-    df.to_csv(savefile, index=None)
+#     df = df.merge(dff[['legDivision', 'legType', 'divAbbv']], how='left')
+# # ====
+#     df = df.explode('candidate_titles')
+#     df = df[~df['candidate_titles'].isna()].drop_duplicates('candidate_titles')
+    # df.to_csv(savefile, index=None)
