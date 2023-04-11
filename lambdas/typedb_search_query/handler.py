@@ -249,14 +249,16 @@ def search_module(event, session):
         num_ret = len(ans)
 
         LOGGER.info(f"Ret -> {num_ret}")
-
-        # second hop search
-        if event.get('legislation_href'):
-            LOGGER.info("Querying the graph for related reg. documents")
-            docs = search_reg_docs(ans, page_size)
+        if num_ret==0:
+            docs = []
         else:
-            LOGGER.info("Querying the graph for reg. documents")
-            docs = search_leg_orgs(ans[page:page + page_size], session)
+            # second hop search
+            if event.get('legislation_href'):
+                LOGGER.info("Querying the graph for related reg. documents")
+                docs = search_reg_docs(ans, page_size)
+            else:
+                LOGGER.info("Querying the graph for reg. documents")
+                docs = search_leg_orgs(ans[page:page + page_size], session)
 
         return {
             "status_code": 200,
