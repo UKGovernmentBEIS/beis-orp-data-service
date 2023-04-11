@@ -18,10 +18,10 @@ RUN python -m spacy download en_core_web_lg
 
 # Create directory and download NLTK
 RUN mkdir -p /tmp/nltk_data/
-RUN python -m nltk.downloader -d /tmp/nltk_data/ punkt
-RUN python -m nltk.downloader -d /tmp/nltk_data/ wordnet
-RUN python -m nltk.downloader -d /tmp/nltk_data/ omw-1.4
-RUN python -m nltk.downloader -d /tmp/nltk_data/ stopwords
+RUN python -m nltk.downloader punkt -d /tmp/nltk_data/ 
+RUN python -m nltk.downloader wordnet -d /tmp/nltk_data/ 
+RUN python -m nltk.downloader omw-1.4 -d /tmp/nltk_data/ 
+RUN python -m nltk.downloader stopwords -d /tmp/nltk_data/ 
 
 # Add utilities for the script
 ADD postprocess ${LAMBDA_TASK_ROOT}/postprocess 
