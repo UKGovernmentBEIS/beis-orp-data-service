@@ -20,6 +20,8 @@ NLTK_DATA = os.environ['NLTK_DATA']
 
 # nltk.data.path.append(NLTK_DATA)
 
+logger.info(f"nltk path: {nltk.data.path}")
+
 def title_predictor(text: str) -> str:
     '''
     param: text: Str document text
@@ -77,6 +79,7 @@ def get_title(title: str,
 
     else:
         score = identify_metadata_title_in_text(title, text)
+        logger.info(f"Metadata score: {score}")
 
         # If score is greater than 95% and title is less than / equal to 2 tokens
         length_of_no_punctuation_title = len(
