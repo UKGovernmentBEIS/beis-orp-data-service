@@ -16,13 +16,14 @@ import pandas as pd
 from word_forms_loc.word_forms_loc import get_word_forms
 from word_forms_loc.lemmatizer import lemmatize
 
+
 search_keys = {"id", "keyword", "title", "date_published",
                "regulator_id", "status", "regulatory_topic", "document_type",
                "legislation_href"}
 return_vals = ['title', 'summary', 'document_uid', 'regulator_id',"regulatory_topic",
                'document_type', 'keyword', 'uri', 'status',
                'date_published', 'date_uploaded', 'legislative_origins', 'version']
-leg_vals = ['url', 'title', 'leg_type', 'leg_division']
+leg_vals = ['href', 'title', 'leg_type', 'leg_division']
 sp_chars = r'"|,|;'
 RET_SIZE = 10
 
@@ -128,10 +129,10 @@ def query_builder(event):
 
     # Related reg docs (links to legislation search)
     elif event.get('legislation_href'):
-        query = 'match $x isa legislation, has URL $id; $id like "'
+        query = 'match $x isa legislation, has URI $id; $id like "'
         query += '|'.join([leg for leg in event.get('legislation_href', [])])
         query += '''";  $regdoc isa regulatoryDocument, has attribute $attribute;
-            (issuedFor:$x,issued:$regdoc) isa publication;
+            (issuedFor:$x,issued:$regdoc) isa publication; limit 1000;
             group $x;'''
         return query
 
@@ -177,19 +178,19 @@ def query_builder(event):
     return query
 
 
-def search_reg_docs(ans):
+def search_reg_docs(ans, page_size):
     # -> [{leg_href:string, related_docs:[]}]
     res = group_of_group(ans, grouping='regdoc')
     docs = []
     for leg, regdocs in res.items():
         doc = {'legislation_href': leg}
         data = []
-        for rd in regdocs:
+        for rd in regdocs[:page_size]:
             rd['keyword'] = list(set([lemma2noun(kw)
                                  for kw in rd.get('keyword', [])]))
-            if rd.get('assigned_orp_topic'):
-                rd['regulatory_topic'] = rd.get('assigned_orp_topic')
-            # TODO handle uri vs url
+            aot = rd.get('assigned_orp_topic')
+            if aot:
+                rd['regulatory_topic'] = max(aot, key=lambda x: len(x.split('/'))) if type(aot)==list else aot
             data.append(get_select_dict(rd, return_vals))
         doc['related_docs'] = data
         docs.append(doc)
@@ -213,7 +214,7 @@ def search_leg_orgs(ans, session):
 
     # Merging leg.orgs info with reg document
     df = res.merge(legs,on='node_id', how='left')
-    legmap = {'leg_type': 'type', 'leg_division': 'division', 'href':'url'}
+    legmap = {'leg_type': 'type', 'leg_division': 'division'}
     df.legislative_origins = df.legislative_origins.fillna("").apply(list).apply(lambda x: list(
             filter(None, [remap(get_select_dict(a, leg_vals), legmap) for a in x])))
 
@@ -222,7 +223,7 @@ def search_leg_orgs(ans, session):
 
     # get assigned topic
     if 'assigned_orp_topic' in df.columns: 
-        df.regulatory_topic = df.get('assigned_orp_topic')
+        df.regulatory_topic = df.assigned_orp_topic.apply(lambda aot: max(aot, key=lambda x: len(x.split('/'))) if type(aot)==list else aot)
 
     df = df.applymap(lambda x: format_datetime(x) if isinstance(x, pd.Timestamp) else x)
     return df.fillna('').apply(lambda x: get_select_dict(x, return_vals), axis=1).tolist()
@@ -252,10 +253,10 @@ def search_module(event, session):
         # second hop search
         if event.get('legislation_href'):
             LOGGER.info("Querying the graph for related reg. documents")
-            docs = search_reg_docs(ans)
+            docs = search_reg_docs(ans, page_size)
         else:
             LOGGER.info("Querying the graph for reg. documents")
-            docs = search_leg_orgs(ans[page:page + RET_SIZE], session)
+            docs = search_leg_orgs(ans[page:page + page_size], session)
 
         return {
             "status_code": 200,
@@ -279,4 +280,3 @@ def lambda_handler(ev, context):
     session = client.session(TYPEDB_DATABASE_NAME, SessionType.DATA)
     result = search_module(event, session)
     return result
-
