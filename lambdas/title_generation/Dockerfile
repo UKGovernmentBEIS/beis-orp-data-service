@@ -18,11 +18,12 @@ ENV MODEL_PATH=/tmp/modeldir/
 RUN python -m spacy download en_core_web_lg
 
 # Create directory and download NLTK
-RUN mkdir -p ./nltk_data
+# RUN mkdir -p ${LAMBDA_TASK_ROOT}/nltk_data
 # RUN python -m nltk.downloader -d /tmp/nltk_data/ punkt
 # RUN python -m nltk.downloader -d /tmp/nltk_data/ wordnet
 # RUN python -m nltk.downloader -d /tmp/nltk_data/ omw-1.4
 # RUN python -m nltk.downloader -d /tmp/nltk_data/ stopwords
+
 
 # RUN [ "python3", "-c", "import os; os.makedirs('/tmp/nltk_data', exist_ok=True)" ]
 RUN [ "python3", "-c", "import nltk; nltk.download('punkt', download_dir='nltk_data/')" ]
@@ -30,7 +31,7 @@ RUN [ "python3", "-c", "import nltk; nltk.download('wordnet', download_dir='nltk
 RUN [ "python3", "-c", "import nltk; nltk.download('omw-1.4', download_dir='nltk_data/')" ]
 RUN [ "python3", "-c", "import nltk; nltk.download('stopwords', download_dir='nltk_data/')" ]
 
-COPY nltk_data ./nltk_data
+COPY nltk_data ${LAMBDA_TASK_ROOT}/nltk_data
 
 # Unzip
 # RUN unzip /tmp/nltk_data/punkt.zip && rm -f /tmp/nltk_data/punkt.zip
