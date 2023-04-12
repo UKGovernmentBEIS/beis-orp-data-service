@@ -9,20 +9,20 @@ from pandas import to_datetime
 # from vars_orp_stream import logger
 from datetime import timezone, datetime
 import logging
-logger = logging.getLogger('ORP_MVP_Stream_KG_Ingestion')
+logger = logging.getLogger('ORP_Stream_KG_Ingestion')
 
-def convertDateUTC(date):
-    return datetime.strftime(date.astimezone(timezone.utc), "%Y-%m-%dT%H:%M:%S")
+# def convertDateUTC(date):
+#     return datetime.strftime(date.astimezone(timezone.utc), "%Y-%m-%dT%H:%M:%S")
 
 # ==== TDB QUERY HELPERS ===
 def getResults(ans):
     results = [list(zip(a.keys(), [(i.get_type().get_label().name(), i.get_value())  for i in a.values() if i.is_attribute()])) for a in ans ]
-    results = [(k,convertDateUTC(v) if type(v)==datetime else v) for k,v in results]
+    # results = [(k,convertDateUTC(v) if type(v)==datetime else v) for k,v in results]
     return results
 
 def getUniqueResult(results):
     results = [(i.get_type().get_label().name(), i.get_value()) for a in results for i in a.concepts() if i.is_attribute()]
-    results = [(k,convertDateUTC(v) if type(v)==datetime else v) for k,v in results]
+    # results = [(k,convertDateUTC(v) if type(v)==datetime else v) for k,v in results]
     return results
 
 def matchquery(query, session):
@@ -131,6 +131,8 @@ def formatAttrDB(attrs, attr_type_dict, delimiter=""):
 
 def batch_insert(session , qbatch):
     if qbatch:
+        s='\n\n'.join(qbatch)
+        logger.debug(f'Queries:\n {s}')
         with session.transaction(TransactionType.WRITE) as transaction:
                typeql_insert_query = 'insert ' + ' '.join(qbatch)
                transaction.query().insert(typeql_insert_query)
@@ -138,6 +140,8 @@ def batch_insert(session , qbatch):
         logger.info(f'=> Finished inserting batch [{len(qbatch)}]')
                    
 def batch_match_insert(session, qbatch, inserttype = True):
+        s='\n\n'.join(qbatch)
+        logger.debug(f'Queries:\n {s}')
         with session.transaction(TransactionType.WRITE) as transaction:
             for qm in qbatch:
                 transaction.query().insert(qm) if inserttype else transaction.query().delete(qm)

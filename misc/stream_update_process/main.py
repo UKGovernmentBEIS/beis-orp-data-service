@@ -19,7 +19,7 @@ logger = logging.getLogger('ORP_PBeta_Stream_KG_Ingestion')
 logging.basicConfig(filename=LOGFILE,
                     filemode='a+',
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-                    datefmt='%H:%M:%S',
+                    datefmt='%Y-%m-%d %H:%M:%S',
                     level=logging.INFO)
                     
 def message_handler(message, attr_type_dict, dict_thing_attrs, session):
