@@ -94,8 +94,11 @@ def get_similarity_score(hash_np, matching_hash_list):
     '''
     scores = []
     for v in matching_hash_list:
-        cosine = np.dot(hash_np, v) / (norm(hash_np) * norm(v))
-        scores.append(cosine)
+        if v.shape==hash_np.shape:
+            cosine = np.dot(hash_np, v) / (norm(hash_np) * norm(v))
+            scores.append(cosine)
+        else:
+            logger.warn(f"Skipping: matching hash size doesn't match incoming hash.")
 
     max_score = max(scores)
     logger.info(f"Incoming hash: {hash_np}")
