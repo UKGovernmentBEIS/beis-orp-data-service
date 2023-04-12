@@ -21,11 +21,14 @@ def merge_dicts(dict_list):
         if dictionary['lambda'] == 'date_generation':
             merged_dict.setdefault('data', {}).setdefault('dates', {})[
                 'date_published'] = dictionary['document']['data']['dates']['date_published']
+            merged_dict['data']['dates']['date_uploaded'] = dictionary['document']['data']['dates']['date_uploaded']
         elif dictionary['lambda'] == 'keyword_extraction':
             merged_dict['subject_keywords'] = dictionary['document']['subject_keywords']
+        elif dictionary['lambda'] == 'title_generation':
             merged_dict['title'] = dictionary['document']['title']
         elif dictionary['lambda'] == 'summarisation':
             merged_dict['summary'] = dictionary['document']['summary']
+            merged_dict['language'] = dictionary['document']['language']
         elif dictionary['lambda'] == 'legislative_origin_extraction':
             merged_dict.setdefault(
                 'data', {})['legislative_origins'] = dictionary['document']['data']['legislative_origins']
@@ -125,7 +128,9 @@ def handler(event, context: LambdaContext):
         'user_id',
         'uri',
         'document_type',
-        'status']
+        'document_format',
+        'status',
+        'hash_text']
     base_document = assert_same_base_values(keys=base_keys, dict_list=event)
 
     # Each previous lambda has added a new key to the extracted metadata
