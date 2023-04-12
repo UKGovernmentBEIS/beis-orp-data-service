@@ -63,7 +63,6 @@ __pycache__/
 *.pyc
 
 # data
-*.csv
 *.p
 *.pickle
 *.parquet
