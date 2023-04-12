@@ -31,8 +31,9 @@ def handler(event, context: LambdaContext):
 
     date = "2023-01-01T00:00:00"
 
-    username = get_secret('tna_username')
-    password = get_secret('tna_password')
+    credentials = get_secret('tna_credentials')
+    username = credentials['tna_username']
+    password = credentials['tna_password']
 
     sparql = SPARQLWrapper("https://www.legislation.gov.uk/sparql")
     sparql.setCredentials(user=username, passwd=password)
