@@ -13,7 +13,6 @@ logger = Logger()
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
 TABLE_NAME = os.environ['TABLE_NAME']
 YEAR_INDEX_NAME = os.environ['YEAR_INDEX_NAME']
-keypath = "../../temp_creds.txt"
 
 
 def get_secret(secret_name):
@@ -32,8 +31,8 @@ def handler(event, context: LambdaContext):
 
     date = "2023-01-01T00:00:00"
 
-    username = get_secret('tna_temp_username')
-    password = get_secret('tna_temp_password')
+    username = get_secret('leg_or_username')
+    password = get_secret('leg_or_password')
 
     sparql = SPARQLWrapper("https://www.legislation.gov.uk/sparql")
     sparql.setCredentials(user=username, passwd=password)
