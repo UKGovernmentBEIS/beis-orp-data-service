@@ -113,8 +113,14 @@ def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
     # Ensuring the base outputs of the parallel stage are the same
-    base_keys = ['document_uid', 'regulator_id', 'user_id',
-                 'uri', 'document_type', 'status']
+    base_keys = [
+        'document_uid',
+        'regulator_id',
+        'user_id',
+        'regulatory_topic',
+        'uri',
+        'document_type',
+        'status']
     base_document = assert_same_base_values(keys=base_keys, dict_list=event)
 
     # Each previous lambda has added a new key to the extracted metadata
