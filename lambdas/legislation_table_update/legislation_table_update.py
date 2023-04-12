@@ -28,6 +28,7 @@ def get_secret(secret_name):
 
 
 def query_tna(username, password, date_cursor):
+    ''''''
     sparql = SPARQLWrapper("https://www.legislation.gov.uk/sparql")
     sparql.setCredentials(user=username, passwd=password)
     sparql.setReturnFormat(CSV)
