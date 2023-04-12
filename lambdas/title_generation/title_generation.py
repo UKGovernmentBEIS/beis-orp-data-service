@@ -18,12 +18,7 @@ MODEL_BUCKET = os.environ['MODEL_BUCKET']
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
 NLTK_DATA = os.environ['NLTK_DATA']
 
-os.makedirs(NLTK_DATA, exist_ok=True)
-nltk.download('wordnet', download_dir=NLTK_DATA)
-nltk.download('omw-1.4', download_dir=NLTK_DATA)
-nltk.download('punkt', download_dir=NLTK_DATA)
-nltk.download('stopwords', download_dir=NLTK_DATA)
-
+logger.info(f"nltk path: {nltk.data.path}")
 
 def title_predictor(text: str) -> str:
     '''
@@ -82,6 +77,7 @@ def get_title(title: str,
 
     else:
         score = identify_metadata_title_in_text(title, text)
+        logger.info(f"Metadata score: {score}")
 
         # If score is greater than 95% and title is less than / equal to 2 tokens
         length_of_no_punctuation_title = len(
