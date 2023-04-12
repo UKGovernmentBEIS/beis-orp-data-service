@@ -1,7 +1,6 @@
 import json
 import os
 import boto3
-from operator import itemgetter
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
@@ -43,10 +42,16 @@ def assert_same_base_values(keys, dict_list):
     don't have the same base values
     '''
     # Get the values of the specified keys in each dictionary
-    values = set(itemgetter(*keys)(d['document']) for d in dict_list)
+    values = set()
+    for d in dict_list:
+        values.add(
+            tuple(
+                tuple(v) if isinstance(
+                    v, list) else v for v in (
+                    d['document'][k] for k in keys)))
+
     # Check if all values are the same
-    assert len(
-        values) == 1, 'The base values of the inputs received are not the same'
+    assert len(values) == 1, 'The base values of the inputs received are not the same'
 
     base_document = {k: v for k,
                      v in dict_list[0]['document'].items() if k in keys}
@@ -116,8 +121,8 @@ def handler(event, context: LambdaContext):
     base_keys = [
         'document_uid',
         'regulator_id',
-        'user_id',
         'regulatory_topic',
+        'user_id',
         'uri',
         'document_type',
         'status']
