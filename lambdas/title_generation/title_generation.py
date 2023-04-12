@@ -18,8 +18,6 @@ MODEL_BUCKET = os.environ['MODEL_BUCKET']
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
 NLTK_DATA = os.environ['NLTK_DATA']
 
-# nltk.data.path.append(NLTK_DATA)
-
 logger.info(f"nltk path: {nltk.data.path}")
 
 def title_predictor(text: str) -> str:
