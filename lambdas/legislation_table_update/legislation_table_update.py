@@ -114,9 +114,9 @@ def insert_results(df):
 def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
-    # date_cursor = datetime.now() - timedelta(days=7)
-    # date_cursor_str = date_cursor.strftime('%Y-%m-%dT%H:%M:%S')
-    date_cursor_str = "2023-01-01T00:00:00"
+    # Runs weekly however it pulls the last 14 days so that it is self-healing
+    date_cursor = datetime.now() - timedelta(days=14)
+    date_cursor_str = date_cursor.strftime('%Y-%m-%dT%H:%M:%S')
 
     credentials = get_secret(secret_name=SECRET_NAME)
     username = credentials['username']
