@@ -8,39 +8,69 @@ from utils.tdb_query_helpers import  *
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
+
+logging.getLogger().addHandler(logging.StreamHandler())
 # =====
 
-# todo  convert time to utc
 def changedAttrs(old:dict, new:dict, attr_type_dict):
     def format(v, atype, ref):
+        print(v, ref)
         if (isinstance(v, list)):
-            # all([match(k, i, atype)!=ref for i in v]) TODO modify to handle lists
-            return False
-        elif (atype=='datetime'): return to_datetime(v).isoformat().replace('+00','') != str(ref)
-        else: return str(v).strip() != str(ref).strip()
-    return [(k, v) for k,v in new.items() if (format(v,attr_type_dict[k], old.get(k, None)))&(v!=None)]
+            sref = set(ref) if ref else set()
+            return len(set(v)^sref) != 0
+        elif (atype=='datetime'): 
+            return to_datetime(v) != ref
+        else: return clean_text(str(v)) != str(ref)
+    return  {k: v for k,v in new.items() if (format(v, attr_type_dict[k], old.get(k, None)))&(v!=None)}
 
 def sim_hash(in_attr, db_attr):
-    in_hash = np.array(map(int, in_attr['hash_text'].split('_')))
-    db_hash = np.array(map(int, db_attr['hash_text'].split('_')))
+    in_hash = np.array(in_attr['hash_text'].split('_')).reshape(1, -1)
+    db_hash = np.array(db_attr['hash_text'].split('_')).reshape(1, -1)
     return cosine_similarity(in_hash, db_hash)
 
-def version_handler():
-
-    return
-
 # ======
-def updateE(etype, identifier, attrs, db_attrs, attr_type_dict, dict_thing_attrs):
+def updateE(etype, identifier, attrs, db_attrs, attr_type_dict):
     query = ""
+    mquery = ""
     dquery = ""
-    db_attrs_dict = dict(db_attrs)
+
+    db_attr_dict = dict(db_attrs)
+    in_attr_dict = dict(attrs)
     # isolate attrs that have changed/are new
-    changed_attrs = changedAttrs(db_attrs_dict, dict(attrs), attr_type_dict)
+    changed_attrs = changedAttrs(db_attr_dict, in_attr_dict, attr_type_dict)
     logger.debug(f"==> Changed attrs for {etype} -> \n {changed_attrs}")
+    print(f"==> Changed attrs for {etype} -> \n {changed_attrs}")
+
     if changed_attrs:
-        # update entity
-        query = match_insert_ent(etype, identifier, changed_attrs, attr_type_dict)
-    return [query, dquery]
+        similarity = sim_hash(in_attr_dict, db_attr_dict)
+        print(f"HASH SIMILARITY: {similarity}")
+        if (etype == 'regulatoryDocument') and (similarity >= 0.99):
+            # todo  drop hash_text from changed
+            logger.debug('-- Entity exists with slight diff -> [MERGE]')
+            print('-- Entity exists with slight diff -> [MERGE]')
+            # delete old attributes
+            dquery = deleteAttrOwn(etype=etype, identifier=db_attr_dict['node_id'],
+                                attrs=[(k,v) for k,v in db_attr_dict.items() if k in changed_attrs.keys()],  
+                                attr_type_dict=attr_type_dict)
+            
+            changed_attrs['version'] = db_attr_dict.get('version', 1)
+            # update entity
+            mquery = match_insert_ent(etype, identifier, changed_attrs.items() , attr_type_dict)
+        else:
+            logger.debug('-- Entity exists with big changes -> [NEW VERSION]')
+            print('-- Entity exists with big changes -> [NEW VERSION]')
+            # compile new attrs
+            new_attrs = db_attr_dict.copy()
+            new_attrs.update(in_attr_dict)
+            # version updating
+            new_attrs['version'] = new_attrs.get('version', 1) + 1 
+            query = insertE(etype, new_attrs.items(), attr_type_dict)
+            # change old vers' status -> archive
+            dquery = deleteAttrOwn(etype=etype, 
+                                attrs=[('status', 'published')], 
+                                in_attrs=[('status', 'archive')], 
+                                attr_type_dict=attr_type_dict)
+    return [query,mquery, dquery]
 
 def insertE(etype, attrs, attr_type_dict):
     logger.info(f"==> inserting new entity {etype}")
@@ -60,9 +90,10 @@ def insertR(rtype, nodes, attrs, attr_type_dict):
     return query
 
 # ====
-def processEntities(nodes, attr_type_dict, dict_thing_attrs, session):
+def processEntities(nodes, attr_type_dict, session):
     queries = []
     mqueries = []
+    dqueries = []
     logger.info(f"Processing Entities ")
     logger.debug(f"-> {nodes}")
     for etype, identifier, attrs in nodes:
@@ -71,17 +102,14 @@ def processEntities(nodes, attr_type_dict, dict_thing_attrs, session):
         logger.debug(f"DB STATS [{etype, identifier}]: %s"%('\n'.join(db_ent)))
         if db_ent:
             logger.info(f"{etype} exists! -> updating...")
-            db_attr_dict = dict(db_ent)
-            in_attr_dict = dict(attrs)
-            if sim_hash(in_attr_dict, db_attr_dict) >= 0.99:
-                # entity exists with slight diff -> merge
-                mqueries.extend(updateE(etype, identifier, in_attr_dict, db_attr_dict, attr_type_dict, dict_thing_attrs))
-            else:
-                
+            q,mq, dq = updateE(etype, identifier, attrs, db_ent, attr_type_dict)
+            queries.append(q)
+            mqueries.append(mq)
+            dqueries.append(dq)
         else:
             # insert a new entity
             queries.append(insertE(etype, attrs, attr_type_dict))
-    return queries, mqueries
+    return queries, mqueries, dqueries
 
 def processLinks(links, attr_type_dict, session):
     mqueries = []
@@ -104,12 +132,14 @@ def processLinks(links, attr_type_dict, session):
 
 
 
-def process_record(jsobj, attr_type_dict, dict_thing_attrs, session): 
+def process_record(jsobj, attr_type_dict, session): 
     queries = []
     mqueries = []
+    dqueries = []
     
-    q, mq = processEntities(jsobj.get('entities', []), attr_type_dict, dict_thing_attrs, session)
+    q, mq, dq = processEntities(jsobj.get('entities', []), attr_type_dict, session)
     queries.extend(q)
     mqueries.extend(mq)
+    dqueries.extend(dq)
     mqueries.extend(processLinks(jsobj.get('links', []), attr_type_dict, session))
-    return queries, mqueries
+    return queries, mqueries, dqueries

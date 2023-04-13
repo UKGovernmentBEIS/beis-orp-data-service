@@ -15,13 +15,15 @@ from queue_wrapper import *
 import logging
 
 LOGFILE = "logs/orp-pbeta-stream.log"
-logger = logging.getLogger('ORP_PBeta_Stream_KG_Ingestion')
+logger = logging.getLogger('ORP_Stream_KG_Ingestion')
 logging.basicConfig(filename=LOGFILE,
                     filemode='a+',
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S',
-                    level=logging.INFO)
-                    
+                    level=logging.DEBUG)
+
+logging.getLogger().addHandler(logging.StreamHandler())
+
 def message_handler(message, attr_type_dict, dict_thing_attrs, session):
     msg_body = message.body
     logger.info(f"Message Body:\n{msg_body}")
@@ -35,7 +37,7 @@ def message_handler(message, attr_type_dict, dict_thing_attrs, session):
         # process record into graph elems
         gdata = extractElements(data, dict_thing_attrs)
         # process elems into db queries
-        queries, mqueries = process_record(gdata, attr_type_dict, dict_thing_attrs, session)
+        queries, mqueries = process_record(gdata, attr_type_dict, session)
         queries = list(filter(None, queries))
         mqueries = list(filter(None, mqueries))
 

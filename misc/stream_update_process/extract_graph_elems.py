@@ -1,7 +1,8 @@
 from utils.functions import *
 from datetime import datetime
 from json_flatten import flatten
-
+import logging
+logger = logging.getLogger('ORP_Stream_KG_Ingestion') 
 
 leg_types = {
 'Primary':'primaryLegislation',
@@ -13,7 +14,7 @@ colmap = {
  'data.dates.date_published':'date_published',
  'data.dates.date_modified':'date_modified'
 }
-STATIC_MD=['status','regulator_id','document_type', 'title']
+STATIC_MD=['status','regulator_id','document_type', 'hash_text']
 
 def extractElements(js:dict, dict_thing_attrs:dict):
     nodes = []
@@ -28,7 +29,12 @@ def extractElements(js:dict, dict_thing_attrs:dict):
     doc['document_type'] = js.get('document_type', 'NA')
     
     # insert regDoc node
-    node_id = doc.get('node_id', hashID([doc.get(i) for i in STATIC_MD]))
+    try:
+        node_id = doc.get('node_id', hashID([doc[i] for i in STATIC_MD]))
+    except:
+        logger.error(f"ABORT: One or multiple mandatory metadata missing -> Dropping message")
+        return {'entities': [], 'links':[]}
+    
     regID = [('node_id',node_id)]
     nodes.append([
         "regulatoryDocument", 
@@ -93,7 +99,7 @@ def extractElements(js:dict, dict_thing_attrs:dict):
             ( "regulatoryAgent", userID, "agent"),
             ("regulator", reguID, "agency"),
         ],
-        getElements(doc.to_dict(),dict_thing_attrs['partOf'])
+        getElements(doc, dict_thing_attrs['partOf'])
     ])
 
     return {'entities': nodes, 'links':links}
