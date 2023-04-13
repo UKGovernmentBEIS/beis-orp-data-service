@@ -7,6 +7,11 @@ COPY requirements.txt  .
 RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 RUN python -m spacy download en_core_web_lg
 
+# Make model directory and download models locally
+RUN mkdir -p ${LAMBDA_TASK_ROOT}/LLM
+COPY local_download.py ${LAMBDA_TASK_ROOT}
+RUN python local_download.py
+
 # Set environment variables
 ENV NUMBA_CACHE_DIR=/tmp/
 ENV TRANSFORMERS_CACHE=/tmp/
