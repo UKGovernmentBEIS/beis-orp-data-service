@@ -6,14 +6,9 @@ from tqdm import tqdm
 from typing import List
 from preprocess.preprocess_functions import removing_regulator_names
 
-
-MODEL_BUCKET = os.environ['MODEL_BUCKET']
-MODEL_PATH = os.environ['MODEL_PATH']
-
 my_pattern = re.compile(r'\s+')
 
 s3_client = boto3.client('s3')
-
 
 # Shorten text for input to title extraction model
 def percentage_shortener(text: str, percentage=0.1) -> str:

@@ -13,24 +13,23 @@ from search_metadata_title.get_title import identify_metadata_title_in_text
 
 logger = Logger()
 
-MODEL_PATH = os.environ['MODEL_PATH']
-MODEL_BUCKET = os.environ['MODEL_BUCKET']
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
-NLTK_DATA = os.environ['NLTK_DATA']
+
+# Download models from local path
+t5_tokenizer = AutoTokenizer.from_pretrained(
+        './LLM/t5_tokenizer')
+t5_model = AutoModelForSeq2SeqLM.from_pretrained(
+        './LLM/t5_model')
 
 logger.info(f"nltk path: {nltk.data.path}")
 
-def title_predictor(text: str) -> str:
+
+def title_predictor(text: str, model, tokenizer) -> str:
     '''
     param: text: Str document text
     returns: processed_title: Str cleaned predicted title from text from pretrained model
         Function to predict a title from the document text using a pretrained model
     '''
-
-    tokenizer = AutoTokenizer.from_pretrained(
-        'fabiochiu/t5-small-medium-title-generation')
-    model = AutoModelForSeq2SeqLM.from_pretrained(
-        'fabiochiu/t5-small-medium-title-generation')
 
     # Preprocess the text
     text = preprocess(text)
@@ -72,7 +71,7 @@ def get_title(title: str,
 
     # Immediately filter out long metadata titles
     if (len(title.split(' ')) > 40):
-        title = title_predictor(text)
+        title = title_predictor(text, model=t5_model, tokenizer=t5_tokenizer)
         return title
 
     else:
@@ -84,14 +83,14 @@ def get_title(title: str,
             re.sub(r'[^\w\s]', ' ', title).split(' '))
 
         if score >= 95 and (length_of_no_punctuation_title <= 2):
-            title = title_predictor(text)
+            title = title_predictor(text, model=t5_model, tokenizer=t5_tokenizer)
             return title
 
         elif (score > threshold) and (length_of_no_punctuation_title >= 3):
             return title
 
         else:
-            title = title_predictor(text)
+            title = title_predictor(text, model=t5_model, tokenizer=t5_tokenizer)
             return title
 
 
