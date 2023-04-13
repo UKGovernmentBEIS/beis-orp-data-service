@@ -11,10 +11,9 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-# DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
-# TABLE_NAME = os.environ['TABLE_NAME']
-DESTINATION_BUCKET = 'beis-dev-datalake'
-TABLE_NAME = 'legislative-origin'
+DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
+TABLE_NAME = os.environ['TABLE_NAME']
+SECRET_NAME = os.environ['SECRET_NAME']
 
 
 def get_secret(secret_name):
@@ -117,9 +116,9 @@ def handler(event, context: LambdaContext):
     date_cursor = datetime.now() - timedelta(days=7)
     date_cursor_str = date_cursor.strftime('%Y-%m-%dT%H:%M:%S')
 
-    credentials = get_secret(secret_name='tna_credentials')
-    username = credentials['tna_username']
-    password = credentials['tna_password']
+    credentials = get_secret(secret_name=SECRET_NAME)
+    username = credentials['username']
+    password = credentials['password']
 
     df = query_tna(username=username, password=password,
                    date_cursor=date_cursor_str)
