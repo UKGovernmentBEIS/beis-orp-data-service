@@ -90,7 +90,8 @@ def save_to_s3(df):
     csv_buffer = pd.DataFrame.to_csv(df, index=False)
     s3 = boto3.client('s3')
     response = s3.put_object(Bucket=DESTINATION_BUCKET,
-                             Key=s3_key, Body=csv_buffer)
+                             Key=s3_key,
+                             Body=csv_buffer)
     if response['ResponseMetadata']['HTTPStatusCode'] != 200:
         raise Exception('Failed to save CSV to S3')
 
@@ -126,4 +127,4 @@ def handler(event, context: LambdaContext):
     save_to_s3(df=df)
     rows_inserted = insert_results(df=df)
 
-    return f'Inserted {rows_inserted} into DynamoDB'
+    return f'Inserted {rows_inserted} rows into DynamoDB'
