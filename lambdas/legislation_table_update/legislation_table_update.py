@@ -11,8 +11,8 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
-TABLE_NAME = os.environ['TABLE_NAME']
+# DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
+# TABLE_NAME = os.environ['TABLE_NAME']
 DESTINATION_BUCKET = 'beis-dev-datalake'
 TABLE_NAME = 'legislative-origin'
 
@@ -75,7 +75,8 @@ def transform_results(df):
 
     LEG_DIV = './leg-division-list.csv'
     df_leg_type = pd.read_csv(LEG_DIV)
-    df = df.merge(df_leg_type[['legDivision', 'legType', 'divAbbv']], how='left')
+    df = df.merge(
+        df_leg_type[['legDivision', 'legType', 'divAbbv']], how='left')
     df = df.explode('candidate_titles')
     df = df.drop_duplicates('candidate_titles')
 
@@ -89,7 +90,8 @@ def save_to_s3(df):
 
     csv_buffer = pd.DataFrame.to_csv(df, index=False)
     s3 = boto3.client('s3')
-    response = s3.put_object(Bucket=DESTINATION_BUCKET, Key=s3_key, Body=csv_buffer)
+    response = s3.put_object(Bucket=DESTINATION_BUCKET,
+                             Key=s3_key, Body=csv_buffer)
     if response['ResponseMetadata']['HTTPStatusCode'] != 200:
         raise Exception('Failed to save CSV to S3')
 
@@ -119,7 +121,8 @@ def handler(event, context: LambdaContext):
     username = credentials['tna_username']
     password = credentials['tna_password']
 
-    df = query_tna(username=username, password=password, date_cursor=date_cursor_str)
+    df = query_tna(username=username, password=password,
+                   date_cursor=date_cursor_str)
     df = transform_results(df=df)
     save_to_s3(df=df)
     rows_inserted = insert_results(df=df)
