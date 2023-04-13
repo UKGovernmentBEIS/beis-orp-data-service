@@ -123,8 +123,12 @@ def handler(event, context: LambdaContext):
 
     df = query_tna(username=username, password=password,
                    date_cursor=date_cursor_str)
+    num_results = df.shape[0]
+    logger.info(f'Successfully queried TNA for {num_results} results')
+
     df = transform_results(df=df)
     save_to_s3(df=df)
     rows_inserted = insert_results(df=df)
+    logger.info(f'Inserted {rows_inserted} rows into DynamoDB')
 
     return f'Inserted {rows_inserted} rows into DynamoDB'
