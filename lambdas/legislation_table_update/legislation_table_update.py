@@ -17,8 +17,7 @@ SECRET_NAME = os.environ['SECRET_NAME']
 
 
 def get_secret(secret_name):
-    '''Retrieves a secret from AWS Secrets Manager'''
-
+    '''Retrieves credentials for TNA from AWS Secrets Manager'''
     client = boto3.client('secretsmanager')
     response = client.get_secret_value(SecretId=secret_name)
     secret_value = json.loads(response['SecretString'])
@@ -27,11 +26,11 @@ def get_secret(secret_name):
 
 
 def query_tna(username, password, date_cursor):
-    ''''''
-    sparql = SPARQLWrapper("https://www.legislation.gov.uk/sparql")
+    '''Queries TNA for all legislation published since the last run of this script'''
+    sparql = SPARQLWrapper('https://www.legislation.gov.uk/sparql')
     sparql.setCredentials(user=username, passwd=password)
     sparql.setReturnFormat(CSV)
-    sparql.setQuery("""
+    sparql.setQuery('''
                 prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
                 prefix xsd: <http://www.w3.org/2001/XMLSchema#>
@@ -55,9 +54,9 @@ def query_tna(username, password, date_cursor):
                                    OPTIONAL {?ref   leg:acronymCitation ?acronymcitation} .
                                    OPTIONAL {?href  leg:shortTitle ?shorttitle} .
                                    OPTIONAL {?ref   leg:number ?number  } .}
-                   FILTER(str(?actTime) > "%s")
+                   FILTER(str(?actTime) > '%s')
                 }
-                """ % date_cursor)
+                ''' % date_cursor)
 
     results = sparql.query().convert()
     df = pd.read_csv(BytesIO(results))
@@ -65,6 +64,7 @@ def query_tna(username, password, date_cursor):
 
 
 def transform_results(df):
+    '''Transforms the results into the model we're using in DynamoDB'''
     df['divAbbv'] = df.ref.apply(lambda x: x.split('/')[4])
     candidate_titles = ['title', 'shorttitle', 'citation', 'acronymcitation']
 
@@ -83,6 +83,7 @@ def transform_results(df):
 
 
 def save_to_s3(df):
+    '''Saves the dataframe as a CSV in S3 for backup purposes'''
     curr_dt = datetime.now().strftime('%Y_%m_%d')
     s3_filename = f'legislation_data_{curr_dt}.csv'
     s3_key = f'legislative-origin/{s3_filename}'
@@ -97,6 +98,7 @@ def save_to_s3(df):
 
 
 def insert_results(df):
+    '''Inserts dataframe of results into DynamoDB'''
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table(TABLE_NAME)
 
