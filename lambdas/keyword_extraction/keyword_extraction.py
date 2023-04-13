@@ -1,4 +1,3 @@
-import io
 import os
 import re
 import boto3
@@ -8,7 +7,6 @@ import nltk
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from collections import defaultdict
-from smart_open import open as smart_open
 from word_forms_loc.lemmatizer import lemmatize
 from sklearn.feature_extraction.text import CountVectorizer
 from bs4 import BeautifulSoup
