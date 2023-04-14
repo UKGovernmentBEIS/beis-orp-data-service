@@ -109,7 +109,7 @@ def handler(event, context: LambdaContext):
             user_id=user_id,
             url=url
         )
-
+        handler_response = {}
         return handler_response
     
     else:
