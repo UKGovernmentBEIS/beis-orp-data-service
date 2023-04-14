@@ -31,7 +31,7 @@ def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
     return document
 
 
-def download_model(
+def load_model(
                 key='keybert.pt'):
     '''Downloads the ML model for keyword extraction'''
 
@@ -129,7 +129,7 @@ def handler(event, context: LambdaContext):
 
     s3_client = boto3.client('s3')
     document = download_text(s3_client=s3_client, document_uid=document_uid)
-    kw_model = download_model()
+    kw_model = load_model()
     title_keywords = extract_keywords(text=title, kw_model=kw_model, n=2)
     doc_keywords = extract_keywords(text=document, kw_model=kw_model)
     # Combine keywords
