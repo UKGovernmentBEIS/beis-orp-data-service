@@ -1,9 +1,7 @@
 import os
-import io
 import boto3
-import torch
 from langdetect import detect
-from smart_open import open
+from transformers import pipeline
 from utils import smart_postprocessor, smart_shortener
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -22,26 +20,11 @@ def validate_env_variable(env_var_name):
     return env_variable
 
 
-def download_model(
-        s3_client,
-        bucket,
-        key='summ.pt'):
+def load_model(
+        model="bart-large-cnn-samsum"):
     '''Downloads the ML model for summarisation'''
-
-    s3_client.download_file(bucket, key, os.path.join('/tmp/modeldir', key))
-
-    # Load the model in
-    with open(os.path.join('/tmp/modeldir', key), 'rb') as f:
-        model = io.BytesIO(f.read())
-        summarizer = torch.load(model, map_location=torch.device('cpu'))
-        return summarizer
-
-
-def initialisation():
-     # Define modeldir path
-    model_path = os.path.join('/tmp', 'modeldir')
-    os.makedirs(model_path, exist_ok=True)
-    return 
+    summarizer = pipeline("summarization", f"./LLM/{model}")
+    return summarizer
 
 
 def download_text(s3_client, document_uid, bucket):
@@ -70,14 +53,12 @@ def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
     SOURCE_BUCKET = validate_env_variable('SOURCE_BUCKET')
-    MODEL_BUCKET = validate_env_variable('MODEL_BUCKET')
 
     document_uid = event['document']['document_uid']
 
-    initialisation()
     s3_client = boto3.client('s3')
 
-    summarizer= download_model(s3_client=s3_client, bucket=MODEL_BUCKET)
+    summarizer= load_model()
 
     text = download_text(s3_client=s3_client, document_uid=document_uid, bucket=SOURCE_BUCKET)
 
