@@ -20,7 +20,7 @@ def validate_env_variable(env_var_name):
     return env_variable
 
 
-def download_model(
+def load_model(
         model="bart-large-cnn-samsum"):
     '''Downloads the ML model for summarisation'''
     summarizer = pipeline("summarization", f"./LLM/{model}")
@@ -58,7 +58,7 @@ def handler(event, context: LambdaContext):
 
     s3_client = boto3.client('s3')
 
-    summarizer= download_model()
+    summarizer= load_model()
 
     text = download_text(s3_client=s3_client, document_uid=document_uid, bucket=SOURCE_BUCKET)
 
