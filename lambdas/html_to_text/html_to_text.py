@@ -109,6 +109,7 @@ def handler(event, context: LambdaContext):
             user_id=user_id,
             url=url
         )
+        # TODO CHANGE RETURN EMPTY DICTIONARY
         handler_response = {}
         return handler_response
     
