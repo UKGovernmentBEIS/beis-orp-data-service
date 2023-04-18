@@ -4,6 +4,7 @@ from datetime import datetime
 import boto3
 import requests
 import pandas as pd
+from notification_email import send_email
 from bs4 import BeautifulSoup
 from htmldate import find_date
 from govuk_extraction import get_content
@@ -14,21 +15,26 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 logger = Logger()
 
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
-
+COGNITO_USER_POOL = os.environ('COGNITO_USER_POOL')
+SENDER_EMAIL_ADDRESS = os.environ('SENDER_EMAIL_ADDRESS')
 
 def get_title_and_text(URL):
     '''
     params: req: request URL
-    returns: title, text: Str
+        returns: title, text: Str
+        returns: None: if bad URL is uploaded
     '''
-    req = requests.get(URL)
-    soup = BeautifulSoup(req.text, 'html.parser')
+    try:
+        req = requests.get(URL)
+        soup = BeautifulSoup(req.text, 'html.parser')
 
-    title = str(soup.head.title.get_text())
-    text = re.sub(
-        "\\s+", " ", str(soup.body.find(id="contentContainer").get_text()).replace("\n", " "))
-
-    return title, text
+        title = str(soup.head.title.get_text())
+        text = re.sub(
+            "\\s+", " ", str(soup.body.find(id="contentContainer").get_text()).replace("\n", " "))
+        return title, text
+    
+    except AttributeError:
+        return None 
 
 
 def get_publication_modification_date(URL):
@@ -91,40 +97,55 @@ def handler(event, context: LambdaContext):
         text, title, date_published = get_content(url)
 
     else:
-        title, text = get_title_and_text(url)
+        response = get_title_and_text(url)
         date_published = get_publication_modification_date(url)
 
-    logger.info(f'Document title is: {title}'
-                f'Publishing date is: {date_published}')
+    # If response is None, notify the uploader of a bad url
+    if response is None:
+        logger.info("Bad URL uploaded")
+        send_email(
+            COGNITO_USER_POOL,
+            SENDER_EMAIL_ADDRESS,
+            user_id=user_id,
+            url=url
+        )
+        # TODO CHANGE RETURN EMPTY DICTIONARY
+        handler_response = {}
+        return handler_response
+    
+    else:
+        title, text = response
+        logger.info(f'Document title is: {title}'
+                    f'Publishing date is: {date_published}')
 
-    write_text(s3_client, text=text, document_uid=document_uid)
+        write_text(s3_client, text=text, document_uid=document_uid)
 
-    logger.info(f'All data extracted e.g. Title extracted: {title}')
+        logger.info(f'All data extracted e.g. Title extracted: {title}')
 
-    # Building metadata document
-    doc = {
-        'title': title,
-        'document_uid': document_uid,
-        'regulator_id': regulator_id,
-        'user_id': user_id,
-        'uri': url,
-        'data':
-        {
-            'dates':
+        # Building metadata document
+        doc = {
+            'title': title,
+            'document_uid': document_uid,
+            'regulator_id': regulator_id,
+            'user_id': user_id,
+            'uri': url,
+            'data':
             {
-                'date_published': date_published,
-                'date_uploaded': date_uploaded_formatted
-            }
-        },
-        'document_type': document_type,
-        'document_format': 'HTML',
-        'regulatory_topic': regulatory_topic,
-        'status': status,
-    }
+                'dates':
+                {
+                    'date_published': date_published,
+                    'date_uploaded': date_uploaded_formatted
+                }
+            },
+            'document_type': document_type,
+            'document_format': 'HTML',
+            'regulatory_topic': regulatory_topic,
+            'status': status,
+        }
 
-    handler_response = {
-        'document': doc,
-        'api_user': api_user
-    }
+        handler_response = {
+            'document': doc,
+            'api_user': api_user
+        }
 
-    return handler_response
+        return handler_response
