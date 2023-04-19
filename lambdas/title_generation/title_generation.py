@@ -36,7 +36,7 @@ def title_predictor(text: str, model, tokenizer) -> str:
     inputs = ['summarize: ' + text]
     inputs = tokenizer(inputs, truncation=True, return_tensors='pt')
     output = model.generate(**inputs, num_beams=10,
-                            do_sample=False, min_length=10, max_new_tokens=25)
+                            do_sample=False, min_length=10)
     decoded_output = tokenizer.batch_decode(
         output, skip_special_tokens=True)[0]
     predicted_title = nltk.sent_tokenize(decoded_output.strip())[0]
