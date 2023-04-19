@@ -34,7 +34,17 @@ def get_title_and_text(URL):
         return title, text
     
     except AttributeError:
-        return None 
+        try:
+            req = requests.get(URL)
+            soup = BeautifulSoup(req.text, 'html.parser')
+
+            title = str(soup.head.title.get_text())
+            text = re.sub(
+                "\\s+", " ", str(" ".join([i.text for i in soup.body.findAll("p")])).replace("\n", " "))
+            return title, text
+        
+        except:
+            return None 
 
 
 def get_publication_modification_date(URL):
