@@ -4,6 +4,13 @@ FROM public.ecr.aws/lambda/python:3.9
 COPY requirements.txt  .
 RUN pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
+# Environment Variables
+ENV NLTK_DATA={LAMBDA_TASK_ROOT}/nltk_data/
+
+# Create directory and download NLTK
+RUN mkdir -p ${LAMBDA_TASK_ROOT}/nltk_data/
+RUN python -m nltk.downloader -d ${LAMBDA_TASK_ROOT}/nltk_data/ all
+
 # Copy function code and certificates
 COPY stopwords.txt ${LAMBDA_TASK_ROOT}
 COPY utils.py ${LAMBDA_TASK_ROOT}

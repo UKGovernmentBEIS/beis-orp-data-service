@@ -189,63 +189,66 @@ def handler(event, context: LambdaContext):
     COGNITO_USER_POOL = validate_env_variable('COGNITO_USER_POOL')
     SENDER_EMAIL_ADDRESS = validate_env_variable('SENDER_EMAIL_ADDRESS')
 
-    # Download punkt for tokenizer
-    NLTK_DATA = validate_env_variable('NLTK_DATA')
-    os.makedirs(NLTK_DATA, exist_ok=True)
-    nltk.download('punkt', download_dir=NLTK_DATA)
+    ######### TODO UNCOMMENT BELOW 
+    # # Open TypeDB session
+    # client = TypeDB.core_client(TYPEDB_SERVER_IP + ':' + TYPEDB_SERVER_PORT)
+    # session = client.session(TYPEDB_DATABASE_NAME, SessionType.DATA)
 
-    # Open TypeDB session
-    client = TypeDB.core_client(TYPEDB_SERVER_IP + ':' + TYPEDB_SERVER_PORT)
-    session = client.session(TYPEDB_DATABASE_NAME, SessionType.DATA)
+    # # Call S3 and download processed text
+    # config = Config(connect_timeout=5, retries={'max_attempts': 0})
+    # s3_client = boto3.client('s3', config=config)
+    # text = download_text(
+    #     s3_client=s3_client,
+    #     document_uid=document_uid,
+    #     bucket=SOURCE_BUCKET
+    # )
 
-    # Call S3 and download processed text
-    config = Config(connect_timeout=5, retries={'max_attempts': 0})
-    s3_client = boto3.client('s3', config=config)
-    text = download_text(
-        s3_client=s3_client,
-        document_uid=document_uid,
-        bucket=SOURCE_BUCKET
-    )
+    # # Get incoming metadata
+    # incoming_metadata = dict(
+    #     zip(return_vals, [event['document'][val] for val in return_vals]))
+    # user_id = event['document']['user_id']
 
-    # Get incoming metadata
-    incoming_metadata = dict(
-        zip(return_vals, [event['document'][val] for val in return_vals]))
-    user_id = event['document']['user_id']
+    # # If search module returns a True i.e. duplicate text with different metadata, then replace existing metadata
+    # # The returned dictionary is the existing document's metadata
+    # hash_np, hash_list = create_hash_list(text)
+    # is_duplicate_results = search_module(session, hash_np, hash_list, incoming_metadata)
 
-    # If search module returns a True i.e. duplicate text with different metadata, then replace existing metadata
-    # The returned dictionary is the existing document's metadata
-    hash_np, hash_list = create_hash_list(text)
-    is_duplicate_results = search_module(session, hash_np, hash_list, incoming_metadata)
+    # # Close TypeDB session and define handler response
+    # session.close()
+    # client.close()
 
-    # Close TypeDB session and define handler response
-    session.close()
-    client.close()
+
     handler_response = event
     handler_response['lambda'] = 'deduplication'
 
-    logger.info(is_duplicate_results)
 
-    # ========== 1. If it is not a duplicate, insert hash and pass the document
-    if is_duplicate_results is False:
-        handler_response['document']['hash_text'] = '_'.join(map(str, hash_np.tolist()))
-        logger.info('Hash inserted into graph')
-        return handler_response
+    ######### TODO UNCOMMENT BELOW 
+    # logger.info(is_duplicate_results)
 
-    # ========== 2. If the document is a version (same text different metadata) return node ID
-    elif is_duplicate_results[0] is False:
-        node_id = is_duplicate_results[2]
-        handler_response['document']['node_id'] = node_id
-        logger.info(f"Node_id of existing version to be changed {node_id}")
-        return handler_response
+    # # ========== 1. If it is not a duplicate, insert hash and pass the document
+    # if is_duplicate_results is False:
+    #     handler_response['document']['hash_text'] = '_'.join(map(str, hash_np.tolist()))
+    #     logger.info('Hash inserted into graph')
+    #     return handler_response
 
-    # ========== 3. Else the document is a complete duplicate, and the user is informed
-    else:
-        # Get the existing metadata of the matching document
-        complete_existing_metadata = is_duplicate_results[1]
-        send_email(
-            COGNITO_USER_POOL,
-            SENDER_EMAIL_ADDRESS,
-            user_id,
-            complete_existing_metadata
-        )
-        return handler_response
+    # # ========== 2. If the document is a version (same text different metadata) return node ID
+    # elif is_duplicate_results[0] is False:
+    #     node_id = is_duplicate_results[2]
+    #     handler_response['document']['node_id'] = node_id
+    #     logger.info(f"Node_id of existing version to be changed {node_id}")
+    #     return handler_response
+
+    # # ========== 3. Else the document is a complete duplicate, and the user is informed
+    # else:
+    #     # Get the existing metadata of the matching document
+    #     complete_existing_metadata = is_duplicate_results[1]
+    #     send_email(
+    #         COGNITO_USER_POOL,
+    #         SENDER_EMAIL_ADDRESS,
+    #         user_id,
+    #         complete_existing_metadata
+    #     )
+    #     return handler_response
+
+    ######### TODO DELETE BELOW 
+    return handler_response
