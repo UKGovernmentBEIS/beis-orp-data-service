@@ -23,7 +23,7 @@ def validate_env_variable(env_var_name):
 def load_model(
         model="bart-large-cnn-samsum"):
     '''Downloads the ML model for summarisation'''
-    summarizer = pipeline("summarization", f"./LLM/{model}")
+    summarizer = pipeline("summarization", f"./LLM/{model}", max_length=600, truncation=True)
     return summarizer
 
 
