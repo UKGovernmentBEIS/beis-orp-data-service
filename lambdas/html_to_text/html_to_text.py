@@ -37,14 +37,35 @@ def get_title_and_text(URL):
         try:
             req = requests.get(URL)
             soup = BeautifulSoup(req.text, 'html.parser')
-
-            title = str(soup.head.title.get_text())
+            ol = soup.find("ol")
+            if ol != None:
+                title = re.sub(
+                "\\s+", " ", str([i.text for i in ol.findAll("li")][-1]).replace("\n", " ").strip())
+            else:
+                title = str(soup.head.title.get_text())
             text = re.sub(
-                "\\s+", " ", str(" ".join([i.text for i in soup.body.findAll("p")])).replace("\n", " "))
+                "\\s+", " ", str(" ".join([i.text for i in soup.main.findAll("p")])).replace("\n", " "))
             return title, text
         
-        except:
-            return None 
+        except AttributeError:
+            try:
+                req = requests.get(URL)
+                soup = BeautifulSoup(req.text, 'html.parser')
+
+                ol = soup.find("ol")
+                if ol != None:
+                    title = re.sub(
+                    "\\s+", " ", str([i.text for i in ol.findAll("li")][-1]).replace("\n", " ").strip())
+                else:
+                    title = str(soup.head.title.get_text())
+                container = soup.body.find(id="mainContent")
+                text = re.sub(
+                    "\\s+", " ", str(" ".join([i.text for i in container.findAll("p")])).replace("\n", " "))
+                print("Option 2")
+                return title, text
+            
+            except:
+                return None 
 
 
 def get_publication_modification_date(URL):
