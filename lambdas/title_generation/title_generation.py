@@ -24,9 +24,7 @@ t5_model = AutoModelForSeq2SeqLM.from_pretrained(
 
 os.makedirs(NLTK_DATA, exist_ok=True)
 nltk.download('popular', download_dir=NLTK_DATA)
-# nltk.download('stopwords', download_dir=NLTK_DATA)
-# nltk.download('wordnet', download_dir=NLTK_DATA)
-# nltk.download('omw-1.4', download_dir=NLTK_DATA)
+
 
 def title_predictor(text: str, model, tokenizer) -> str:
     '''
@@ -123,7 +121,7 @@ def handler(event, context: LambdaContext):
     s3_client = boto3.client('s3')
     text = download_text(s3_client=s3_client, document_uid=document_uid)
 
-    title = get_title(title=metadata_title, text=text, threshold=85)
+    title = get_title(title=metadata_title, text=text, threshold=80)
     logger.info(f'Document title is: {title}')
 
     handler_response = event
