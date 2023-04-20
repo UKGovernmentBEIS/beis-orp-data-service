@@ -134,21 +134,22 @@ def handler(event, context: LambdaContext):
         response = get_title_and_text(url)
         date_published = get_publication_modification_date(url)
 
-    # If response is None, notify the uploader of a bad url
-    if response is None:
-        logger.info("Bad URL uploaded")
-        send_email(
-            COGNITO_USER_POOL,
-            SENDER_EMAIL_ADDRESS,
-            user_id=user_id,
-            url=url
-        )
-        # TODO CHANGE RETURN EMPTY DICTIONARY
-        handler_response = {}
-        return handler_response
+        # If response is None, notify the uploader of a bad url
+        if response is None:
+            logger.info("Bad URL uploaded")
+            send_email(
+                COGNITO_USER_POOL,
+                SENDER_EMAIL_ADDRESS,
+                user_id=user_id,
+                url=url
+            )
+            # TODO CHANGE RETURN EMPTY DICTIONARY
+            handler_response = {}
+            return handler_response
 
-    else:
-        title, text = response
+        else:
+            title, text = response
+
         logger.info(f'Document title is: {title}'
                     f'Publishing date is: {date_published}')
 
