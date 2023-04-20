@@ -15,8 +15,8 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 logger = Logger()
 
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
-COGNITO_USER_POOL = os.environ('COGNITO_USER_POOL')
-SENDER_EMAIL_ADDRESS = os.environ('SENDER_EMAIL_ADDRESS')
+COGNITO_USER_POOL = os.environ['COGNITO_USER_POOL']
+SENDER_EMAIL_ADDRESS = os.environ['SENDER_EMAIL_ADDRESS']
 
 
 def get_title_and_text(URL):
