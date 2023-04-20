@@ -1,4 +1,5 @@
 import os
+import json
 import boto3
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -75,19 +76,22 @@ def send_email(COGNITO_USER_POOL, SENDER_EMAIL_ADDRESS,
 def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
-    failed_doc = event['document']
-    user = failed_doc['user_id']
-
-    failed_doc_key = event['object_key']
+    if event['detail']['object']['key'] == 'HTML':
+        document = json.loads(event['body']['body'])
+        failed_doc = document['uri']
+        user = document['user_id']
+    else:
+        failed_doc = event['document']['object_key']
+        user = failed_doc['user_id']
 
     error = event.get('error')
 
     logger.info(f'user: {user}')
-    logger.info(f'failed_doc_key: {failed_doc_key}')
+    logger.info(f'failed_doc_key: {failed_doc}')
     logger.info(f'Error: {error}')
 
     return {
         'user': user,
-        'failed_doc_key': failed_doc_key,
+        'failed_doc': failed_doc,
         'error': error
     }
