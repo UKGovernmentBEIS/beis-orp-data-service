@@ -1,6 +1,5 @@
 import re
 import spacy
-from tqdm import tqdm
 from typing import List
 from preprocess.preprocess_functions import removing_regulator_names
 
@@ -61,7 +60,7 @@ def get_similarity_scores(title: str, candidate_titles: List) -> float:
 
     title = nlp(re.sub(r'[^\w\s]', '', title.lower()))
 
-    for sent in tqdm(candidate_titles):
+    for sent in candidate_titles:
         score = title.similarity(nlp(re.sub(r'[^\w\s]', '', sent.lower())))
         similarity_scores.append(score * 100)
 
