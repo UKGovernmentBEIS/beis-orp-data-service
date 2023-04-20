@@ -130,8 +130,9 @@ def handler(event, context: LambdaContext):
         'uri',
         'document_type',
         'document_format',
-        'status',
-        'hash_text']
+        'status']
+    ############ TODO UNCOMMENT LINE BELOW AND READD TO LIST 
+        # 'hash_text']
     base_document = assert_same_base_values(keys=base_keys, dict_list=event)
 
     # Each previous lambda has added a new key to the extracted metadata
