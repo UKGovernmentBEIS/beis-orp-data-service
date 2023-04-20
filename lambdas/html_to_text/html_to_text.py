@@ -22,7 +22,7 @@ SENDER_EMAIL_ADDRESS = os.environ('SENDER_EMAIL_ADDRESS')
 def get_title_and_text(URL):
     '''
     params: req: request URL
-        returns: title, text: Str
+        returns: title, text: str
         returns: None: if bad URL is uploaded
     '''
     try:
