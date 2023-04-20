@@ -150,37 +150,37 @@ def handler(event, context: LambdaContext):
         else:
             title, text = response
 
-        logger.info(f'Document title is: {title}'
-                    f'Publishing date is: {date_published}')
+    logger.info(f'Document title is: {title}'
+                f'Publishing date is: {date_published}')
 
-        write_text(s3_client, text=text, document_uid=document_uid)
+    write_text(s3_client, text=text, document_uid=document_uid)
 
-        logger.info(f'All data extracted e.g. Title extracted: {title}')
+    logger.info(f'All data extracted e.g. Title extracted: {title}')
 
-        # Building metadata document
-        doc = {
-            'title': title,
-            'document_uid': document_uid,
-            'regulator_id': regulator_id,
-            'user_id': user_id,
-            'uri': url,
-            'data':
+    # Building metadata document
+    doc = {
+        'title': title,
+        'document_uid': document_uid,
+        'regulator_id': regulator_id,
+        'user_id': user_id,
+        'uri': url,
+        'data':
+        {
+            'dates':
             {
-                'dates':
-                {
-                    'date_published': date_published,
-                    'date_uploaded': date_uploaded_formatted
-                }
-            },
-            'document_type': document_type,
-            'document_format': 'HTML',
-            'regulatory_topic': regulatory_topic,
-            'status': status,
-        }
+                'date_published': date_published,
+                'date_uploaded': date_uploaded_formatted
+            }
+        },
+        'document_type': document_type,
+        'document_format': 'HTML',
+        'regulatory_topic': regulatory_topic,
+        'status': status,
+    }
 
-        handler_response = {
-            'document': doc,
-            'api_user': api_user
-        }
+    handler_response = {
+        'document': doc,
+        'api_user': api_user
+    }
 
-        return handler_response
+    return handler_response
