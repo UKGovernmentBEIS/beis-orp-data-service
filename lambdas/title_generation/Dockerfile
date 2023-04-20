@@ -22,7 +22,7 @@ RUN python local_download.py
 
 # Create directory and download NLTK
 RUN mkdir -p ${LAMBDA_TASK_ROOT}/nltk_data/
-RUN python -m nltk.downloader -d ${LAMBDA_TASK_ROOT}/nltk_data/ all
+RUN python -m nltk.downloader -d ${LAMBDA_TASK_ROOT}/nltk_data/ punkt
 
 # Add utilities for the script
 ADD postprocess ${LAMBDA_TASK_ROOT}/postprocess 

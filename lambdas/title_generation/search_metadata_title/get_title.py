@@ -1,6 +1,4 @@
 import re
-import os
-import boto3
 import spacy
 from tqdm import tqdm
 from typing import List
@@ -8,7 +6,6 @@ from preprocess.preprocess_functions import removing_regulator_names
 
 my_pattern = re.compile(r'\s+')
 
-s3_client = boto3.client('s3')
 
 # Shorten text for input to title extraction model
 def percentage_shortener(text: str, percentage=0.1) -> str:
