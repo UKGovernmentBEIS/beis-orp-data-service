@@ -5,7 +5,7 @@ import wordninja
 with open("regulator_name_list.txt", "r") as f:
     fileObject = f.read()
     regulator_name_list = fileObject.split("\n")
-    regulator_name_list = regulator_name_list + ["Logo of the " + i for i in regulator_name_list]
+    regulator_name_list = ["Logo of the " + i for i in regulator_name_list] + regulator_name_list
 
 
 def removing_regulator_names(text: str, regulator_name_list=regulator_name_list) -> str:
