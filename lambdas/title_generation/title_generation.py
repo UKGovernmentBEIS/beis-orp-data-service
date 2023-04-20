@@ -23,10 +23,10 @@ t5_model = AutoModelForSeq2SeqLM.from_pretrained(
         './LLM/t5_model')
 
 os.makedirs(NLTK_DATA, exist_ok=True)
-nltk.download('punkt', download_dir=NLTK_DATA)
-nltk.download('stopwords', download_dir=NLTK_DATA)
-nltk.download('wordnet', download_dir=NLTK_DATA)
-nltk.download('omw-1.4', download_dir=NLTK_DATA)
+nltk.download('popular', download_dir=NLTK_DATA)
+# nltk.download('stopwords', download_dir=NLTK_DATA)
+# nltk.download('wordnet', download_dir=NLTK_DATA)
+# nltk.download('omw-1.4', download_dir=NLTK_DATA)
 
 def title_predictor(text: str, model, tokenizer) -> str:
     '''
