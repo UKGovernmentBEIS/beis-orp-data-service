@@ -21,6 +21,7 @@ t5_tokenizer = AutoTokenizer.from_pretrained(
 t5_model = AutoModelForSeq2SeqLM.from_pretrained(
         './LLM/t5_model')
 
+nltk.download('punkt')
 logger.info(f"nltk path: {nltk.data.path}")
 
 
