@@ -14,6 +14,7 @@ from search_metadata_title.get_title import identify_metadata_title_in_text
 logger = Logger()
 
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
+NLTK_DATA = os.environ['NLTK_DATA']
 
 # Download models from local path
 t5_tokenizer = AutoTokenizer.from_pretrained(
@@ -21,7 +22,8 @@ t5_tokenizer = AutoTokenizer.from_pretrained(
 t5_model = AutoModelForSeq2SeqLM.from_pretrained(
         './LLM/t5_model')
 
-logger.info(f"nltk path: {nltk.data.path}")
+os.makedirs(NLTK_DATA, exist_ok=True)
+nltk.download('popular', download_dir=NLTK_DATA)
 
 
 def title_predictor(text: str, model, tokenizer) -> str:
@@ -119,7 +121,7 @@ def handler(event, context: LambdaContext):
     s3_client = boto3.client('s3')
     text = download_text(s3_client=s3_client, document_uid=document_uid)
 
-    title = get_title(title=metadata_title, text=text, threshold=85)
+    title = get_title(title=metadata_title, text=text, threshold=80)
     logger.info(f'Document title is: {title}')
 
     handler_response = event
