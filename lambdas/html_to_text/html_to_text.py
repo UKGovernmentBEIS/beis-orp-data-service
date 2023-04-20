@@ -1,5 +1,6 @@
 import re
 import os
+import json
 from datetime import datetime
 import boto3
 import requests
@@ -116,14 +117,15 @@ def handler(event, context: LambdaContext):
     s3_client = boto3.client('s3')
 
     # Getting metadata from event
-    document_uid = event['body']['uuid']
-    regulator_id = event['body']['regulator_id']
-    user_id = event['body']['user_id']
-    api_user = event['body'].get('api_user')
-    document_type = event['body']['document_type']
-    status = event['body']['status']
-    url = event['body']['uri']
-    regulatory_topic = event['body']['topics']
+    event = json.loads(event['body']['body'])
+    document_uid = event['uuid']
+    regulator_id = event['regulator_id']
+    user_id = event['user_id']
+    api_user = event.get('api_user')
+    document_type = event['document_type']
+    status = event['status']
+    url = event['uri']
+    regulatory_topic = event['topics']
 
     if "https://www.gov.uk/" in url:
         text, title, date_published = get_content(url)
