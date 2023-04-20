@@ -13,7 +13,7 @@ The AWS Lambda functions in this repository are orchestrated by Step Functions, 
 - AWS account with appropriate permissions to create and deploy Lambda functions, Step Functions, and other necessary resources
 - Docker installed and running
 - AWS CLI installed
-- Terraform CLI installed
+- Terraform installed
 
 ## Monitoring
 
@@ -31,9 +31,9 @@ If you encounter any issues with the Lambda functions, Docker image, Step Functi
 
 ## Runbooks
 
-- [Monitoring Runbook](runbooks/monitoring.md)
-- [Maintenance/Deployment Runbook](runbooks/maintenance_deployment.md)
-- [Troubleshooting Runbook](runbooks/troubleshooting.md)
+- [Monitoring Runbook](./runbooks/monitoring.md)
+- [Maintenance/Deployment Runbook](./runbooks/maintenance_deployment.md)
+- [Troubleshooting Runbook](./runbooks/troubleshooting.md)
 
 ## License
 
