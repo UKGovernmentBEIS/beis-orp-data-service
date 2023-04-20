@@ -9,6 +9,7 @@ RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 # Set environment variables
 ENV NUMBA_CACHE_DIR=/tmp/
 ENV TRANSFORMERS_CACHE=/tmp/
+ENV NLTK_DATA=/tmp/nltk_data/
 ENV SPACY_PATH=/tmp/spacy_model/
 
 # Download Spacy 

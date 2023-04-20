@@ -14,6 +14,7 @@ from search_metadata_title.get_title import identify_metadata_title_in_text
 logger = Logger()
 
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
+NLTK_DATA = os.environ['NLTK_DATA']
 
 # Download models from local path
 t5_tokenizer = AutoTokenizer.from_pretrained(
@@ -21,8 +22,8 @@ t5_tokenizer = AutoTokenizer.from_pretrained(
 t5_model = AutoModelForSeq2SeqLM.from_pretrained(
         './LLM/t5_model')
 
-nltk.download('punkt')
-logger.info(f"nltk path: {nltk.data.path}")
+os.makedirs(NLTK_DATA, exist_ok=True)
+nltk.download('punkt', download_dir=NLTK_DATA)
 
 
 def title_predictor(text: str, model, tokenizer) -> str:
