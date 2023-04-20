@@ -18,6 +18,7 @@ DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
 COGNITO_USER_POOL = os.environ('COGNITO_USER_POOL')
 SENDER_EMAIL_ADDRESS = os.environ('SENDER_EMAIL_ADDRESS')
 
+
 def get_title_and_text(URL):
     '''
     params: req: request URL
@@ -32,30 +33,30 @@ def get_title_and_text(URL):
         text = re.sub(
             "\\s+", " ", str(soup.body.find(id="contentContainer").get_text()).replace("\n", " "))
         return title, text
-    
+
     except AttributeError:
         try:
             req = requests.get(URL)
             soup = BeautifulSoup(req.text, 'html.parser')
             ol = soup.find("ol")
-            if ol != None:
+            if ol is not None:
                 title = re.sub(
-                "\\s+", " ", str([i.text for i in ol.findAll("li")][-1]).replace("\n", " ").strip())
+                    "\\s+", " ", str([i.text for i in ol.findAll("li")][-1]).replace("\n", " ").strip())
             else:
                 title = str(soup.head.title.get_text())
             text = re.sub(
                 "\\s+", " ", str(" ".join([i.text for i in soup.main.findAll("p")])).replace("\n", " "))
             return title, text
-        
+
         except AttributeError:
             try:
                 req = requests.get(URL)
                 soup = BeautifulSoup(req.text, 'html.parser')
 
                 ol = soup.find("ol")
-                if ol != None:
+                if ol is not None:
                     title = re.sub(
-                    "\\s+", " ", str([i.text for i in ol.findAll("li")][-1]).replace("\n", " ").strip())
+                        "\\s+", " ", str([i.text for i in ol.findAll("li")][-1]).replace("\n", " ").strip())
                 else:
                     title = str(soup.head.title.get_text())
                 container = soup.body.find(id="mainContent")
@@ -63,9 +64,9 @@ def get_title_and_text(URL):
                     "\\s+", " ", str(" ".join([i.text for i in container.findAll("p")])).replace("\n", " "))
                 print("Option 2")
                 return title, text
-            
-            except:
-                return None 
+
+            except BaseException:
+                return None
 
 
 def get_publication_modification_date(URL):
@@ -143,7 +144,7 @@ def handler(event, context: LambdaContext):
         # TODO CHANGE RETURN EMPTY DICTIONARY
         handler_response = {}
         return handler_response
-    
+
     else:
         title, text = response
         logger.info(f'Document title is: {title}'
