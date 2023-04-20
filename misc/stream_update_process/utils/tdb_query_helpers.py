@@ -88,6 +88,7 @@ def deleteAttrOwn(etype, identifier, attrs, attr_type_dict, in_attrs=None):
     dat = ''
     q1= ''
     q2=''
+    is_update=False
     query = f'match $x isa {etype}, has Identifier "{identifier}"'
     for i, (k, v) in enumerate(attrs):
         if type(v)==list:
@@ -100,9 +101,10 @@ def deleteAttrOwn(etype, identifier, attrs, attr_type_dict, in_attrs=None):
             dat += f", has $attr{i}"
     query += f'{q1}{q2}; delete $x {dat[1:]};'
     if in_attrs:
-        query += f'insert $x' \
+        query += f'insert $x ' \
         f'{", ".join([f"has {k} {format_attr(v, attr_type_dict[k])}" for k, v in in_attrs]) };' 
-    return query
+        is_update = True
+    return query, is_update
 
 
 def match_insert_ent(etype, ids, attrs, attr_type_dict):
@@ -175,14 +177,22 @@ def batch_insert(session , qbatch):
                transaction.commit()
         logger.info(f'=> Finished inserting batch [{len(qbatch)}]')
                    
-def batch_match_insert(session, qbatch, inserttype = True):
+def batch_match_insert(session, qbatch):
         s='\n\n'.join(qbatch)
         logger.debug(f'Queries:\n {s}')
         with session.transaction(TransactionType.WRITE) as transaction:
             for qm in qbatch:
-                transaction.query().insert(qm) if inserttype else transaction.query().delete(qm)
+                transaction.query().insert(qm) 
             transaction.commit()
         logger.info(f'=> Finished m-inserting batch [{len(qbatch)}]')
+
+def batch_match_delete(session, qbatch):
+        with session.transaction(TransactionType.WRITE) as transaction:
+            for qm, is_update in qbatch:
+                logger.debug(f'Query:\n {qm}')
+                transaction.query().update(qm) if is_update else transaction.query().delete(qm)
+            transaction.commit()
+        logger.info(f'=> Finished d/ud-inserting batch [{len(qbatch)}]')
 
 
 def chunker(iterable, chunksize):

@@ -67,7 +67,7 @@ def extractElements(js:dict, dict_thing_attrs:dict):
         'publication',
         True,
         [
-            ( "regulatoryDocument", regID, "issued"),
+            ( "regulatoryDocument", [('document_uid',doc['document_uid'])], "issued"),
             ("regulator", reguID, "issuedBy"),
             ( "regulatoryAgent", userID, "uploader"),
         ],
@@ -77,9 +77,9 @@ def extractElements(js:dict, dict_thing_attrs:dict):
     # insert leg.org. node
     legs = js['data'].get('legislative_origins', [])
     for leg in legs:
-        leg['leg_division'] = leg.pop('division')
-        leg['leg_type'] = leg.pop('type')
-        leg['leg_number'] = leg.pop('number')
+        leg['leg_division'] = leg.pop('division', None)
+        leg['leg_type'] = leg.pop('type', None)
+        leg['leg_number'] = leg.pop('number', None)
         leg_etype = leg_types.get(leg['leg_type'], 'legislation')
         legID = [('node_id', hashID([leg['href']]))]
         nodes.append([

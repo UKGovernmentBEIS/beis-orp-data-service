@@ -44,36 +44,36 @@ def updateE(etype, identifier, attrs, db_attrs, attr_type_dict):
     if changed_attrs:
         similarity = sim_hash(in_attr_dict, db_attr_dict)
         print(f"HASH SIMILARITY: {similarity}")
-        if (etype == 'regulatoryDocument') and (similarity >= 0.99):
-            # todo  drop hash_text from changed
-            logger.debug('-- Entity exists with slight diff -> [MERGE]')
-            print('-- Entity exists with slight diff -> [MERGE]')
-            # delete old attributes
-            dquery = deleteAttrOwn(etype=etype, identifier=db_attr_dict['node_id'],
-                                attrs=[(k,v) for k,v in db_attr_dict.items() if k in changed_attrs.keys()],  
-                                attr_type_dict=attr_type_dict)
-            
-            changed_attrs['version'] = db_attr_dict.get('version', 1)
-            # update entity
-            mquery = match_insert_ent(etype, identifier, changed_attrs.items() , attr_type_dict)
-        else:
+        if (etype == 'regulatoryDocument') and (similarity < 0.99):
             logger.debug('-- Entity exists with big changes -> [NEW VERSION]')
             print('-- Entity exists with big changes -> [NEW VERSION]')
             # compile new attrs
             new_attrs = db_attr_dict.copy()
             new_attrs.update(in_attr_dict)
             # version updating
-            new_attrs['version'] = new_attrs.get('version', 1) + 1 
+            new_attrs['version'] = int(new_attrs.get('version', 1)) + 1 
             query = insertE(etype, new_attrs.items(), attr_type_dict)
             # change old vers' status -> archive
             dquery = deleteAttrOwn(etype=etype, 
-                                attrs=[('status', 'published')], 
+                                identifier=db_attr_dict['document_uid'],
+                                attrs=[('status', db_attr_dict['status'])], 
                                 in_attrs=[('status', 'archive')], 
                                 attr_type_dict=attr_type_dict)
+            
+        else:
+            logger.debug('-- Entity exists with slight diff -> [MERGE]')
+            print('-- Entity exists with slight diff -> [MERGE]')
+            # changed_attrs.pop("hash_text", None)
+            # delete old attributes
+            dquery = deleteAttrOwn(etype=etype, 
+                                identifier=db_attr_dict['document_uid'],
+                                attrs=[(k,v) for k,v in db_attr_dict.items() if k in changed_attrs.keys()],  
+                                attr_type_dict=attr_type_dict)
+            # update entity
+            mquery = match_insert_ent(etype, identifier, changed_attrs.items() , attr_type_dict)
     return [query,mquery, dquery]
 
 def insertE(etype, attrs, attr_type_dict):
-    logger.info(f"==> inserting new entity {etype}")
     q = f"$_ isa {etype}"
     q += formatAttrDB(attrs, attr_type_dict)
     q += ";"
@@ -108,6 +108,9 @@ def processEntities(nodes, attr_type_dict, session):
             dqueries.append(dq)
         else:
             # insert a new entity
+            logger.info(f"-- Entity [{etype}] doesn't exist -> [NEW ENTITY]")
+            print(f"-- Entity [{etype}] doesn't exist -> [NEW ENTITY]")
+            attrs += [('version', 1)]
             queries.append(insertE(etype, attrs, attr_type_dict))
     return queries, mqueries, dqueries
 
