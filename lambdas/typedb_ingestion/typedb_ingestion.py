@@ -130,9 +130,8 @@ def handler(event, context: LambdaContext):
         'uri',
         'document_type',
         'document_format',
-        'status']
-    ############ TODO UNCOMMENT LINE BELOW AND READD TO LIST 
-        # 'hash_text']
+        'status',
+        'hash_text']
     base_document = assert_same_base_values(keys=base_keys, dict_list=event)
 
     # Each previous lambda has added a new key to the extracted metadata
@@ -141,8 +140,7 @@ def handler(event, context: LambdaContext):
     document = {**base_document, **inferred_document}
     logger.info({'document': document})
 
-    ############ TODO UNCOMMENT LINE BELOW  
-    # response = sqs_connect_and_send(document=document)
+    response = sqs_connect_and_send(document=document)
 
     # Obtaining values for user_id and whether or not the user has uploaded
     # via GUI or API
@@ -151,38 +149,32 @@ def handler(event, context: LambdaContext):
 
     # Send an email to the user if ingestion is successful and if the user is
     # not an API user
+    if response['ResponseMetadata']['HTTPStatusCode'] == 200 and not api_user:
 
-    ############ TODO UNCOMMENT LINE BELOW  
-    # if response['ResponseMetadata']['HTTPStatusCode'] == 200 and not api_user:
+        email_address = get_email_address(COGNITO_USER_POOL, user_id)
+        logger.info(f'Pulled email from Cognito: {email_address}')
 
-    ############ TODO RE-INDENT CODE BLOCK BELOW
-    email_address = get_email_address(COGNITO_USER_POOL, user_id)
-    logger.info(f'Pulled email from Cognito: {email_address}')
+        if email_address:
+            document_uid = document['document_uid']
+            title = document['title']
+            document_type = document['document_type']
+            regulator_id = document['regulator_id']
+            date_published = document['data']['dates']['date_published']
 
-    if email_address:
-        document_uid = document['document_uid']
-        title = document['title']
-        document_type = document['document_type']
-        regulator_id = document['regulator_id']
-        date_published = document['data']['dates']['date_published']
-
-        send_email(
-            sender_email=SENDER_EMAIL_ADDRESS,
-            recipient_email=email_address,
-            subject='ORP Upload Complete',
-            body=f'''Your document (UUID: {document_uid}) has been ingested to the ORP.
-                It can be viewed in the ORP at
-                https://app.{ENVIRONMENT}.cannonband.com/document/view/{document_uid}?ingested=true
-                It will now be searchable.\n
-                You can search using the following criteria:\n
-                - Title: {title}\n
-                - Document Type: {document_type}\n
-                - Regulator: {regulator_id}\n
-                - Date Published: {date_published}\n
-                This is a system generated email, please do not reply.'''
-        )
-
-    ############ TODO DELETE LINE BELOW  
-    response = {}
+            send_email(
+                sender_email=SENDER_EMAIL_ADDRESS,
+                recipient_email=email_address,
+                subject='ORP Upload Complete',
+                body=f'''Your document (UUID: {document_uid}) has been ingested to the ORP.
+                    It can be viewed in the ORP at
+                    https://app.{ENVIRONMENT}.open-regulation.beis.gov.uk/document/view/{document_uid}?ingested=true
+                    It will now be searchable.\n
+                    You can search using the following criteria:\n
+                    - Title: {title}\n
+                    - Document Type: {document_type}\n
+                    - Regulator: {regulator_id}\n
+                    - Date Published: {date_published}\n
+                    This is a system generated email, please do not reply.'''
+            )
 
     return response
