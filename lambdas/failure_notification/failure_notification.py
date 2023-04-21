@@ -66,7 +66,7 @@ def handler(event, context: LambdaContext):
         document_uid = document.get('document_uid', document.get('uuid'))
         uploader_id = document['user_id']
     else:
-        failed_doc = event['document']['object_key']
+        failed_doc = event['detail']['object']['key']
         uploader_id = failed_doc['user_id']
 
     error = event.get('error').get('Error')
