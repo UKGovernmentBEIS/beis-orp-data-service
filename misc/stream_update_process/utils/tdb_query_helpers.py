@@ -60,8 +60,8 @@ def deleteRelationQuery(rtype, nodes, identifiers, attr_type_dict):
 
 def getEntityDB(etype, identifier, attr_type_dict, session):
     logger.debug(f"? ==> Checking entity {etype} exists" )
-    query = f"match $x isa {etype} {formatAttrDB(identifier, attr_type_dict)}, has attribute $a; get $a;"
-    out = getUniqueResult(matchquery(query, session))
+    query = f"match $x isa {etype} {formatAttrDB(identifier, attr_type_dict)}, has attribute $a; group $x;"
+    out = [getUniqueResult(i.concept_maps()) for i in matchgroupquery(query, session)]
     return out
 
 def getRelationDB(rtype, ids, nodes, attr_type_dict, session, date_indicator="PublishedOn", check=False):
@@ -158,7 +158,7 @@ def match(k, v, atype):
             else:
                 return f", has {k} {format_attr(v, atype)}"
         except Exception as e:
-            print(f"ERROR: Unexpected at ({k,v,atype})\n {e}")
+            logger.error(f"ERROR: Unexpected at ({k,v,atype})\n {e}")
     else:
         return ""
     

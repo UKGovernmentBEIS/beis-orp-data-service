@@ -9,12 +9,11 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-logging.getLogger().addHandler(logging.StreamHandler())
+
 # =====
 
 def changedAttrs(old:dict, new:dict, attr_type_dict):
     def format(v, atype, ref):
-        print(v, ref)
         if (isinstance(v, list)):
             sref = set(ref) if ref else set()
             return len(set(v)^sref) != 0
@@ -39,14 +38,12 @@ def updateE(etype, identifier, attrs, db_attrs, attr_type_dict):
     # isolate attrs that have changed/are new
     changed_attrs = changedAttrs(db_attr_dict, in_attr_dict, attr_type_dict)
     logger.debug(f"==> Changed attrs for {etype} -> \n {changed_attrs}")
-    print(f"==> Changed attrs for {etype} -> \n {changed_attrs}")
 
     if changed_attrs:
         similarity = sim_hash(in_attr_dict, db_attr_dict)
-        print(f"HASH SIMILARITY: {similarity}")
+        logger.debug(f"HASH SIMILARITY: {similarity}")
         if (etype == 'regulatoryDocument') and (similarity < 0.99):
             logger.debug('-- Entity exists with big changes -> [NEW VERSION]')
-            print('-- Entity exists with big changes -> [NEW VERSION]')
             # compile new attrs
             new_attrs = db_attr_dict.copy()
             new_attrs.update(in_attr_dict)
@@ -62,8 +59,6 @@ def updateE(etype, identifier, attrs, db_attrs, attr_type_dict):
             
         else:
             logger.debug('-- Entity exists with slight diff -> [MERGE]')
-            print('-- Entity exists with slight diff -> [MERGE]')
-            # changed_attrs.pop("hash_text", None)
             # delete old attributes
             dquery = deleteAttrOwn(etype=etype, 
                                 identifier=db_attr_dict['document_uid'],
@@ -99,7 +94,8 @@ def processEntities(nodes, attr_type_dict, session):
     for etype, identifier, attrs in nodes:
         logger.info(f"? ==> Checking entity {etype} exists" )
         db_ent = getEntityDB(etype, identifier, attr_type_dict, session)
-        logger.debug(f"DB STATS [{etype, identifier}]: %s"%('\n'.join(db_ent)))
+        db_ent = [i for i in db_ent if i.get('status')!='archive'][0]
+        logger.debug(f"DB STATS [{etype, identifier}]: %s"%(db_ent))
         if db_ent:
             logger.info(f"{etype} exists! -> updating...")
             q,mq, dq = updateE(etype, identifier, attrs, db_ent, attr_type_dict)
@@ -109,7 +105,6 @@ def processEntities(nodes, attr_type_dict, session):
         else:
             # insert a new entity
             logger.info(f"-- Entity [{etype}] doesn't exist -> [NEW ENTITY]")
-            print(f"-- Entity [{etype}] doesn't exist -> [NEW ENTITY]")
             attrs += [('version', 1)]
             queries.append(insertE(etype, attrs, attr_type_dict))
     return queries, mqueries, dqueries
