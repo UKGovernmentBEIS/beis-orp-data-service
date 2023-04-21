@@ -107,7 +107,11 @@ def capitalize_if_majority_uppercase(s):
     else:
         return s
     
-    
+def custom_title(word):
+    if word and word[0].isalpha():
+        return word[0].upper() + word[1:]
+    return word
+   
 def postprocess_title(title: str) -> str:
     """
     param: title: Str
@@ -124,7 +128,7 @@ def postprocess_title(title: str) -> str:
     for idx, word in enumerate(text_list):
         if idx == 0 or (
                 word.isupper() is False and word not in stopwords.words("english")):
-            returned_list.append(word.title())
+            returned_list.append(custom_title(word))
         else:
             returned_list.append(word)
 
