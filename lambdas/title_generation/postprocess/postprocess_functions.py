@@ -94,6 +94,13 @@ def remove_table_of_contents(title: str):
         return title[:match.start()].strip()
     else:
         return title
+
+def capitalize_if_majority_uppercase(s):
+    uppercase_count = sum(1 for c in s if c.isupper())
+    if uppercase_count > len(s) / 2:
+        return s.upper()
+    else:
+        return s
     
 def postprocess_title(title: str) -> str:
     """
@@ -115,5 +122,5 @@ def postprocess_title(title: str) -> str:
         else:
             returned_list.append(word)
 
-    title = remove_table_of_contents(" ".join(returned_list))
+    title = capitalize_if_majority_uppercase(remove_table_of_contents(" ".join(returned_list)))
     return title
