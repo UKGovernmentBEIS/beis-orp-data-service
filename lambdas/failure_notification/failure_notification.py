@@ -13,6 +13,7 @@ ENVIRONMENT = os.environ['ENVIRONMENT']
 
 
 def get_email_address(user_pool_id, user_sub):
+    logger.info(f'Retrieving email from Cognito for user: {user_sub}')
     cognito_client = boto3.client('cognito-idp')
     try:
         response = cognito_client.admin_get_user(
@@ -74,47 +75,53 @@ def handler(event, context: LambdaContext):
     uploader_email = get_email_address(
         user_pool_id=COGNITO_USER_POOL,
         user_sub=uploader_id)
+    logger.info(f'Retrieved email from Cognito: {uploader_email}')
 
-    logger.error(f'''The ORP failed to ingest a document.
-                 Uploader: {uploader_email}
-                 Document S3 key or URL: {failed_doc}
-                 Error: {error}
-                 Cause: {cause}''')
+    if uploader_email:
+        logger.error(f'''The ORP failed to ingest a document.
+                    Uploader: {uploader_email}
+                    Document S3 key or URL: {failed_doc}
+                    Error: {error}
+                    Cause: {cause}''')
 
-    if document_uid:
+        if document_uid:
 
-        body = f'''Your document (UUID: {document_uid}) has not been uploaded to the ORP.
-                    It can be viewed in the ORP at
-                    https://app.{ENVIRONMENT}.open-regulation.beis.gov.uk/document/view/{document_uid}?ingested=true
-                    However it will not be searchable as uploading the document caused a {error}.
-                    If you know the cause of this error, please fix it and re-upload the document.
-                    If not, reach out to {SENDER_EMAIL_ADDRESS} and they will look into it further.
-                    Thank you for using the ORP.
-                    This is a system generated email, please do not reply.'''
+            body = f'''Your document (UUID: {document_uid}) has not been uploaded to the ORP.
+                        It can be viewed in the ORP at
+                        https://app.{ENVIRONMENT}.open-regulation.beis.gov.uk/document/view/{document_uid}?ingested=true
+                        However it will not be searchable as uploading the document caused a {error}.
+                        If you know the cause of this error, please fix it and re-upload the document.
+                        If not, reach out to {SENDER_EMAIL_ADDRESS} and they will look into it further.
+                        Thank you for using the ORP.
+                        This is a system generated email, please do not reply.'''
+
+        else:
+
+            body = f'''Your document (UUID: {document_uid}) has not been uploaded to the ORP.
+                        Uploading the document caused an error: {error}.
+                        If you the know cause of this error, please fix it and re-upload the document.
+                        If not, reach out to {SENDER_EMAIL_ADDRESS} and they will look into it further.
+                        Thank you for using the ORP.
+                        This is a system generated email, please do not reply.'''
+
+        logger.info(f'Sending email from: {SENDER_EMAIL_ADDRESS} to: {uploader_email}')
+        response = send_email(
+            sender_email=SENDER_EMAIL_ADDRESS,
+            recipient_email=uploader_email,
+            subject='ORP Upload Failure',
+            body=body
+        )
+
+        logger.info('Sent email')
+
+        return {
+            'Uploader': uploader_email,
+            'Failed Doc': failed_doc,
+            'Error': error,
+            'Cause': cause,
+            'Email Send HTTP Response': response
+        }
 
     else:
 
-        body = f'''Your document (UUID: {document_uid}) has not been uploaded to the ORP.
-                    Uploading the document caused an error: {error}.
-                    If you the know cause of this error, please fix it and re-upload the document.
-                    If not, reach out to {SENDER_EMAIL_ADDRESS} and they will look into it further.
-                    Thank you for using the ORP.
-                    This is a system generated email, please do not reply.'''
-
-    logger.info(f'Sending email from: {SENDER_EMAIL_ADDRESS} to: {uploader_email}')
-    response = send_email(
-        sender_email=SENDER_EMAIL_ADDRESS,
-        recipient_email=uploader_email,
-        subject='ORP Upload Failure',
-        body=body
-    )
-
-    logger.info('Sent email')
-
-    return {
-        'Uploader': uploader_email,
-        'Failed Doc': failed_doc,
-        'Error': error,
-        'Cause': cause,
-        'Email Send HTTP Response': response
-    }
+        return {'Notification Failure': 'Couldn\'t find uploader in Cognito'}
