@@ -101,12 +101,15 @@ def handler(event, context: LambdaContext):
                     Thank you for using the ORP.
                     This is a system generated email, please do not reply.'''
 
+    logger.info(f'Sending email from: {SENDER_EMAIL_ADDRESS} to: {uploader_email}')
     response = send_email(
         sender_email=SENDER_EMAIL_ADDRESS,
         recipient_email=uploader_email,
         subject='ORP Upload Failure',
         body=body
     )
+
+    logger.info('Sent email')
 
     return {
         'Uploader': uploader_email,
