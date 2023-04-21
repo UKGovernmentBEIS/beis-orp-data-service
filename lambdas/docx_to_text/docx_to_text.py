@@ -4,6 +4,7 @@ import json
 import docx
 import boto3
 import zipfile
+from datetime import datetime
 import pandas as pd
 import xml.etree.ElementTree as ET
 from aws_lambda_powertools.logging.logger import Logger
@@ -119,6 +120,11 @@ def handler(event, context: LambdaContext):
     source_bucket = event['detail']['bucket']['name']
     object_key = event['detail']['object']['key']
 
+    # Finding the time the object was uploaded
+    date_uploaded = event['time']
+    date_obj = datetime.strptime(date_uploaded, "%Y-%m-%dT%H:%M:%SZ")
+    date_uploaded_formatted = date_obj.strftime("%Y-%m-%dT%H:%M:%S")
+
     s3_client = boto3.client('s3')
     doc_s3_metadata = get_s3_metadata(
         s3_client=s3_client,
@@ -170,6 +176,7 @@ def handler(event, context: LambdaContext):
             'dates':
             {
                 'date_published': date_published,
+                'date_uploaded': date_uploaded_formatted
             }
         },
         'document_type': document_type,
