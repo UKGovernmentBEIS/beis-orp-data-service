@@ -102,7 +102,7 @@ def remove_table_of_contents(title: str):
 
 def capitalize_if_majority_uppercase(s):
     uppercase_count = sum(1 for c in s if c.isupper())
-    if uppercase_count > len(s) / 2:
+    if uppercase_count > len(s) / 2 and any(char.isdigit() for char in s)==False:
         return s.upper()
     else:
         return s
