@@ -152,7 +152,7 @@ def handler(event, context: LambdaContext):
     # Send an email to the user if ingestion is successful and if the user is
     # not an API user
 
-    ############ TODO UNCOMMENT LINE BELOW  
+    ############# TODO UNCOMMENT LINE BELOW  
     # if response['ResponseMetadata']['HTTPStatusCode'] == 200 and not api_user:
 
     ############ TODO RE-INDENT CODE BLOCK BELOW
