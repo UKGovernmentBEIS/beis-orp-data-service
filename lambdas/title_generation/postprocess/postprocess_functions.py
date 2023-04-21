@@ -73,13 +73,17 @@ def remove_other_patterns(title: str) -> str:
     returns: title: Str
         Title without set patterns
         Pattern 1: page %d of %d
-    """    
-    pattern = re.compile(r'page (\d+) of (\d+)')
-    match = pattern.search(title)
-    if match:
-        return title[:match.start()] + title[match.end():]
-    else:
-        return title
+    """
+    patterns = [re.compile(r'page (\d+) of (\d+)'), r'\b(Crown Copyright|Crown copyright)\b']
+    for idx, pat in enumerate(patterns):    
+        match = re.search(pat, title)
+        if (match and idx==0):
+            title = title[:match.start()] + title[match.end():]
+        elif (match and idx==1):
+            return title[:match.start()].strip()
+        elif idx==1:
+            return title
+        
 
 def remove_table_of_contents(title: str):
     """
@@ -95,12 +99,14 @@ def remove_table_of_contents(title: str):
     else:
         return title
 
+
 def capitalize_if_majority_uppercase(s):
     uppercase_count = sum(1 for c in s if c.isupper())
     if uppercase_count > len(s) / 2:
         return s.upper()
     else:
         return s
+    
     
 def postprocess_title(title: str) -> str:
     """
