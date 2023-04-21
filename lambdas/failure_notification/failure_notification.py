@@ -12,6 +12,17 @@ SENDER_EMAIL_ADDRESS = os.environ['SENDER_EMAIL_ADDRESS']
 ENVIRONMENT = os.environ['ENVIRONMENT']
 
 
+def get_s3_metadata(s3_client, object_key, source_bucket):
+    '''Gets the S3 metadata attached to the document'''
+
+    metadata = s3_client.head_object(
+        Bucket=source_bucket,
+        Key=object_key
+    )['Metadata']
+
+    return metadata
+
+
 def get_email_address(user_pool_id, user_sub):
     logger.info(f'Retrieving email from Cognito for user: {user_sub}')
     cognito_client = boto3.client('cognito-idp')
@@ -60,14 +71,32 @@ def send_email(sender_email, recipient_email, subject, body):
 def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
-    if event['detail']['object']['key'] == 'HTML':
+    file_extensions = ['.doc', '.docx', '.pdf', '.odt', '.odf', '.odp']
+
+    if event.get('lambda'):
+        document = event['document']
+        document_uid = document['document_uid']
+        uploader_id = document['user_id']
+
+    if event.get['detail']['object']['key'] == 'HTML':
         document = json.loads(event['body']['body'])
         failed_doc = document['uri']
         document_uid = document.get('document_uid', document.get('uuid'))
         uploader_id = document['user_id']
-    else:
+
+    elif any(event['detail']['object']['key'].endswith(extension) for extension in file_extensions):
         failed_doc = event['detail']['object']['key']
-        uploader_id = failed_doc['user_id']
+
+        # Logic for downloading metadata from S3 object
+        s3_client = boto3.client('s3')
+        doc_s3_metadata = get_s3_metadata(
+            s3_client=s3_client,
+            object_key=failed_doc,
+            source_bucket=event['detail']['bucket']['name']
+        )
+
+        document_uid = doc_s3_metadata['uuid']
+        uploader_id = doc_s3_metadata.get('user_id')
 
     error = event.get('error').get('Error')
     cause = event.get('error').get('Cause')
@@ -75,7 +104,7 @@ def handler(event, context: LambdaContext):
     uploader_email = get_email_address(
         user_pool_id=COGNITO_USER_POOL,
         user_sub=uploader_id)
-    logger.info(f'Retrieved email from Cognito: {uploader_email}')
+    logger.info(f'Retrieved email from Cognito: {uploader_id}')
 
     if uploader_email:
         logger.error(f'''The ORP failed to ingest a document.
@@ -97,7 +126,7 @@ def handler(event, context: LambdaContext):
 
         else:
 
-            body = f'''Your document (UUID: {document_uid}) has not been uploaded to the ORP.
+            body = f'''Your document {failed_doc} has not been uploaded to the ORP.
                         Uploading the document caused an error: {error}.
                         If you the know cause of this error, please fix it and re-upload the document.
                         If not, reach out to {SENDER_EMAIL_ADDRESS} and they will look into it further.
