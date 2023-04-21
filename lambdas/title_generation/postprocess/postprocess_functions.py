@@ -81,6 +81,20 @@ def remove_other_patterns(title: str) -> str:
     else:
         return title
 
+def remove_table_of_contents(title: str):
+    """
+    Checks if Contents or Table of Contents is followed by 1, and then 
+    whether the number 2 follows the subsequent sequence of words
+    params: title
+        returns: title
+    """
+    pattern = r'\b(Contents|Table of Contents|Table of contents)\b\s*1\s+\D+?\s+2'
+    match = re.search(pattern, title)
+    if match:
+        return title[:match.start()].strip()
+    else:
+        return title
+    
 def postprocess_title(title: str) -> str:
     """
     param: title: Str
@@ -101,4 +115,5 @@ def postprocess_title(title: str) -> str:
         else:
             returned_list.append(word)
 
-    return " ".join(returned_list)
+    title = remove_table_of_contents(" ".join(returned_list))
+    return title
