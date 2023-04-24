@@ -36,5 +36,5 @@ def create_hash_list(text):
     returns: hash_list: list of hashes
     '''
     hash_np = getHash(text)
-    hash_list = map(str, hash_np.tolist())
+    hash_list = list(map(str, hash_np.tolist()))
     return hash_np, hash_list
