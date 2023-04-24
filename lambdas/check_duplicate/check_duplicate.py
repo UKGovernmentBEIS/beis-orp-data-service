@@ -61,7 +61,7 @@ def read_transaction(session, hash_list):
         $u isa regulatoryDocument,
         has attribute $a,
         has hash_text $h;
-        not {{$x has status "archive";}}; #skips archived versions of docs
+        not {{$u has status "archive";}}; 
         {contains}; group $u;
     '''
     query_len = len(query)
