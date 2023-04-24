@@ -115,11 +115,9 @@ def handler(event, context: LambdaContext):
 
         if document_uid:
 
-            body = f'''Your document (UUID: {document_uid}) has NOT been uploaded to the ORP.
-                        It can be previewed at
-                        https://app.{ENVIRONMENT}.open-regulation.beis.gov.uk/document/view/{document_uid}?ingested=true
-                        However it will not be searchable as uploading the document caused an error.
-                        Please reach out to {SENDER_EMAIL_ADDRESS} and they will look into the error.
+            body = f'''Your document (UUID: {document_uid}) has not been uploaded to the ORP.
+                        Uploading the document caused an error.
+                        Please reach out to the BEIS team at {SENDER_EMAIL_ADDRESS} and they will look into the error.
                         Thank you for using the ORP.
                         This is a system generated email, please do not reply.'''
 
@@ -127,7 +125,7 @@ def handler(event, context: LambdaContext):
 
             body = f'''Your document {failed_doc} has not been uploaded to the ORP.
                         Uploading the document caused an error.
-                        Please reach out to {SENDER_EMAIL_ADDRESS} and they will look into it further.
+                        Please reach out to the BEIS team at {SENDER_EMAIL_ADDRESS} and they will look into the error.
                         Thank you for using the ORP.
                         This is a system generated email, please do not reply.'''
 
