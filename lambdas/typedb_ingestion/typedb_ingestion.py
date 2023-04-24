@@ -25,7 +25,8 @@ def merge_dicts(dict_list):
         elif dictionary['lambda'] == 'keyword_extraction':
             merged_dict['subject_keywords'] = dictionary['document']['subject_keywords']
             # Title is added here as the keyword_extraction lambda runs immediately
-            # after the title_generation lambda
+            # after the title_generation lambda so it can extract keywords from the
+            # title too
             merged_dict['title'] = dictionary['document']['title']
         elif dictionary['lambda'] == 'summarisation':
             merged_dict['summary'] = dictionary['document']['summary']
