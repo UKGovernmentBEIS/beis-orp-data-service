@@ -121,7 +121,7 @@ def handler(event, context: LambdaContext):
     s3_client = boto3.client('s3')
     text = download_text(s3_client=s3_client, document_uid=document_uid)
 
-    title = get_title(title=metadata_title, text=text, threshold=80)
+    title = get_title(title=metadata_title, text=text, threshold=85)
     logger.info(f'Document title is: {title}')
 
     handler_response = event
