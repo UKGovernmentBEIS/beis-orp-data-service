@@ -1,5 +1,4 @@
 import os
-import nltk
 import boto3
 import numpy as np
 from numpy.linalg import norm
@@ -15,7 +14,7 @@ logger = Logger()
 search_keys = {'id', 'status',
                'regulatory_topic', 'document_type'}
 return_vals = ['regulatory_topic', 'document_type', 'status']
-
+SIMILARITY_SCORE_CUTOFF=0.95
 
 def validate_env_variable(env_var_name):
     '''Check existence of environment variables'''
@@ -59,12 +58,16 @@ def read_transaction(session, hash_list):
 
     query = f'''
     match
-        $u isa legalDocument,
+        $u isa regulatoryDocument,
         has attribute $a,
+        has status "published",
         has hash_text $h;
         {contains}; group $u;
     '''
-    # Read the person using a READ only transaction
+    query_len = len(query)
+    logger.info(f"Length of query: {query_len}")
+
+    # Read using a READ only transaction
     with session.transaction(TransactionType.READ) as read_transaction:
         answer_iterator = read_transaction.query().match_group(query)
 
@@ -103,7 +106,7 @@ def get_similarity_score(hash_np, matching_hash_list):
     max_score = max(scores)
     logger.info(f"Incoming hash: {hash_np}")
     logger.info(f"Max score: {max_score}")
-    if (len(scores) > 0) and (max_score >= 0.95):
+    if (len(scores) > 0) and (max_score >= SIMILARITY_SCORE_CUTOFF):
         if max(scores) == 1:
             logger.info('Duplicate text detected')
             index = scores.index(max(scores))
@@ -189,66 +192,63 @@ def handler(event, context: LambdaContext):
     COGNITO_USER_POOL = validate_env_variable('COGNITO_USER_POOL')
     SENDER_EMAIL_ADDRESS = validate_env_variable('SENDER_EMAIL_ADDRESS')
 
-    ######### TODO UNCOMMENT BELOW 
-    # # Open TypeDB session
-    # client = TypeDB.core_client(TYPEDB_SERVER_IP + ':' + TYPEDB_SERVER_PORT)
-    # session = client.session(TYPEDB_DATABASE_NAME, SessionType.DATA)
+    # Open TypeDB session
+    client = TypeDB.core_client(TYPEDB_SERVER_IP + ':' + TYPEDB_SERVER_PORT)
+    session = client.session(TYPEDB_DATABASE_NAME, SessionType.DATA)
 
-    # # Call S3 and download processed text
-    # config = Config(connect_timeout=5, retries={'max_attempts': 0})
-    # s3_client = boto3.client('s3', config=config)
-    # text = download_text(
-    #     s3_client=s3_client,
-    #     document_uid=document_uid,
-    #     bucket=SOURCE_BUCKET
-    # )
+    # Call S3 and download processed text
+    config = Config(connect_timeout=5, retries={'max_attempts': 0})
+    s3_client = boto3.client('s3', config=config)
+    text = download_text(
+        s3_client=s3_client,
+        document_uid=document_uid,
+        bucket=SOURCE_BUCKET
+    )
 
-    # # Get incoming metadata
-    # incoming_metadata = dict(
-    #     zip(return_vals, [event['document'][val] for val in return_vals]))
-    # user_id = event['document']['user_id']
+    # Get incoming metadata
+    incoming_metadata = dict(
+        zip(return_vals, [event['document'][val] for val in return_vals]))
+    user_id = event['document']['user_id']
 
-    # # If search module returns a True i.e. duplicate text with different metadata, then replace existing metadata
-    # # The returned dictionary is the existing document's metadata
-    # hash_np, hash_list = create_hash_list(text)
-    # is_duplicate_results = search_module(session, hash_np, hash_list, incoming_metadata)
+    # If search module returns a True i.e. duplicate text with different metadata, then replace existing metadata
+    # The returned dictionary is the existing document's metadata
+    hash_np, hash_list = create_hash_list(text)
+    is_duplicate_results = search_module(session, hash_np, hash_list, incoming_metadata)
 
-    # # Close TypeDB session and define handler response
-    # session.close()
-    # client.close()
+    # Close TypeDB session and define handler response
+    session.close()
+    client.close()
 
 
     handler_response = event
     handler_response['lambda'] = 'deduplication'
 
 
-    ######### TODO UNCOMMENT BELOW 
-    # logger.info(is_duplicate_results)
 
-    # # ========== 1. If it is not a duplicate, insert hash and pass the document
-    # if is_duplicate_results is False:
-    #     handler_response['document']['hash_text'] = '_'.join(map(str, hash_np.tolist()))
-    #     logger.info('Hash inserted into graph')
-    #     return handler_response
+    # ========== 1. If it is not a duplicate, insert hash and pass the document
+    handler_response['document']['hash_text'] = '_'.join(map(str, hash_np.tolist()))
+    if is_duplicate_results is False:
+        logger.info('New document!')
+        return handler_response
 
-    # # ========== 2. If the document is a version (same text different metadata) return node ID
-    # elif is_duplicate_results[0] is False:
-    #     node_id = is_duplicate_results[2]
-    #     handler_response['document']['node_id'] = node_id
-    #     logger.info(f"Node_id of existing version to be changed {node_id}")
-    #     return handler_response
+    # ========== 2. If the document is a version (similar text, different metadata) return node ID
+    elif is_duplicate_results[0] is False:
+        node_id = is_duplicate_results[2]
+        handler_response['document']['node_id'] = node_id
+        logger.info(f"Similar document exists!\nNode_id of existing version to be changed {node_id}")
+        return handler_response
 
-    # # ========== 3. Else the document is a complete duplicate, and the user is informed
-    # else:
-    #     # Get the existing metadata of the matching document
-    #     complete_existing_metadata = is_duplicate_results[1]
-    #     send_email(
-    #         COGNITO_USER_POOL,
-    #         SENDER_EMAIL_ADDRESS,
-    #         user_id,
-    #         complete_existing_metadata
-    #     )
-    #     return handler_response
+   
+    # ========== 3. Else the document is a complete duplicate, and the user is informed
+    else:
+        # Get the existing metadata of the matching document
+        complete_existing_metadata = is_duplicate_results[1]
+        send_email(
+            COGNITO_USER_POOL,
+            SENDER_EMAIL_ADDRESS,
+            user_id,
+            complete_existing_metadata
+        )
+        return handler_response
 
-    ######### TODO DELETE BELOW 
-    return handler_response
+  
