@@ -53,7 +53,7 @@ def read_transaction(session, hash_list):
         returns: matching_hash_list: list of hashes from the database that matched an integer in the hash_list
                 metadata_dict: dictionary of the metadata of all the shortlisted documents
     '''
-    logger.info(f'Incoming document hash: {hash_list}')
+    logger.info(f'Incoming document hash: {"_".join(map(str,hash_list))}')
     window_size=6
     hl = [hash_list[i:i+window_size] for i in range(0,len(hash_list)+1, window_size)]
     contains = ' or '.join(['{$h contains \'%s\';}' % "_".join(map(str, hash)) for hash in hl])
@@ -66,8 +66,8 @@ def read_transaction(session, hash_list):
         not {{$u has status "archive";}}; 
         {contains}; group $u;
     '''
-    query_len = len(query)
-    logger.info(f"Length of query: {query_len}")
+    
+    logger.info(f"Query:\n {query}")
 
     # Read using a READ only transaction
     with session.transaction(TransactionType.READ) as read_transaction:
