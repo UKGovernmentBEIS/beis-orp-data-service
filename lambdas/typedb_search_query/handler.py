@@ -142,18 +142,17 @@ def query_builder(event):
         if event.get('regulatory_topic'):
             query += f', has regulatory_topic "{event["regulatory_topic"]}"'
 
-        # list filters
+        
+        # list filters [AND]
         if event.get('keyword'):
             query += ''.join(
                 [f', has keyword "{get_lemma(kw.strip().lower())}"' for kw in event['keyword'].split(' ')])
-
-        if event.get('document_type'):
-            query += ', has document_type $document_type'
-            subq += f"; $document_type like \"{'|'.join([i for i in event['document_type']])}\""
-
-        if event.get('status'):
-            query += ', has status $status'
-            subq += f"; $status like \"{'|'.join([i for i in event['status']])}\""
+    
+        # list filters [OR]
+        paramOR = {'document_type', 'regulator_id', 'status'}
+        for param in set(event.keys())&paramOR:
+            query += f', has {param} ${param}'
+            subq += f"; ${param} like \"{'|'.join([i for i in event[param]])}\""
 
         # compound filters
         if event.get('date_published'):
@@ -169,10 +168,6 @@ def query_builder(event):
             query += ', has title $title'
             subq += f'; $title contains "{event["title"].lower()}"'
 
-        if event.get('regulator_id'):
-            query += '; $y isa regulator, has regulator_id $rid'
-            subq += f"; $rid like \"{'|'.join([i for i in event['regulator_id']])}\""
-            query += '; (issued:$x,issuedBy:$y) isa publication'
     query += subq
     query += '; get $attribute, $x; group $x;'
     return query
