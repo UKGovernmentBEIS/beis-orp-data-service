@@ -78,7 +78,7 @@ def handler(event, context: LambdaContext):
         document_uid = document['document_uid']
         uploader_id = document['user_id']
 
-    if event.get['detail']['object']['key'] == 'HTML':
+    if event['detail']['object']['key'] == 'HTML':
         document = json.loads(event['body']['body'])
         failed_doc = document['uri']
         document_uid = document.get('document_uid', document.get('uuid'))
