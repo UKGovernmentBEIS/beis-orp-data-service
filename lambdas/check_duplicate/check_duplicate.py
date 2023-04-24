@@ -12,7 +12,7 @@ from aws_lambda_powertools.logging.logger import Logger
 
 logger = Logger()
 search_keys = {'document_uid', 'status',
-               'regulatory_topic', 'document_type'}
+               'regulatory_topic', 'document_type', 'node_id'}
 return_vals = ['regulatory_topic', 'document_type', 'status']
 SIMILARITY_SCORE_CUTOFF=0.95
 
