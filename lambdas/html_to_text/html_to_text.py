@@ -5,7 +5,6 @@ from datetime import datetime
 import boto3
 import requests
 import pandas as pd
-from notification_email import send_email
 from bs4 import BeautifulSoup
 from htmldate import find_date
 from govuk_extraction import get_content
@@ -16,8 +15,6 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 logger = Logger()
 
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
-COGNITO_USER_POOL = os.environ['COGNITO_USER_POOL']
-SENDER_EMAIL_ADDRESS = os.environ['SENDER_EMAIL_ADDRESS']
 
 
 def get_title_and_text(URL):
@@ -134,21 +131,7 @@ def handler(event, context: LambdaContext):
         response = get_title_and_text(url)
         date_published = get_publication_modification_date(url)
 
-        # If response is None, notify the uploader of a bad url
-        if response is None:
-            logger.info("Bad URL uploaded")
-            send_email(
-                COGNITO_USER_POOL,
-                SENDER_EMAIL_ADDRESS,
-                user_id=user_id,
-                url=url
-            )
-            # TODO CHANGE RETURN EMPTY DICTIONARY
-            handler_response = {}
-            return handler_response
-
-        else:
-            title, text = response
+        title, text = response
 
     logger.info(f'Document title is: {title}'
                 f'Publishing date is: {date_published}')
