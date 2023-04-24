@@ -11,7 +11,7 @@ from aws_lambda_powertools.logging.logger import Logger
 
 
 logger = Logger()
-search_keys = {'id', 'status',
+search_keys = {'document_uid', 'status',
                'regulatory_topic', 'document_type'}
 return_vals = ['regulatory_topic', 'document_type', 'status']
 SIMILARITY_SCORE_CUTOFF=0.95
@@ -59,7 +59,7 @@ def read_transaction(session, hash_list):
     query = f'''
     match
         $u isa regulatoryDocument,
-        has attribute $a,
+        {''.join([f'has {i} ${i},' for i in search_keys])}
         has hash_text $h;
         not {{$u has status "archive";}}; 
         {contains}; group $u;
