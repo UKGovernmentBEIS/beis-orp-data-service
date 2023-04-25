@@ -94,10 +94,10 @@ def processEntities(nodes, attr_type_dict, session):
     for etype, identifier, attrs in nodes:
         logger.info(f"? ==> Checking entity {etype} exists" )
         db_ent = getEntityDB(etype, identifier, attr_type_dict, session)
-        db_ent = [i for i in db_ent if i.get('status')!='archive'][0]
-        logger.debug(f"DB STATS [{etype, identifier}]: %s"%(db_ent))
         if db_ent:
             logger.info(f"{etype} exists! -> updating...")
+            db_ent = [i for i in db_ent if i.get('status')!='archive'][0]
+            logger.debug(f"DB STATS [{etype, identifier}]: %s"%(db_ent))
             q,mq, dq = updateE(etype, identifier, attrs, db_ent, attr_type_dict)
             queries.append(q)
             mqueries.append(mq)
@@ -130,14 +130,14 @@ def processLinks(links, attr_type_dict, session):
 
 
 
-def process_record(jsobj, attr_type_dict, session): 
-    queries = []
-    mqueries = []
-    dqueries = []
+# def process_record(jsobj, attr_type_dict, session): 
+#     queries = []
+#     mqueries = []
+#     dqueries = []
     
-    q, mq, dq = processEntities(jsobj.get('entities', []), attr_type_dict, session)
-    queries.extend(q)
-    mqueries.extend(mq)
-    dqueries.extend(dq)
-    mqueries.extend(processLinks(jsobj.get('links', []), attr_type_dict, session))
-    return queries, mqueries, dqueries
+#     q, mq, dq = processEntities(jsobj.get('entities', []), attr_type_dict, session)
+#     queries.extend(q)
+#     mqueries.extend(mq)
+#     dqueries.extend(dq)
+#     mqueries.extend(processLinks(jsobj.get('links', []), attr_type_dict, session))
+#     return queries, mqueries, dqueries
