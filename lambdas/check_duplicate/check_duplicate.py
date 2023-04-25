@@ -240,7 +240,7 @@ def handler(event, context: LambdaContext):
     elif is_duplicate_results[0] is False:
         node_id = is_duplicate_results[2]
         handler_response['document']['node_id'] = node_id
-        logger.info(f"Similar document exists!\nNode_id of existing version to be changed {node_id}")
+        logger.info(f"Similar document exists! Node_id of existing version to be changed {node_id}")
         return handler_response
 
    
