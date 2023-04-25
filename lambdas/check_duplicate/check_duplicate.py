@@ -112,13 +112,9 @@ def get_similarity_score(hash_np, matching_hash_list):
     logger.info(f"Incoming hash: {hash_np}")
     logger.info(f"Max score: {max_score}")
     if (len(scores) > 0) and (max_score >= SIMILARITY_SCORE_CUTOFF):
-        if max(scores) == 1:
-            logger.info('Duplicate text detected')
+            logger.info('Possible duplicate text detected')
             index = scores.index(max(scores))
             return index
-        else:
-            logger.info('Possible version detected, no current process for versioning.')
-            return None
     else:
         logger.info('New document')
         return None
