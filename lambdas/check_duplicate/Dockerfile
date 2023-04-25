@@ -5,7 +5,7 @@ COPY requirements.txt  .
 RUN pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
 # Environment Variables
-ENV NLTK_DATA={LAMBDA_TASK_ROOT}/nltk_data/
+ENV NLTK_DATA=${LAMBDA_TASK_ROOT}/nltk_data/
 
 # Create directory and download NLTK
 RUN mkdir -p ${LAMBDA_TASK_ROOT}/nltk_data/
