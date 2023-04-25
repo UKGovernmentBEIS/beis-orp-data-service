@@ -5,6 +5,7 @@ from numpy.linalg import norm
 from botocore.client import Config
 from utils import create_hash_list
 from notification_email import send_email
+from pandas import DataFrame
 from typedb.client import TransactionType, SessionType, TypeDB
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools.logging.logger import Logger
@@ -39,11 +40,13 @@ def download_text(s3_client, document_uid, bucket):
 
     return text
 
+def group_attributes(attr):
+    return DataFrame(attr).groupby(0)[1].apply(set).apply(lambda x: list(x) if len(x)>1 else list(x)[0]).to_dict()
 
 def getUniqueResult(results):
     res = [(i.get_type().get_label().name(), i.get_value())
            for a in results for i in a.concepts() if i.is_attribute()]
-    return res
+    return group_attributes(res)
 
 
 def read_transaction(session, hash_list):
@@ -75,20 +78,20 @@ def read_transaction(session, hash_list):
 
         # Get matches on hash
         ans_list = [ans for ans in answer_iterator]
-        metadata_dict = [dict(getUniqueResult(results=a.concept_maps()))
-                         for a in ans_list]
+    metadata_dict = [getUniqueResult(results=a.concept_maps())
+                        for a in ans_list]
+    
+    matching_hash_list = [
+        np.array(
+            hash['hash_text'].split('_'),
+            dtype='uint64') for hash in metadata_dict]
 
-        matching_hash_list = [
-            np.array(
-                hash['hash_text'].split('_'),
-                dtype='uint64') for hash in metadata_dict]
+    # Node IDs
+    node_id_list = [node['node_id'] for node in metadata_dict]
 
-        # Node IDs
-        node_id_list = [node['node_id'] for node in metadata_dict]
-
-        logger.info('Number of returned hashes: ' + str(len(matching_hash_list)))
-        logger.info(matching_hash_list)
-        return matching_hash_list, metadata_dict, node_id_list
+    logger.info('Number of returned hashes: ' + str(len(matching_hash_list)))
+    logger.info(matching_hash_list)
+    return matching_hash_list, metadata_dict, node_id_list
 
 
 def get_similarity_score(hash_np, matching_hash_list):
