@@ -25,7 +25,7 @@ def extractElements(js:dict, dict_thing_attrs:dict):
     reg_topic = js.get('regulatory_topic', [])
     doc['regulatory_topic'] = reg_topic
     if reg_topic: 
-        doc['assigned_orp_topic'] = max(reg_topic, key=len)
+        doc['assigned_orp_topic'] = reg_topic[-1]
     doc['document_type'] = js.get('document_type', 'NA')
     
     # insert regDoc node

@@ -9,7 +9,7 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-
+CHANGES_THRESHOLD=0.995
 # =====
 
 def changedAttrs(old:dict, new:dict, attr_type_dict):
@@ -42,7 +42,7 @@ def updateE(etype, identifier, attrs, db_attrs, attr_type_dict):
     if changed_attrs:
         similarity = sim_hash(in_attr_dict, db_attr_dict)
         logger.debug(f"HASH SIMILARITY: {similarity}")
-        if (etype == 'regulatoryDocument') and (similarity < 0.99):
+        if (etype == 'regulatoryDocument') and (similarity < CHANGES_THRESHOLD):
             logger.debug('-- Entity exists with big changes -> [NEW VERSION]')
             # compile new attrs
             new_attrs = db_attr_dict.copy()
@@ -105,7 +105,7 @@ def processEntities(nodes, attr_type_dict, session):
         else:
             # insert a new entity
             logger.info(f"-- Entity [{etype}] doesn't exist -> [NEW ENTITY]")
-            attrs += [('version', 1)]
+            if etype=='regulatoryDocument': attrs += [('version', 1)]
             queries.append(insertE(etype, attrs, attr_type_dict))
     return queries, mqueries, dqueries
 
