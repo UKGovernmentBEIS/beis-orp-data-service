@@ -155,7 +155,7 @@ def extract_legislative_origins(table, title_list):
         item = response['Item']
 
         legislative_origin = {
-            "url": item["href"],
+            "href": item["href"],
             "ref": item["ref"],
             "title": item["title"],
             "number": item["number"],

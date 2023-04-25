@@ -1,18 +1,9 @@
 import re
-import os
-import boto3
 import spacy
-from tqdm import tqdm
 from typing import List
 from preprocess.preprocess_functions import removing_regulator_names
 
-
-MODEL_BUCKET = os.environ['MODEL_BUCKET']
-MODEL_PATH = os.environ['MODEL_PATH']
-
 my_pattern = re.compile(r'\s+')
-
-s3_client = boto3.client('s3')
 
 
 # Shorten text for input to title extraction model
@@ -69,12 +60,12 @@ def get_similarity_scores(title: str, candidate_titles: List) -> float:
 
     title = nlp(re.sub(r'[^\w\s]', '', title.lower()))
 
-    for sent in tqdm(candidate_titles):
+    for sent in candidate_titles:
         score = title.similarity(nlp(re.sub(r'[^\w\s]', '', sent.lower())))
         similarity_scores.append(score * 100)
 
     # Get score of match
-    if not similarity_scores:
+    if len(similarity_scores)>0:
         score = max(similarity_scores)
     else:
         score = 0

@@ -5,40 +5,86 @@ The General Teaching Councils for Scotland, Wales and Northern Ireland
 Ofqual – Office of Qualifications and Examinations Regulation
 Ofsted – Office for Standards in Education, Children's Services and Skills
 Office for Students (OfS)
+Office for Students
 Environment Agency (EA)
+Environment Agency
+Department for Communities and Local Government
 Marine Management Organisation (MMO)
+Marine Management Organisation
+Office for Product Safety & Standards
+Office for Product Safety and Standards
 Natural Resources Wales (NRW)
+Natural Resources Wales
 Northern Ireland Environment Agency (NIEA)
+Northern Ireland Environment Agency
 Scottish Environment Protection Agency (SEPA)
+Scottish Environment Protection Agency
 Financial Conduct Authority (FCA)
-The Office for Professional Body Anti-Money Laundering Supervision (OPBAS)[1]
-Financial Reporting Council, expected to be replaced by the Audit, Reporting and Governance Authority in 2023
+Financial Conduct Authority
+The Office for Professional Body Anti-Money Laundering Supervision (OPBAS)
+The Office for Professional Body Anti-Money Laundering Supervision
+Financial Reporting Council
+Reporting and Governance Authority
+Reporting & Governance Authority
 Institute of Chartered Accountants in England and Wales
+Institute of Chartered Accountants in England & Wales
 Office of the Regulator of Community Interest Companies (ORCIC)
+Office of the Regulator of Community Interest Companies
 Payment Systems Regulator (PSR)
+Payment Systems Regulator
 Pensions Regulator
+The Pensions Regulator
+Information Commissioner's Office
+Information Commissioner's Office (ICO)
 Prudential Regulation Authority (PRA)
+Prudential Regulation Authority
 Care Quality Commission (CQC)
+Care Quality Commission
 Complementary and Natural Healthcare Council (CNHC)
+Complementary & Natural Healthcare Council (CNHC)
+Complementary and Natural Healthcare Council
+Complementary & Natural Healthcare Council
 General Chiropractic Council (GCC)
+General Chiropractic Council
 General Dental Council (GDC)
+General Dental Council
 General Medical Council (GMC)
+General Medical Council
 General Optical Council (GOC)
+General Optical Council
 General Osteopathic Council (GOsC)
+General Osteopathic Council
 General Pharmaceutical Council (GPhC)
-Health and Care Professions Council (HCPC) – fifteen professions with designated titles[2]
+General Pharmaceutical Council
+Health and Care Professions Council (HCPC)
+Health & Care Professions Council (HCPC)
+Health and Care Professions Council
+Health & Care Professions Council
 Health and Safety Executive
+Health & Safety Executive
 Healthcare Inspectorate Wales (HIW)
+Healthcare Inspectorate Wales
 Healthcare Safety Investigation Branch (HSIB)
+Healthcare Safety Investigation Branch
 Human Fertilisation and Embryology Authority
+Human Fertilisation & Embryology Authority
 Human Tissue Authority (HTA)
+Human Tissue Authority
 Medicines and Healthcare products Regulatory Agency (MHRA)
+Medicines and Healthcare products Regulatory Agency
+Medicines & Healthcare products Regulatory Agency
 NHS Improvement (NHSI)
+NHS Improvement
 Nursing and Midwifery Council (NMC)
+Nursing and Midwifery Council
+Nursing & Midwifery Council
 Pharmaceutical Society of Northern Ireland (PSNI)
+Pharmaceutical Society of Northern Ireland
 Professional Standards Authority for Health and Social Care
 Royal College of Veterinary Surgeons (RCVS)
+Royal College of Veterinary Surgeons
 UK Health Security Agency (UKHSA)
+UK Health Security Agency
 Regulator of Social Housing
 Scottish Housing Regulator
 Authorised Conveyancing Practitioners Board
@@ -54,17 +100,30 @@ Costs Lawyer Standards Board[3]
 Council for Licensed Conveyancers
 Scottish Care Inspectorate
 Care Council for Wales (CCW)
-Social Work England[4]
+Care Council for Wales
+Social Work England
 Northern Ireland Social Care Council (NISCC)
+Northern Ireland Social Care Council
 Scottish Social Services Council (SSSC)
+Scottish Social Services Council
 Civil Aviation Authority (CAA)
+Civil Aviation Authority
 Office of Rail and Road (ORR)
+Office of Rail and Road
+Office of Rail & Road
 Ofcom – independent regulator and competition authority for the UK communications industries
+Ofcom
 Phone-paid Services Authority – regulator for phone-paid services in the UK, part of Ofcom, replaces ICSTIS, PhonepayPlus
+Phone-paid Services Authority
 Office for Nuclear Regulation (ONR)
+Office for Nuclear Regulation
+Office for Product Safety & Standards
 Ofgem – the Office of the Gas and Electricity Markets
+Ofgem
 Ofwat – the Water Services Regulation Authority
-The Utility Regulator – regulating electricity, gas, water and sewerage industries in Northern Ireland[5]
+Ofwat
+The Utility Regulator – regulating electricity, gas, water and sewerage industries in Northern Ireland
+The Utility Regulator
 Water Industry Commission for Scotland
 Accreditation Service
 Advertising Standards Authority
@@ -74,13 +133,16 @@ Competition and Markets Authority
 Council for Registered Gas Installers
 Direct Marketing Authority
 Engineering Council – the regulatory body for the engineering profession
+Engineering Council
 Equality and Human Rights Commission
+Equality & Human Rights Commission
 Food Standards Agency
 Forensic Science Regulator
 Fundraising Regulator
 Gambling Commission
 Gangmasters and Labour Abuse Authority
 HM Revenue and Customs
+HM Revenue & Customs
 IMPRESS
 Independent Press Standards Organisation
 Information Commissioner's Office

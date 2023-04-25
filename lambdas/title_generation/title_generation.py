@@ -13,36 +13,32 @@ from search_metadata_title.get_title import identify_metadata_title_in_text
 
 logger = Logger()
 
-MODEL_PATH = os.environ['MODEL_PATH']
-MODEL_BUCKET = os.environ['MODEL_BUCKET']
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
 NLTK_DATA = os.environ['NLTK_DATA']
 
+# Download models from local path
+t5_tokenizer = AutoTokenizer.from_pretrained(
+        './LLM/t5_tokenizer')
+t5_model = AutoModelForSeq2SeqLM.from_pretrained(
+        './LLM/t5_model')
+
 os.makedirs(NLTK_DATA, exist_ok=True)
-nltk.download('wordnet', download_dir=NLTK_DATA)
-nltk.download('omw-1.4', download_dir=NLTK_DATA)
-nltk.download('punkt', download_dir=NLTK_DATA)
-nltk.download('stopwords', download_dir=NLTK_DATA)
+nltk.download('popular', download_dir=NLTK_DATA)
 
 
-def title_predictor(text: str) -> str:
+def title_predictor(text: str, model, tokenizer) -> str:
     '''
     param: text: Str document text
     returns: processed_title: Str cleaned predicted title from text from pretrained model
         Function to predict a title from the document text using a pretrained model
     '''
 
-    tokenizer = AutoTokenizer.from_pretrained(
-        'fabiochiu/t5-small-medium-title-generation')
-    model = AutoModelForSeq2SeqLM.from_pretrained(
-        'fabiochiu/t5-small-medium-title-generation')
-
     # Preprocess the text
     text = preprocess(text)
     inputs = ['summarize: ' + text]
     inputs = tokenizer(inputs, truncation=True, return_tensors='pt')
     output = model.generate(**inputs, num_beams=10,
-                            do_sample=False, min_length=10, max_new_tokens=25)
+                            do_sample=False, min_length=10)
     decoded_output = tokenizer.batch_decode(
         output, skip_special_tokens=True)[0]
     predicted_title = nltk.sent_tokenize(decoded_output.strip())[0]
@@ -77,25 +73,26 @@ def get_title(title: str,
 
     # Immediately filter out long metadata titles
     if (len(title.split(' ')) > 40):
-        title = title_predictor(text)
+        title = title_predictor(text, model=t5_model, tokenizer=t5_tokenizer)
         return title
 
     else:
         score = identify_metadata_title_in_text(title, text)
+        logger.info(f"Metadata score: {score}")
 
         # If score is greater than 95% and title is less than / equal to 2 tokens
         length_of_no_punctuation_title = len(
             re.sub(r'[^\w\s]', ' ', title).split(' '))
 
         if score >= 95 and (length_of_no_punctuation_title <= 2):
-            title = title_predictor(text)
+            title = title_predictor(text, model=t5_model, tokenizer=t5_tokenizer)
             return title
 
         elif (score > threshold) and (length_of_no_punctuation_title >= 3):
             return title
 
         else:
-            title = title_predictor(text)
+            title = title_predictor(text, model=t5_model, tokenizer=t5_tokenizer)
             return title
 
 

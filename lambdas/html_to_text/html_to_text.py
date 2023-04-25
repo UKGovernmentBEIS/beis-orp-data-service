@@ -1,5 +1,6 @@
 import re
 import os
+import json
 from datetime import datetime
 import boto3
 import requests
@@ -19,16 +20,51 @@ DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
 def get_title_and_text(URL):
     '''
     params: req: request URL
-    returns: title, text: Str
+        returns: title, text: str
+        returns: None: if bad URL is uploaded
     '''
-    req = requests.get(URL)
-    soup = BeautifulSoup(req.text, 'html.parser')
+    try:
+        req = requests.get(URL)
+        soup = BeautifulSoup(req.text, 'html.parser')
 
-    title = str(soup.head.title.get_text())
-    text = re.sub(
-        "\\s+", " ", str(soup.body.find(id="contentContainer").get_text()).replace("\n", " "))
+        title = str(soup.head.title.get_text())
+        text = re.sub(
+            "\\s+", " ", str(soup.body.find(id="contentContainer").get_text()).replace("\n", " "))
+        return title, text
 
-    return title, text
+    except AttributeError:
+        try:
+            req = requests.get(URL)
+            soup = BeautifulSoup(req.text, 'html.parser')
+            ol = soup.find("ol")
+            if ol is not None:
+                title = re.sub(
+                    "\\s+", " ", str([i.text for i in ol.findAll("li")][-1]).replace("\n", " ").strip())
+            else:
+                title = str(soup.head.title.get_text())
+            text = re.sub(
+                "\\s+", " ", str(" ".join([i.text for i in soup.main.findAll("p")])).replace("\n", " "))
+            return title, text
+
+        except AttributeError:
+            try:
+                req = requests.get(URL)
+                soup = BeautifulSoup(req.text, 'html.parser')
+
+                ol = soup.find("ol")
+                if ol is not None:
+                    title = re.sub(
+                        "\\s+", " ", str([i.text for i in ol.findAll("li")][-1]).replace("\n", " ").strip())
+                else:
+                    title = str(soup.head.title.get_text())
+                container = soup.body.find(id="mainContent")
+                text = re.sub(
+                    "\\s+", " ", str(" ".join([i.text for i in container.findAll("p")])).replace("\n", " "))
+                print("Option 2")
+                return title, text
+
+            except BaseException:
+                return None
 
 
 def get_publication_modification_date(URL):
@@ -78,21 +114,24 @@ def handler(event, context: LambdaContext):
     s3_client = boto3.client('s3')
 
     # Getting metadata from event
-    document_uid = event['body']['uuid']
-    regulator_id = event['body']['regulator_id']
-    user_id = event['body']['user_id']
-    api_user = event['body'].get('api_user')
-    document_type = event['body']['document_type']
-    status = event['body']['status']
-    url = event['body']['uri']
-    regulatory_topic = event['body']['topics']
+    event = json.loads(event['body']['body'])
+    document_uid = event['uuid']
+    regulator_id = event['regulator_id']
+    user_id = event['user_id']
+    api_user = event.get('api_user')
+    document_type = event['document_type']
+    status = event['status']
+    url = event['uri']
+    regulatory_topic = event['topics']
 
     if "https://www.gov.uk/" in url:
         text, title, date_published = get_content(url)
 
     else:
-        title, text = get_title_and_text(url)
+        response = get_title_and_text(url)
         date_published = get_publication_modification_date(url)
+
+        title, text = response
 
     logger.info(f'Document title is: {title}'
                 f'Publishing date is: {date_published}')

@@ -1,4 +1,3 @@
-import io
 import os
 import re
 import boto3
@@ -8,7 +7,6 @@ import nltk
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from collections import defaultdict
-from smart_open import open as smart_open
 from word_forms_loc.lemmatizer import lemmatize
 from sklearn.feature_extraction.text import CountVectorizer
 from bs4 import BeautifulSoup
@@ -19,9 +17,6 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 logger = Logger()
 
 SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
-MODEL_BUCKET = os.environ['MODEL_BUCKET']
-NLTK_DATA = os.environ['NLTK_DATA']
-MODEL_PATH = os.environ['MODEL_PATH']
 
 
 def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
@@ -36,20 +31,11 @@ def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
     return document
 
 
-def download_model(s3_client,
-                   bucket=MODEL_BUCKET,
-                   model_path=MODEL_PATH,
-                   key='keybert.pt'):
+def load_model(
+                key='keybert.pt'):
     '''Downloads the ML model for keyword extraction'''
 
-    s3_client.download_file(
-        bucket,
-        key,
-        os.path.join(model_path, key)
-    )
-    with smart_open(os.path.join(model_path, key), 'rb') as f:
-        buffer = io.BytesIO(f.read())
-        model = torch.load(buffer)
+    model = torch.load(f"./LLM/{key}")
     logger.info('Downloaded model')
 
     return model
@@ -140,15 +126,10 @@ def handler(event, context: LambdaContext):
     title = event['document']['title']
 
     logger.info('Started initialisation...')
-    os.makedirs(MODEL_PATH, exist_ok=True)
-    os.makedirs(NLTK_DATA, exist_ok=True)
-    nltk.download('wordnet', download_dir=NLTK_DATA)
-    nltk.download('omw-1.4', download_dir=NLTK_DATA)
-    nltk.download('punkt', download_dir=NLTK_DATA)
 
     s3_client = boto3.client('s3')
     document = download_text(s3_client=s3_client, document_uid=document_uid)
-    kw_model = download_model(s3_client=s3_client)
+    kw_model = load_model()
     title_keywords = extract_keywords(text=title, kw_model=kw_model, n=2)
     doc_keywords = extract_keywords(text=document, kw_model=kw_model)
     # Combine keywords

@@ -9,8 +9,16 @@ RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 # Set environment variables
 ENV NUMBA_CACHE_DIR=/tmp/
 ENV TRANSFORMERS_CACHE=/tmp/
-ENV NLTK_DATA=/tmp/nltk_data/
-ENV MODEL_PATH=/tmp/modeldir/
+ENV NLTK_DATA=${LAMBDA_TASK_ROOT}/nltk_data/
+
+# Create directory and download NLTK
+RUN mkdir -p ${LAMBDA_TASK_ROOT}/nltk_data/
+RUN python -m nltk.downloader -d ${LAMBDA_TASK_ROOT}/nltk_data/ all
+
+# Make model directory and download models locally
+RUN mkdir -p ${LAMBDA_TASK_ROOT}/LLM
+COPY local_download.py ${LAMBDA_TASK_ROOT}
+RUN python local_download.py
 
 # Copy function code
 ADD word_forms_loc.tar.gz ${LAMBDA_TASK_ROOT}

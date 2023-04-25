@@ -1,0 +1,130 @@
+define
+#==========#
+# ENTITIES #
+#==========#
+legalDocument sub entity,
+	owns node_id,
+	owns title,
+	owns document_type,
+	owns hash_text,
+	owns language,
+	owns status;
+	legislation sub legalDocument,
+		plays publication:issuedFor,
+		owns leg_division,
+		owns leg_number,
+		owns leg_type,
+		owns href,
+		owns ref;
+		primaryLegislation sub legislation;
+		secondaryLegislation sub legislation;
+	regulatoryDocument sub legalDocument,
+		plays publication:issued,
+		owns document_uid,
+        owns document_format,
+		owns keyword,
+		owns uri,
+		owns regulator_id,
+		owns regulatory_topic,
+		owns assigned_orp_topic,
+		owns summary,
+		owns date_published,
+		owns date_uploaded,
+		owns version;
+
+regulatoryAgency sub entity,
+	owns node_id;
+	regulator sub regulatoryAgency,
+		plays publication:issuedBy,
+		plays partOf:agency,
+		owns regulator_id;
+
+Person sub entity,
+	owns node_id,
+	owns full_name,
+	owns nationality,
+	owns middle_name,
+	owns long_name,
+	owns forename,
+    owns email,
+	owns surname;
+	regulatoryAgent sub Person,
+		plays partOf:agent,
+		plays publication:uploader,
+		owns user_id;
+
+#==========#
+# RELATIONS #
+#==========#
+publication sub relation,
+	relates issued,
+	relates issuedBy,
+	relates issuedFor,
+	relates uploader,
+	owns date_modified;
+
+ partOf sub relation,
+	relates agent,
+	relates agency,
+	owns date_joined,
+	owns date_left;
+
+#==========#
+# ATTRIBUTE #
+#==========#
+
+Date sub attribute, abstract, value datetime;
+	EndDate sub Date, abstract;
+    	date_left sub EndDate;
+	StartDate sub Date, abstract;
+		date_uploaded sub StartDate;
+		date_published sub StartDate;
+		date_joined sub StartDate;
+	UpdateDate sub Date, abstract;
+		date_modified sub UpdateDate;
+Descriptor sub attribute, abstract, value string;
+	Identifier sub Descriptor, abstract, value string;
+		node_id sub Identifier;
+		document_uid sub Identifier;
+		user_id sub Identifier;
+		hash_text sub Identifier;
+		regulator_id sub Identifier,
+    		owns regulator_name,
+    		owns regulator_category;
+	Status sub Descriptor, abstract, value string;
+		status sub Status;
+	Title sub Descriptor, abstract;
+		title sub Title;
+		short_title sub Title;
+		long_title sub Title;
+		subtitle sub Title;
+	version sub Descriptor;
+    document_type sub Descriptor;
+document_format sub attribute, value string;
+details sub attribute, value string;
+email sub attribute, value string;
+keyword sub attribute, value string;
+language sub attribute, value string;
+leg_division sub attribute, value string;
+leg_number sub attribute, value long;
+leg_type sub attribute, value string;
+Name sub attribute, abstract, value string;
+	forename sub Name;
+	full_name sub Name;
+	long_name sub Name;
+	middle_name sub Name;
+	surname sub Name;
+nationality sub attribute, value string;
+regulator_category sub attribute, value string;
+regulator_name sub attribute, value string;
+Topic sub attribute,abstract, value string,
+    owns topic_name;
+	regulatory_topic sub Topic;
+	assigned_orp_topic sub Topic;
+summary sub attribute, value string;
+topic_name sub attribute, value string;
+URI sub attribute, abstract, value string;
+    href sub URI;
+    ref sub URI;
+    uri sub URI;
+    url sub URI;

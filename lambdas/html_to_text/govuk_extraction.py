@@ -34,7 +34,7 @@ def get_content(url):
     soup = BeautifulSoup(response.text, 'html.parser')
 
     # Title
-    title = soup.find("title").get_text()
+    title = re.sub('\s+', " ", soup.find("title").get_text()).strip().replace("\n", " ").replace(" - GOV.UK","")
 
     js = requests.get(url_json).json()
 

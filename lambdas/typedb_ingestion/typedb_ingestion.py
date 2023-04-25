@@ -1,7 +1,6 @@
 import json
 import os
 import boto3
-from operator import itemgetter
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
@@ -22,11 +21,16 @@ def merge_dicts(dict_list):
         if dictionary['lambda'] == 'date_generation':
             merged_dict.setdefault('data', {}).setdefault('dates', {})[
                 'date_published'] = dictionary['document']['data']['dates']['date_published']
+            merged_dict['data']['dates']['date_uploaded'] = dictionary['document']['data']['dates']['date_uploaded']
         elif dictionary['lambda'] == 'keyword_extraction':
             merged_dict['subject_keywords'] = dictionary['document']['subject_keywords']
+            # Title is added here as the keyword_extraction lambda runs immediately
+            # after the title_generation lambda so it can extract keywords from the
+            # title too
             merged_dict['title'] = dictionary['document']['title']
         elif dictionary['lambda'] == 'summarisation':
             merged_dict['summary'] = dictionary['document']['summary']
+            merged_dict['language'] = dictionary['document']['language']
         elif dictionary['lambda'] == 'legislative_origin_extraction':
             merged_dict.setdefault(
                 'data', {})['legislative_origins'] = dictionary['document']['data']['legislative_origins']
@@ -43,10 +47,16 @@ def assert_same_base_values(keys, dict_list):
     don't have the same base values
     '''
     # Get the values of the specified keys in each dictionary
-    values = set(itemgetter(*keys)(d['document']) for d in dict_list)
+    values = set()
+    for d in dict_list:
+        values.add(
+            tuple(
+                tuple(v) if isinstance(
+                    v, list) else v for v in (
+                    d['document'].get(k) for k in keys)))
+
     # Check if all values are the same
-    assert len(
-        values) == 1, 'The base values of the inputs received are not the same'
+    assert len(values) == 1, 'The base values of the inputs received are not the same'
 
     base_document = {k: v for k,
                      v in dict_list[0]['document'].items() if k in keys}
@@ -113,8 +123,17 @@ def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
     # Ensuring the base outputs of the parallel stage are the same
-    base_keys = ['document_uid', 'regulator_id', 'user_id',
-                 'uri', 'document_type', 'status']
+    base_keys = [
+        'document_uid',
+        'regulator_id',
+        'regulatory_topic',
+        'user_id',
+        'uri',
+        'document_type',
+        'document_format',
+        'status',
+        'hash_text',
+        'node_id']
     base_document = assert_same_base_values(keys=base_keys, dict_list=event)
 
     # Each previous lambda has added a new key to the extracted metadata
@@ -133,6 +152,7 @@ def handler(event, context: LambdaContext):
     # Send an email to the user if ingestion is successful and if the user is
     # not an API user
     if response['ResponseMetadata']['HTTPStatusCode'] == 200 and not api_user:
+
         email_address = get_email_address(COGNITO_USER_POOL, user_id)
         logger.info(f'Pulled email from Cognito: {email_address}')
 
@@ -149,7 +169,7 @@ def handler(event, context: LambdaContext):
                 subject='ORP Upload Complete',
                 body=f'''Your document (UUID: {document_uid}) has been ingested to the ORP.
                     It can be viewed in the ORP at
-                    https://app.{ENVIRONMENT}.cannonband.com/document/view/{document_uid}?ingested=true
+                    https://app.{ENVIRONMENT}.open-regulation.beis.gov.uk/document/view/{document_uid}?ingested=true
                     It will now be searchable.\n
                     You can search using the following criteria:\n
                     - Title: {title}\n
