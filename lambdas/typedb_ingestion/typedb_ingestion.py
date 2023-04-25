@@ -53,7 +53,7 @@ def assert_same_base_values(keys, dict_list):
             tuple(
                 tuple(v) if isinstance(
                     v, list) else v for v in (
-                    d['document'][k] for k in keys)))
+                    d['document'].get(k) for k in keys)))
 
     # Check if all values are the same
     assert len(values) == 1, 'The base values of the inputs received are not the same'
@@ -132,7 +132,8 @@ def handler(event, context: LambdaContext):
         'document_type',
         'document_format',
         'status',
-        'hash_text']
+        'hash_text',
+        'node_id']
     base_document = assert_same_base_values(keys=base_keys, dict_list=event)
 
     # Each previous lambda has added a new key to the extracted metadata
