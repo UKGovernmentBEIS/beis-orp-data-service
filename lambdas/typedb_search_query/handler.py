@@ -225,42 +225,50 @@ def search_leg_orgs(ans, session):
 
 
 def search_module(event, session):
-    keyset = set(event.keys()) & search_keys
-    page_size = int(event.get('page_size', RET_SIZE))
-    page = int(event.get('page', 0)) * page_size
+    try:
+        keyset = set(event.keys()) & search_keys
+        page_size = int(event.get('page_size', RET_SIZE))
+        page = int(event.get('page', 0)) * page_size
 
-    if len(keyset) == 0:
-        return {
-            "status_code": 400,
-            "status_description": "Bad Request - Unsupported search parameter(s)."
-        }
+        if len(keyset) == 0:
+            return {
+                "status_code": 400,
+                "status_description": "Bad Request - Unsupported search parameter(s)."
+            }
 
-    else:
-        # Build TQL query from search params
-        query = query_builder(event)
-
-        # Query the graph database for reg. documents
-        ans = matchquery(query, session)
-        num_ret = len(ans)
-
-        LOGGER.info(f"Ret -> {num_ret}")
-        if num_ret==0:
-            docs = []
         else:
-            # second hop search
-            if event.get('legislation_href'):
-                LOGGER.info("Querying the graph for related reg. documents")
-                docs = search_reg_docs(ans, page_size)
-            else:
-                LOGGER.info("Querying the graph for reg. documents")
-                docs = search_leg_orgs(ans[page:page + page_size], session)
+            # Build TQL query from search params
+            query = query_builder(event)
 
+            # Query the graph database for reg. documents
+            ans = matchquery(query, session)
+            num_ret = len(ans)
+
+            LOGGER.info(f"Ret -> {num_ret}")
+            if num_ret==0:
+                docs = []
+            else:
+                # second hop search
+                if event.get('legislation_href'):
+                    LOGGER.info("Querying the graph for related reg. documents")
+                    docs = search_reg_docs(ans, page_size)
+                else:
+                    LOGGER.info("Querying the graph for reg. documents")
+                    docs = search_leg_orgs(ans[page:page + page_size], session)
+            LOGGER.info(f"Results: {docs}")
+            return {
+                "status_code": 200,
+                "status_description": "OK",
+                "total_search_results": num_ret,
+                "documents": docs
+            }
+    except Exception as e:
+        LOGGER.error(f"Unidentified Error. {e}")
         return {
-            "status_code": 200,
-            "status_description": "OK",
-            "total_search_results": num_ret,
-            "documents": docs
+            "status_code": 500,
+            "status_description": "Server error."
         }
+
 
 
 def lambda_handler(ev, context):
@@ -268,7 +276,7 @@ def lambda_handler(ev, context):
 
     event = json.loads(ev['body'])
 
-    LOGGER.info("Event Body: ", event)
+    LOGGER.info(f"Event Body: {event}")
     TYPEDB_IP = validate_env_variable('TYPEDB_SERVER_IP')
     TYPEDB_PORT = validate_env_variable('TYPEDB_SERVER_PORT')
     TYPEDB_DATABASE_NAME = validate_env_variable('TYPEDB_DATABASE_NAME')
