@@ -3,7 +3,6 @@ import re
 import boto3
 import wordninja
 import torch
-import nltk
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from collections import defaultdict
@@ -32,7 +31,7 @@ def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
 
 
 def load_model(
-                key='keybert.pt'):
+        key='keybert.pt'):
     '''Downloads the ML model for keyword extraction'''
 
     model = torch.load(f"./LLM/{key}")
