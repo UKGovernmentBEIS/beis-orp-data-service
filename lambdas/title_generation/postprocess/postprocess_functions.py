@@ -2,6 +2,7 @@ from typing import List
 from nltk.corpus import stopwords
 import re
 
+
 def delete_repeated_ngrams(text_list: List) -> List:
     """
     param: title: Str
@@ -74,20 +75,21 @@ def remove_other_patterns(title: str) -> str:
         Title without set patterns
         Pattern 1: page %d of %d
     """
-    patterns = [re.compile(r'page (\d+) of (\d+)'), r'\b(Crown Copyright|Crown copyright)\b']
-    for idx, pat in enumerate(patterns):    
+    patterns = [re.compile(r'page (\d+) of (\d+)'),
+                r'\b(Crown Copyright|Crown copyright)\b']
+    for idx, pat in enumerate(patterns):
         match = re.search(pat, title)
-        if (match and idx==0):
+        if (match and idx == 0):
             title = title[:match.start()] + title[match.end():]
-        elif (match and idx==1):
+        elif (match and idx == 1):
             return title[:match.start()].strip()
-        elif idx==1:
+        elif idx == 1:
             return title
-        
+
 
 def remove_table_of_contents(title: str):
     """
-    Checks if Contents or Table of Contents is followed by 1, and then 
+    Checks if Contents or Table of Contents is followed by 1, and then
     whether the number 2 follows the subsequent sequence of words
     params: title
         returns: title
@@ -102,16 +104,18 @@ def remove_table_of_contents(title: str):
 
 def capitalize_if_majority_uppercase(s):
     uppercase_count = sum(1 for c in s if c.isupper())
-    if uppercase_count > len(s) / 2 and any(char.isdigit() for char in s)==False:
+    if uppercase_count > len(s) / 2 and any(char.isdigit() for char in s) is False:
         return s.upper()
     else:
         return s
-    
+
+
 def custom_title(word):
     if word and word[0].isalpha():
         return word[0].upper() + word[1:]
     return word
-   
+
+
 def postprocess_title(title: str) -> str:
     """
     param: title: Str
@@ -132,5 +136,6 @@ def postprocess_title(title: str) -> str:
         else:
             returned_list.append(word)
 
-    title = capitalize_if_majority_uppercase(remove_table_of_contents(" ".join(returned_list)))
+    title = capitalize_if_majority_uppercase(
+        remove_table_of_contents(" ".join(returned_list)))
     return title
