@@ -138,6 +138,7 @@ def query_builder(event):
         query = 'match $x isa legislation, has URI $id; $id like "'
         query += '|'.join([leg for leg in event.get('legislation_href', [])])
         query += '''";  $regdoc isa regulatoryDocument, has attribute $attribute;
+         not {{$regdoc has status "archive";}};
             (issuedFor:$x,issued:$regdoc) isa publication; limit 1000;
             group $x;'''
         return query
@@ -174,7 +175,7 @@ def query_builder(event):
             subq += f'; $title contains "{event["title"].lower()}"'
 
     query += subq
-    query += '; get $attribute, $x; group $x;'
+    query += ';not {{$x has status "archive";}}; get $attribute, $x; group $x;'
     return query
 
 
@@ -205,8 +206,8 @@ def search_leg_orgs(ans, session):
     # Query the graph database for legislative origins
     LOGGER.info("Querying the graph for legislative origins")
 
-    query = 'match $x isa regulatoryDocument, has node_id $id; $id like "'
-    query += '|'.join(res['node_id'])
+    query = 'match $x isa regulatoryDocument, has document_uid $id; $id like "'
+    query += '|'.join(res['document_uid'])
     query += '''";  $leg isa legislation, has attribute $attribute;
         (issuedFor:$leg,issued:$x) isa publication;
         group $x;'''
@@ -216,11 +217,11 @@ def search_leg_orgs(ans, session):
             ans,
             grouping='leg').items(),
         columns=[
-            'node_id',
+            'document_uid',
             'legislative_origins'])
 
     # Merging leg.orgs info with reg document
-    df = res.merge(legs, on='node_id', how='left')
+    df = res.merge(legs, on='document_uid', how='left')
     legmap = {'leg_type': 'type', 'leg_division': 'division'}
     df.legislative_origins = df.legislative_origins.fillna("").apply(list).apply(lambda x: list(
         filter(None, [remap(get_select_dict(a, leg_vals), legmap) for a in x])))
