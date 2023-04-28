@@ -23,9 +23,12 @@ def changedAttrs(old:dict, new:dict, attr_type_dict):
     return  {k: v for k,v in new.items() if (format(v, attr_type_dict[k], old.get(k, None)))&(v!=None)}
 
 def sim_hash(in_attr, db_attr):
-    in_hash = np.array(in_attr['hash_text'].split('_')).reshape(1, -1)
-    db_hash = np.array(db_attr['hash_text'].split('_')).reshape(1, -1)
-    return cosine_similarity(in_hash, db_hash)
+    if in_attr.get('hash_text'):
+        in_hash = np.array(in_attr['hash_text'].split('_')).reshape(1, -1)
+        db_hash = np.array(db_attr['hash_text'].split('_')).reshape(1, -1)
+        return cosine_similarity(in_hash, db_hash)
+    else:
+        return 0
 
 # ======
 def updateE(etype, identifier, attrs, db_attrs, attr_type_dict):
@@ -63,9 +66,11 @@ def updateE(etype, identifier, attrs, db_attrs, attr_type_dict):
             dquery = deleteAttrOwn(etype=etype, 
                                 identifier=db_attr_dict['document_uid'],
                                 attrs=[(k,v) for k,v in db_attr_dict.items() if k in changed_attrs.keys()],  
-                                attr_type_dict=attr_type_dict)
+                                attr_type_dict=attr_type_dict, 
+                                in_attrs=changed_attrs.items())
             # update entity
-            mquery = match_insert_ent(etype, identifier, changed_attrs.items() , attr_type_dict)
+            # ids = [('document_uid', in_attr_dict['document_uid'])]
+            # mquery = match_insert_ent(etype,ids, changed_attrs.items() , attr_type_dict)
     return [query,mquery, dquery]
 
 def insertE(etype, attrs, attr_type_dict):

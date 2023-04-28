@@ -85,24 +85,12 @@ def getRelationDB(rtype, ids, nodes, attr_type_dict, session, date_indicator="Pu
         if links: return True
 
 def deleteAttrOwn(etype, identifier, attrs, attr_type_dict, in_attrs=None):
-    dat = ''
-    q1= ''
-    q2=''
     is_update=False
-    query = f'match $x isa {etype}, has Identifier "{identifier}"'
-    for i, (k, v) in enumerate(attrs):
-        if type(v)==list:
-            q1 += "".join([f", has {k} $attr{i}{j} " for j,_ in enumerate(v)])
-            q2 += f'{"".join([f"; $attr{i}{j} {format_attr(vv, attr_type_dict[k])}" for j, vv in enumerate(v)]) }'
-            dat += "".join([f", has $attr{i}{j} " for j in range(len((v)))])
-        else:
-            q1 += f', has {k} $attr{i}'
-            q2 += f'; $attr{i} {format_attr(v, attr_type_dict[k])}' 
-            dat += f", has $attr{i}"
-    query += f'{q1}{q2}; delete $x {dat[1:]};'
+    query = f'match $x isa {etype}, has Identifier "{identifier}", has $attr_del;'
+    query += " or ".join([f"{{$attr_del isa {k};}}" for k,_ in attrs]) if len(attrs)!=1 else f"$attr_del isa {attrs[0][0]}"
+    query += f'; delete $x has $attr_del;'
     if in_attrs:
-        query += f'insert $x ' \
-        f'{", ".join([f"has {k} {format_attr(v, attr_type_dict[k])}" for k, v in in_attrs]) };' 
+        query += f'insert $x {formatAttrDB(in_attrs, attr_type_dict)[1:]};' 
         is_update = True
     return query, is_update
 
