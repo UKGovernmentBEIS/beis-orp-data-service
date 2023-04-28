@@ -15,7 +15,8 @@ logger = Logger()
 search_keys = {'document_uid', 'status',
                'regulatory_topic', 'document_type', 'node_id'}
 return_vals = ['regulatory_topic', 'document_type', 'status']
-SIMILARITY_SCORE_CUTOFF=0.95
+SIMILARITY_SCORE_CUTOFF = 0.95
+
 
 def validate_env_variable(env_var_name):
     '''Check existence of environment variables'''
@@ -40,8 +41,11 @@ def download_text(s3_client, document_uid, bucket):
 
     return text
 
+
 def group_attributes(attr):
-    return DataFrame(attr).groupby(0)[1].apply(set).apply(lambda x: list(x) if len(x)>1 else list(x)[0]).to_dict()
+    return DataFrame(attr).groupby(0)[1].apply(set).apply(
+        lambda x: list(x) if len(x) > 1 else list(x)[0]).to_dict()
+
 
 def getUniqueResult(results):
     res = [(i.get_type().get_label().name(), i.get_value())
@@ -57,8 +61,9 @@ def read_transaction(session, hash_list):
                 metadata_dict: dictionary of the metadata of all the shortlisted documents
     '''
     logger.info(f'Incoming document hash: {"_".join(hash_list)}')
-    window_size=6
-    hl = [hash_list[i:i+window_size] for i in range(0,len(hash_list)+1, window_size)]
+    window_size = 6
+    hl = [hash_list[i:i + window_size]
+          for i in range(0, len(hash_list) + 1, window_size)]
     contains = ' or '.join(['{$h contains \'%s\';}' % "_".join(hash) for hash in hl])
 
     query = f'''
@@ -66,10 +71,10 @@ def read_transaction(session, hash_list):
         $u isa regulatoryDocument,
         {''.join([f'has {i} ${i},' for i in search_keys])}
         has hash_text $h;
-        not {{$u has status "archive";}}; 
+        not {{$u has status "archive";}};
         {contains}; group $u;
     '''
-    
+
     logger.info(f"Query:\n {query}")
 
     # Read using a READ only transaction
@@ -79,8 +84,8 @@ def read_transaction(session, hash_list):
         # Get matches on hash
         ans_list = [ans for ans in answer_iterator]
     metadata_dict = [getUniqueResult(results=a.concept_maps())
-                        for a in ans_list]
-    
+                     for a in ans_list]
+
     matching_hash_list = [
         np.array(
             hash['hash_text'].split('_'),
@@ -102,19 +107,19 @@ def get_similarity_score(hash_np, matching_hash_list):
     '''
     scores = []
     for v in matching_hash_list:
-        if v.shape==hash_np.shape:
+        if v.shape == hash_np.shape:
             cosine = np.dot(hash_np, v) / (norm(hash_np) * norm(v))
             scores.append(cosine)
         else:
-            logger.warn(f"Skipping: matching hash size doesn't match incoming hash.")
+            logger.warn("Skipping: matching hash size doesn't match incoming hash.")
 
     max_score = max(scores)
     logger.info(f"Incoming hash: {hash_np}")
     logger.info(f"Max score: {max_score}")
     if (len(scores) > 0) and (max_score >= SIMILARITY_SCORE_CUTOFF):
-            logger.info('Possible duplicate text detected')
-            index = scores.index(max(scores))
-            return index
+        logger.info('Possible duplicate text detected')
+        index = scores.index(max(scores))
+        return index
     else:
         logger.info('New document')
         return None
@@ -174,7 +179,7 @@ def search_module(session, hash_np, hash_list, incoming_metadata):
 
     # No index returned, hence there are no similar documents
     else:
-        logger.info(f"No index returned - no similar documents")
+        logger.info("No index returned - no similar documents")
         return False
 
 
@@ -220,11 +225,8 @@ def handler(event, context: LambdaContext):
     session.close()
     client.close()
 
-
     handler_response = event
     handler_response['lambda'] = 'deduplication'
-
-
 
     # ========== 1. If it is not a duplicate, insert hash and pass the document
     handler_response['document']['hash_text'] = '_'.join(map(str, hash_np.tolist()))
@@ -236,10 +238,10 @@ def handler(event, context: LambdaContext):
     elif is_duplicate_results[0] is False:
         node_id = is_duplicate_results[2]
         handler_response['document']['node_id'] = node_id
-        logger.info(f"Similar document exists! Node_id of existing version to be changed {node_id}")
+        logger.info(
+            f"Similar document exists! Node_id of existing version to be changed {node_id}")
         return handler_response
 
-   
     # ========== 3. Else the document is a complete duplicate, and the user is informed
     else:
         # Get the existing metadata of the matching document
@@ -251,5 +253,3 @@ def handler(event, context: LambdaContext):
             complete_existing_metadata
         )
         return handler_response
-
-  
