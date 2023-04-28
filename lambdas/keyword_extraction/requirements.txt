@@ -5,5 +5,5 @@ inflect==6.0.2
 keybert==0.7.0
 nltk==3.7
 scikit_learn==1.2.1
-torch==1.13.0
+torch==1.13.1
 wordninja==2.0.0
