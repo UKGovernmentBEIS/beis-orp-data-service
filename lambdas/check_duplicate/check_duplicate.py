@@ -165,7 +165,9 @@ def search_module(session, hash_np, hash_list, incoming_metadata):
     '''
     matching_hash_list, complete_existing_metadata, node_id_list = read_transaction(
         session, hash_list)
-    index = get_similarity_score(hash_np=hash_np, matching_hash_list=matching_hash_list)
+    index = get_similarity_score(
+        hash_np=hash_np,
+        matching_hash_list=matching_hash_list) if matching_hash_list else None
 
     # 1. If index != None, i.e. text with similarity > 0.95 found
     # 2. Test for exact duplicates and return the results
