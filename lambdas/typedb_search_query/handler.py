@@ -138,7 +138,7 @@ def query_builder(event):
         query = 'match $x isa legislation, has URI $id; $id like "'
         query += '|'.join([leg for leg in event.get('legislation_href', [])])
         query += '''";  $regdoc isa regulatoryDocument, has attribute $attribute;
-         not {{$regdoc has status "archive";}};
+         not {$regdoc has status "archive";};
             (issuedFor:$x,issued:$regdoc) isa publication; limit 1000;
             group $x;'''
         return query
@@ -175,7 +175,7 @@ def query_builder(event):
             subq += f'; $title contains "{event["title"].lower()}"'
 
     query += subq
-    query += ';not {{$x has status "archive";}}; get $attribute, $x; group $x;'
+    query += ';not {$x has status "archive";}; get $attribute, $x; group $x;'
     return query
 
 
