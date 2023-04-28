@@ -8,6 +8,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
+
 def validate_env_variable(env_var_name):
     logger.debug(
         f"Getting the value of the environment variable: {env_var_name}")
@@ -23,7 +24,11 @@ def validate_env_variable(env_var_name):
 def load_model(
         model="bart-large-cnn-samsum"):
     '''Downloads the ML model for summarisation'''
-    summarizer = pipeline("summarization", f"./LLM/{model}", max_length=600, truncation=True)
+    summarizer = pipeline(
+        "summarization",
+        f"./LLM/{model}",
+        max_length=600,
+        truncation=True)
     return summarizer
 
 
@@ -58,16 +63,19 @@ def handler(event, context: LambdaContext):
 
     s3_client = boto3.client('s3')
 
-    summarizer= load_model()
+    summarizer = load_model()
 
-    text = download_text(s3_client=s3_client, document_uid=document_uid, bucket=SOURCE_BUCKET)
+    text = download_text(
+        s3_client=s3_client,
+        document_uid=document_uid,
+        bucket=SOURCE_BUCKET)
 
     # Detect language
     lang = detect_language(text=text)
 
     # Shorten text after summarising
     summary = smart_postprocessor(
-                    summarizer(text)[0]["summary_text"])
+        summarizer(text)[0]["summary_text"])
 
     logger.info(f'Langauge: {lang}')
     logger.info(f'Summary: {summary}')

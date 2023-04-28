@@ -1,5 +1,6 @@
 import re
 
+
 def smart_shortener(text):
     '''
     params: text: Str
@@ -12,6 +13,7 @@ def smart_shortener(text):
         shortened_complete = shortened + \
             text.replace(shortened, '').split('.')[0]
         return shortened_complete
+
 
 def smart_postprocessor(sentence):
     if len(sentence) < 500:
