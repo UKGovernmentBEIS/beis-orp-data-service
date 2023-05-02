@@ -1,6 +1,6 @@
 aws_lambda_powertools==2.7.0
 beautifulsoup4==4.11.2
-boto3==1.21.32
+boto3==1.26.23
 inflect==6.0.2
 keybert==0.7.0
 nltk==3.7

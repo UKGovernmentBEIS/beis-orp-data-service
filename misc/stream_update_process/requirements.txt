@@ -1,5 +1,5 @@
-typedb-client==2.12.1
+typedb-client==2.17.0
 json_flatten==0.3
-boto3==1.24.59
-pandas==1.4.1
+boto3==1.26.23
+pandas==2.0.1
 scikit-learn==1.2.2
