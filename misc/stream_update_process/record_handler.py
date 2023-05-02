@@ -4,23 +4,26 @@ Created on Wed Aug 24 15:33:34 2022
 
 @author: imane.hafnaoui
 """
-from utils.tdb_query_helpers import  *
+from utils.tdb_query_helpers import *
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-CHANGES_THRESHOLD=0.995
+CHANGES_THRESHOLD = 0.995
 # =====
 
-def changedAttrs(old:dict, new:dict, attr_type_dict):
+
+def changedAttrs(old: dict, new: dict, attr_type_dict):
     def format(v, atype, ref):
         if (isinstance(v, list)):
             sref = set(ref) if ref else set()
-            return len(set(v)^sref) != 0
-        elif (atype=='datetime'): 
+            return len(set(v) ^ sref) != 0
+        elif (atype == 'datetime'):
             return to_datetime(v) != ref
-        else: return clean_text(str(v)) != str(ref)
-    return  {k: v for k,v in new.items() if (format(v, attr_type_dict[k], old.get(k, None)))&(v!=None)}
+        else:
+            return clean_text(str(v)) != str(ref)
+    return {k: v for k, v in new.items() if (format(v, attr_type_dict[k], old.get(k, None))) & (v != None)}
+
 
 def sim_hash(in_attr, db_attr):
     if in_attr.get('hash_text'):
@@ -31,6 +34,8 @@ def sim_hash(in_attr, db_attr):
         return 0
 
 # ======
+
+
 def updateE(etype, identifier, attrs, db_attrs, attr_type_dict):
     query = ""
     mquery = ""
@@ -51,27 +56,29 @@ def updateE(etype, identifier, attrs, db_attrs, attr_type_dict):
             new_attrs = db_attr_dict.copy()
             new_attrs.update(in_attr_dict)
             # version updating
-            new_attrs['version'] = int(new_attrs.get('version', 1)) + 1 
+            new_attrs['version'] = int(new_attrs.get('version', 1)) + 1
             query = insertE(etype, new_attrs.items(), attr_type_dict)
             # change old vers' status -> archive
-            dquery = deleteAttrOwn(etype=etype, 
-                                identifier=db_attr_dict['document_uid'],
-                                attrs=[('status', db_attr_dict['status'])], 
-                                in_attrs=[('status', 'archive')], 
-                                attr_type_dict=attr_type_dict)
-            
+            dquery = deleteAttrOwn(etype=etype,
+                                   identifier=db_attr_dict['document_uid'],
+                                   attrs=[('status', db_attr_dict['status'])],
+                                   in_attrs=[('status', 'archive')],
+                                   attr_type_dict=attr_type_dict)
+
         else:
             logger.debug('-- Entity exists with slight diff -> [MERGE]')
             # delete old attributes
-            dquery = deleteAttrOwn(etype=etype, 
-                                identifier=db_attr_dict['document_uid'],
-                                attrs=[(k,v) for k,v in db_attr_dict.items() if k in changed_attrs.keys()],  
-                                attr_type_dict=attr_type_dict, 
-                                in_attrs=changed_attrs.items())
+            dquery = deleteAttrOwn(etype=etype,
+                                   identifier=db_attr_dict['document_uid'],
+                                   attrs=[(k, v) for k, v in db_attr_dict.items(
+                                   ) if k in changed_attrs.keys()],
+                                   attr_type_dict=attr_type_dict,
+                                   in_attrs=changed_attrs.items())
             # update entity
             # ids = [('document_uid', in_attr_dict['document_uid'])]
             # mquery = match_insert_ent(etype,ids, changed_attrs.items() , attr_type_dict)
-    return [query,mquery, dquery]
+    return [query, mquery, dquery]
+
 
 def insertE(etype, attrs, attr_type_dict):
     q = f"$_ isa {etype}"
@@ -79,17 +86,20 @@ def insertE(etype, attrs, attr_type_dict):
     q += ";"
     return q
 
+
 def insertR(rtype, nodes, attrs, attr_type_dict):
     logger.info(f"==> inserting relation {rtype}")
-    query = "match" 
-    query +=  "".join([f" $x{i} isa {etype} \
-     {''.join([match(k,v, attr_type_dict[k]) for k,v in eID])} ;" for i, (etype, eID, _) in enumerate(nodes)]) 
+    query = "match"
+    query += "".join([f" $x{i} isa {etype} \
+     {''.join([match(k,v, attr_type_dict[k]) for k,v in eID])} ;" for i, (etype, eID, _) in enumerate(nodes)])
     query += f"insert ({','.join([f'{role}:$x{i}' for i, (_,_,role) in enumerate(nodes)])}) isa {rtype}"
     query += formatAttrDB(attrs, attr_type_dict)
     query += ";"
     return query
 
 # ====
+
+
 def processEntities(nodes, attr_type_dict, session):
     queries = []
     mqueries = []
@@ -97,32 +107,36 @@ def processEntities(nodes, attr_type_dict, session):
     logger.info(f"Processing Entities ")
     logger.debug(f"-> {nodes}")
     for etype, identifier, attrs in nodes:
-        logger.info(f"? ==> Checking entity {etype} exists" )
+        logger.info(f"? ==> Checking entity {etype} exists")
         db_ent = getEntityDB(etype, identifier, attr_type_dict, session)
         if db_ent:
             logger.info(f"{etype} exists! -> updating...")
-            db_ent = [i for i in db_ent if i.get('status')!='archive'][0]
-            logger.debug(f"DB STATS [{etype, identifier}]: %s"%(db_ent))
-            q,mq, dq = updateE(etype, identifier, attrs, db_ent, attr_type_dict)
+            db_ent = [i for i in db_ent if i.get('status') != 'archive'][0]
+            logger.debug(f"DB STATS [{etype, identifier}]: %s" % (db_ent))
+            q, mq, dq = updateE(etype, identifier, attrs,
+                                db_ent, attr_type_dict)
             queries.append(q)
             mqueries.append(mq)
             dqueries.append(dq)
         else:
             # insert a new entity
             logger.info(f"-- Entity [{etype}] doesn't exist -> [NEW ENTITY]")
-            if etype=='regulatoryDocument': attrs += [('version', 1)]
+            if etype == 'regulatoryDocument':
+                attrs += [('version', 1)]
             queries.append(insertE(etype, attrs, attr_type_dict))
     return queries, mqueries, dqueries
+
 
 def processLinks(links, attr_type_dict, session):
     mqueries = []
     logger.info(f"Processing Links ")
     logger.debug(f"->  {links}")
-    for rtype,  check, nodes, attrs in links:
+    for rtype, check, nodes, attrs in links:
         if check:
             # check link exists
-            logger.info(f"? ==> Checking relation {rtype} exists" )
-            db_rel = getRelationDB(rtype, [], nodes, attr_type_dict, session, check=True)
+            logger.info(f"? ==> Checking relation {rtype} exists")
+            db_rel = getRelationDB(
+                rtype, [], nodes, attr_type_dict, session, check=True)
             logger.debug(f"Return: {db_rel}")
             if not db_rel:
                 # insert new link
@@ -133,13 +147,11 @@ def processLinks(links, attr_type_dict, session):
     return mqueries
 
 
-
-
-# def process_record(jsobj, attr_type_dict, session): 
+# def process_record(jsobj, attr_type_dict, session):
 #     queries = []
 #     mqueries = []
 #     dqueries = []
-    
+
 #     q, mq, dq = processEntities(jsobj.get('entities', []), attr_type_dict, session)
 #     queries.extend(q)
 #     mqueries.extend(mq)
