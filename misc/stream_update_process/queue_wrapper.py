@@ -31,6 +31,7 @@ def get_queue(name):
     """
     try:
         queue = sqs.get_queue_by_name(QueueName=name)
+        logger.info("Got queue '%s' with URL=%s", name, queue.url)
     except ClientError as error:
         logger.exception("Couldn't get queue named %s.", name)
         raise error
@@ -39,9 +40,10 @@ def get_queue(name):
 
 
 def get_queue_messages(queue):
-    queue_messages = queue.receive_messages(
-        MaxNumberOfMessages=10)
+    queue_messages = queue.receive_messages()
+    # MaxNumberOfMessages=SQS_MAX_MSGS_RECEIVED,
     # VisibilityTimeout=SQS_VIS_TIMEOUT,
     # WaitTimeSeconds=SQS_POLLING_TIME)
+    logger.info(f"Loaded [{len(queue_messages)}] messages in the queue.")
 
     return queue_messages

@@ -57,7 +57,6 @@ def send_email(COGNITO_USER_POOL, SENDER_EMAIL_ADDRESS,
     LOGGER.info(f'Pulled email from Cognito: {email_address}')
 
     if email_address:
-        user_id = complete_existing_metadata['user_id']
         document_uid = complete_existing_metadata['document_uid']
 
         send_email_structure(

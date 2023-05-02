@@ -129,7 +129,7 @@ def handler(event, context: LambdaContext):
     num_results = df.shape[0]
     logger.info(f'Successfully queried TNA for {num_results} results')
     if num_results == 0:
-        raise Exception(f'No results found in TNA query')
+        raise Exception('No results found in TNA query')
 
     df = transform_results(df=df)
     save_to_s3(df=df)

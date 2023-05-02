@@ -1,6 +1,6 @@
 aws_lambda_powertools==2.7.1
-boto3==1.21.32
-botocore==1.24.32
+boto3==1.26.23
+botocore==1.29.23
 torch==1.13.1
 transformers==4.26.1
 langdetect==1.0.9

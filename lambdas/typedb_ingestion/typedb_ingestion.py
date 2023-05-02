@@ -159,22 +159,21 @@ def handler(event, context: LambdaContext):
         if email_address:
             document_uid = document['document_uid']
             title = document['title']
-            document_type = document['document_type']
-            regulator_id = document['regulator_id']
             date_published = document['data']['dates']['date_published']
 
             send_email(
                 sender_email=SENDER_EMAIL_ADDRESS,
                 recipient_email=email_address,
                 subject='ORP Upload Complete',
-                body=f'''Your document (UUID: {document_uid}) has been ingested to the ORP.
-                    It can be viewed in the ORP at
+                body=f'''The ORP ingestion pipeline has finished enriching your document (UUID: {document_uid}).
+                    The upload process has begun and should take no longer than 2 minutes.
+                    Once uploaded, it can be viewed in the ORP at
                     https://app.{ENVIRONMENT}.open-regulation.beis.gov.uk/document/view/{document_uid}?ingested=true
-                    It will now be searchable.\n
+                    and will be searchable.\n
+                    If the document is not visible after 5 minutes, please contact {SENDER_EMAIL_ADDRESS} as there\n
+                    may have been an issue during upload.
                     You can search using the following criteria:\n
                     - Title: {title}\n
-                    - Document Type: {document_type}\n
-                    - Regulator: {regulator_id}\n
                     - Date Published: {date_published}\n
                     This is a system generated email, please do not reply.'''
             )

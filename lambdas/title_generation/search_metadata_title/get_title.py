@@ -65,7 +65,7 @@ def get_similarity_scores(title: str, candidate_titles: List) -> float:
         similarity_scores.append(score * 100)
 
     # Get score of match
-    if len(similarity_scores)>0:
+    if len(similarity_scores) > 0:
         score = max(similarity_scores)
     else:
         score = 0

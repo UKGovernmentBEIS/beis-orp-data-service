@@ -18,9 +18,9 @@ NLTK_DATA = os.environ['NLTK_DATA']
 
 # Download models from local path
 t5_tokenizer = AutoTokenizer.from_pretrained(
-        './LLM/t5_tokenizer')
+    './LLM/t5_tokenizer')
 t5_model = AutoModelForSeq2SeqLM.from_pretrained(
-        './LLM/t5_model')
+    './LLM/t5_model')
 
 os.makedirs(NLTK_DATA, exist_ok=True)
 nltk.download('popular', download_dir=NLTK_DATA)

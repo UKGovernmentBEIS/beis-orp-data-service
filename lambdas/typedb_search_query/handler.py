@@ -8,7 +8,8 @@ Created on Thu Dec 15 10:15:34 2022
 
 import json
 import logging
-import os, re
+import os
+import re
 from typedb.client import TransactionType, SessionType, TypeDB
 from datetime import datetime
 from itertools import groupby
@@ -20,7 +21,7 @@ from word_forms_loc.lemmatizer import lemmatize
 search_keys = {"id", "keyword", "title", "date_published",
                "regulator_id", "status", "regulatory_topic", "document_type",
                "legislation_href"}
-return_vals = ['title', 'summary', 'document_uid', 'regulator_id',"regulatory_topic",
+return_vals = ['title', 'summary', 'document_uid', 'regulator_id', "regulatory_topic",
                'document_type', 'keyword', 'uri', 'status', 'language', 'document_format',
                'date_published', 'date_uploaded', 'legislative_origins', 'version']
 leg_vals = ['href', 'title', 'leg_type', 'leg_division']
@@ -46,18 +47,21 @@ def validate_env_variable(env_var_name):
         raise Exception(f"Please, provide environment variable {env_var_name}")
     return env_variable
 
-def clean_text(text): 
-    if type(text)==list:
+
+def clean_text(text):
+    if isinstance(text, list):
         return [clean_text(i) for i in text]
-    elif type(text)==str:
+    elif isinstance(text, str):
         return re.sub(sp_chars, '', text).encode("ascii", "ignore").decode()
-    else: return text
+    else:
+        return text
+
 
 def format_datetime(date): return datetime.isoformat(date)
 
 
 def get_select_dict(results: dict, selc: list): return {k: (format_datetime(
-    v) if type(v) == datetime else v)for k, v in results.items() if (v!='') & (k in selc)}
+    v) if isinstance(v, datetime) else v)for k, v in results.items() if (v != '') & (k in selc)}
 
 
 def remap(d: dict, mapd: dict): return {
@@ -77,13 +81,15 @@ def getUniqueResult(results):
            for a in results for i in a.concepts() if i.is_attribute()]
     return group_attributes(res)
 
+
 def group_of_group(results, id='id', grouping='y', attribute='attribute'):
     ret = {}
     for res in results:
-        a = []
         gp1 = res.concept_maps()[0].map()[id].get_value()
         attrs = [i.map() for i in res.concept_maps()]
-        df=pd.DataFrame([(i[grouping].get_iid(), (i[attribute].get_type().get_label().name(), i[attribute].get_value())) for i in attrs ])
+        df = pd.DataFrame([(i[grouping].get_iid(),
+                            (i[attribute].get_type().get_label().name(),
+                             i[attribute].get_value())) for i in attrs])
         ret[gp1] = df.groupby(0)[1].apply(list).apply(group_attributes).to_list()
     return ret
 
@@ -119,7 +125,7 @@ def lemma2noun(lemma):
 
 
 def query_builder(event):
-    event = {k:clean_text(v) for k,v in event.items() }
+    event = {k: clean_text(v) for k, v in event.items()}
     # Build TQL query from search params
     subq = ""
     query = 'match $x isa regulatoryDocument, has attribute $attribute'
@@ -132,6 +138,7 @@ def query_builder(event):
         query = 'match $x isa legislation, has URI $id; $id like "'
         query += '|'.join([leg for leg in event.get('legislation_href', [])])
         query += '''";  $regdoc isa regulatoryDocument, has attribute $attribute;
+         not {$regdoc has status "archive";};
             (issuedFor:$x,issued:$regdoc) isa publication; limit 1000;
             group $x;'''
         return query
@@ -142,15 +149,14 @@ def query_builder(event):
         if event.get('regulatory_topic'):
             query += f', has regulatory_topic "{event["regulatory_topic"]}"'
 
-        
         # list filters [AND]
         if event.get('keyword'):
             query += ''.join(
                 [f', has keyword "{get_lemma(kw.strip().lower())}"' for kw in event['keyword'].split(' ')])
-    
+
         # list filters [OR]
         paramOR = {'document_type', 'regulator_id', 'status'}
-        for param in set(event.keys())&paramOR:
+        for param in set(event.keys()) & paramOR:
             query += f', has {param} ${param}'
             subq += f"; ${param} like \"{'|'.join([i for i in event[param]])}\""
 
@@ -169,7 +175,7 @@ def query_builder(event):
             subq += f'; $title contains "{event["title"].lower()}"'
 
     query += subq
-    query += '; get $attribute, $x; group $x;'
+    query += ';not {$x has status "archive";}; get $attribute, $x; group $x;'
     return query
 
 
@@ -185,7 +191,8 @@ def search_reg_docs(ans, page_size):
                                  for kw in rd.get('keyword', [])]))
             aot = rd.get('assigned_orp_topic')
             if aot:
-                rd['regulatory_topic'] = max(aot, key=lambda x: len(x.split('/'))) if type(aot)==list else aot
+                rd['regulatory_topic'] = max(aot, key=lambda x: len(
+                    x.split('/'))) if isinstance(aot, list) else aot
             data.append(get_select_dict(rd, return_vals))
         doc['related_docs'] = data
         docs.append(doc)
@@ -194,72 +201,88 @@ def search_reg_docs(ans, page_size):
 
 def search_leg_orgs(ans, session):
     res = pd.DataFrame([dict(getUniqueResult(a.concept_maps()))
-           for a in ans])
+                        for a in ans])
 
     # Query the graph database for legislative origins
     LOGGER.info("Querying the graph for legislative origins")
 
-    query = 'match $x isa regulatoryDocument, has node_id $id; $id like "'
-    query += '|'.join(res['node_id'])
+    query = 'match $x isa regulatoryDocument, has document_uid $id; $id like "'
+    query += '|'.join(res['document_uid'])
     query += '''";  $leg isa legislation, has attribute $attribute;
         (issuedFor:$leg,issued:$x) isa publication;
         group $x;'''
     ans = matchquery(query=query, session=session)
-    legs = pd.DataFrame(group_of_group(ans, grouping='leg').items(), columns=['node_id', 'legislative_origins'])
+    legs = pd.DataFrame(
+        group_of_group(
+            ans,
+            grouping='leg').items(),
+        columns=[
+            'document_uid',
+            'legislative_origins'])
 
     # Merging leg.orgs info with reg document
-    df = res.merge(legs,on='node_id', how='left')
+    df = res.merge(legs, on='document_uid', how='left')
     legmap = {'leg_type': 'type', 'leg_division': 'division'}
     df.legislative_origins = df.legislative_origins.fillna("").apply(list).apply(lambda x: list(
-            filter(None, [remap(get_select_dict(a, leg_vals), legmap) for a in x])))
+        filter(None, [remap(get_select_dict(a, leg_vals), legmap) for a in x])))
 
     # get noun for keywords
-    df.keyword = df.keyword.apply(lambda x: list(set([lemma2noun(kw) for kw in x]) if x else []))
+    df.keyword = df.keyword.apply(lambda x: list(
+        set([lemma2noun(kw) for kw in x]) if x else []))
 
     # get assigned topic
-    if 'assigned_orp_topic' in df.columns: 
-        df.regulatory_topic = df.assigned_orp_topic.apply(lambda aot: max(aot, key=lambda x: len(x.split('/'))) if type(aot)==list else aot)
+    if 'assigned_orp_topic' in df.columns:
+        df.regulatory_topic = df.assigned_orp_topic.apply(lambda aot: max(
+            aot, key=lambda x: len(x.split('/'))) if isinstance(aot, list) else aot)
 
     df = df.applymap(lambda x: format_datetime(x) if isinstance(x, pd.Timestamp) else x)
-    return df.fillna('').apply(lambda x: get_select_dict(x, return_vals), axis=1).tolist()
+    return df.fillna('').apply(
+        lambda x: get_select_dict(x, return_vals), axis=1).tolist()
 
 
 def search_module(event, session):
-    keyset = set(event.keys()) & search_keys
-    page_size = int(event.get('page_size', RET_SIZE))
-    page = int(event.get('page', 0)) * page_size
+    try:
+        keyset = set(event.keys()) & search_keys
+        page_size = int(event.get('page_size', RET_SIZE))
+        page = int(event.get('page', 0)) * page_size
 
-    if len(keyset) == 0:
-        return {
-            "status_code": 400,
-            "status_description": "Bad Request - Unsupported search parameter(s)."
-        }
+        if len(keyset) == 0:
+            return {
+                "status_code": 400,
+                "status_description": "Bad Request - Unsupported search parameter(s)."
+            }
 
-    else:
-        # Build TQL query from search params
-        query = query_builder(event)
-
-        # Query the graph database for reg. documents
-        ans = matchquery(query, session)
-        num_ret = len(ans)
-
-        LOGGER.info(f"Ret -> {num_ret}")
-        if num_ret==0:
-            docs = []
         else:
-            # second hop search
-            if event.get('legislation_href'):
-                LOGGER.info("Querying the graph for related reg. documents")
-                docs = search_reg_docs(ans, page_size)
-            else:
-                LOGGER.info("Querying the graph for reg. documents")
-                docs = search_leg_orgs(ans[page:page + page_size], session)
+            # Build TQL query from search params
+            query = query_builder(event)
 
+            # Query the graph database for reg. documents
+            ans = matchquery(query, session)
+            num_ret = len(ans)
+
+            LOGGER.info(f"Ret -> {num_ret}")
+            if num_ret == 0:
+                docs = []
+            else:
+                # second hop search
+                if event.get('legislation_href'):
+                    LOGGER.info("Querying the graph for related reg. documents")
+                    docs = search_reg_docs(ans, page_size)
+                else:
+                    LOGGER.info("Querying the graph for reg. documents")
+                    docs = search_leg_orgs(ans[page:page + page_size], session)
+            LOGGER.info(f"Results: {docs}")
+            return {
+                "status_code": 200,
+                "status_description": "OK",
+                "total_search_results": num_ret,
+                "documents": docs
+            }
+    except Exception as e:
+        LOGGER.error(f"Unidentified Error. {e}")
         return {
-            "status_code": 200,
-            "status_description": "OK",
-            "total_search_results": num_ret,
-            "documents": docs
+            "status_code": 500,
+            "status_description": "Server error."
         }
 
 
@@ -268,7 +291,7 @@ def lambda_handler(ev, context):
 
     event = json.loads(ev['body'])
 
-    LOGGER.info("Event Body: ", event)
+    LOGGER.info(f"Event Body: {event}")
     TYPEDB_IP = validate_env_variable('TYPEDB_SERVER_IP')
     TYPEDB_PORT = validate_env_variable('TYPEDB_SERVER_PORT')
     TYPEDB_DATABASE_NAME = validate_env_variable('TYPEDB_DATABASE_NAME')
