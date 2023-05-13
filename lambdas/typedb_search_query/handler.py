@@ -199,10 +199,10 @@ def search_reg_docs(ans, page_size):
     return docs
 
 
-def search_leg_orgs(ans, session):
+def search_leg_orgs(ans, session, page, page_size):
     res = pd.DataFrame([dict(getUniqueResult(a.concept_maps()))
                         for a in ans])
-
+    res = res.dropna().iloc[page:page + page_size]
     # Query the graph database for legislative origins
     LOGGER.info("Querying the graph for legislative origins")
 
@@ -228,7 +228,7 @@ def search_leg_orgs(ans, session):
 
     # get noun for keywords
     df.keyword = df.keyword.apply(lambda x: list(
-        set([lemma2noun(kw) for kw in x]) if x else []))
+        set([lemma2noun(kw) for kw in x]) if type(x)==list else []))
 
     # get assigned topic
     if 'assigned_orp_topic' in df.columns:
@@ -270,7 +270,7 @@ def search_module(event, session):
                     docs = search_reg_docs(ans, page_size)
                 else:
                     LOGGER.info("Querying the graph for reg. documents")
-                    docs = search_leg_orgs(ans[page:page + page_size], session)
+                    docs = search_leg_orgs(ans, session, page, page_size)
             LOGGER.info(f"Results: {docs}")
             return {
                 "status_code": 200,
