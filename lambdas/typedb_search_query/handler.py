@@ -175,7 +175,7 @@ def query_builder(event):
             subq += f'; $title contains "{event["title"].lower()}"'
 
     query += subq
-    query += ';not {$x has status "archive";}; get $attribute, $x; group $x;'
+    query += ';not {$x has status "archive";}; get $attribute, $x; limit 1000; group $x;'
     return query
 
 
@@ -241,7 +241,7 @@ def search_leg_orgs(ans, session):
 
 
 def search_module(event, session):
-    try:
+    
         keyset = set(event.keys()) & search_keys
         page_size = int(event.get('page_size', RET_SIZE))
         page = int(event.get('page', 0)) * page_size
@@ -278,13 +278,6 @@ def search_module(event, session):
                 "total_search_results": num_ret,
                 "documents": docs
             }
-    except Exception as e:
-        LOGGER.error(f"Unidentified Error. {e}")
-        return {
-            "status_code": 500,
-            "status_description": "Server error."
-        }
-
 
 def lambda_handler(ev, context):
     LOGGER.info("Received event: " + json.dumps(ev, indent=2))
