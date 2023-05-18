@@ -38,7 +38,7 @@ def extractElements(js: dict, dict_thing_attrs: dict):
         return {'entities': [], 'links': []}
 
     regID = [('node_id', node_id)]
-    doc.pop('node_id')
+    if 'node_id' in doc.keys(): doc.pop('node_id')
     nodes.append([
         "regulatoryDocument",
         regID,
