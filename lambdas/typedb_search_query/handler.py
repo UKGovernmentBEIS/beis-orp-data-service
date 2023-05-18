@@ -17,6 +17,8 @@ import pandas as pd
 from word_forms_loc.word_forms_loc import get_word_forms
 from word_forms_loc.lemmatizer import lemmatize
 
+# from word_forms.word_forms import get_word_forms
+# from word_forms.lemmatizer import lemmatize
 
 search_keys = {"id", "keyword", "title", "date_published",
                "regulator_id", "status", "regulatory_topic", "document_type",
@@ -199,10 +201,7 @@ def search_reg_docs(ans, page_size):
     return docs
 
 
-def search_leg_orgs(ans, session, page, page_size):
-    res = pd.DataFrame([dict(getUniqueResult(a.concept_maps()))
-                        for a in ans])
-    res = res.dropna().iloc[page:page + page_size]
+def search_leg_orgs(res, session):
     # Query the graph database for legislative origins
     LOGGER.info("Querying the graph for legislative origins")
 
@@ -270,7 +269,13 @@ def search_module(event, session):
                     docs = search_reg_docs(ans, page_size)
                 else:
                     LOGGER.info("Querying the graph for reg. documents")
-                    docs = search_leg_orgs(ans, session, page, page_size)
+                    res = pd.DataFrame([dict(getUniqueResult(a.concept_maps()))
+                                        for a in ans])
+                    res.dropna(subset=['document_uid'], inplace=True)
+                    num_ret = res.shape[0]
+                    res = res.iloc[page:page + page_size]
+                    
+                    docs = search_leg_orgs(res, session)
             LOGGER.info(f"Results: {docs}")
             return {
                 "status_code": 200,
