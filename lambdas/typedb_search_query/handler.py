@@ -17,6 +17,8 @@ import pandas as pd
 from word_forms_loc.word_forms_loc import get_word_forms
 from word_forms_loc.lemmatizer import lemmatize
 
+# from word_forms.word_forms import get_word_forms
+# from word_forms.lemmatizer import lemmatize
 
 search_keys = {"id", "keyword", "title", "date_published",
                "regulator_id", "status", "regulatory_topic", "document_type",
@@ -175,7 +177,7 @@ def query_builder(event):
             subq += f'; $title contains "{event["title"].lower()}"'
 
     query += subq
-    query += ';not {$x has status "archive";}; get $attribute, $x; group $x;'
+    query += ';not {$x has status "archive";}; get $attribute, $x; limit 1000; group $x;'
     return query
 
 
@@ -199,10 +201,7 @@ def search_reg_docs(ans, page_size):
     return docs
 
 
-def search_leg_orgs(ans, session):
-    res = pd.DataFrame([dict(getUniqueResult(a.concept_maps()))
-                        for a in ans])
-
+def search_leg_orgs(res, session):
     # Query the graph database for legislative origins
     LOGGER.info("Querying the graph for legislative origins")
 
@@ -228,7 +227,7 @@ def search_leg_orgs(ans, session):
 
     # get noun for keywords
     df.keyword = df.keyword.apply(lambda x: list(
-        set([lemma2noun(kw) for kw in x]) if x else []))
+        set([lemma2noun(kw) for kw in x]) if type(x)==list else []))
 
     # get assigned topic
     if 'assigned_orp_topic' in df.columns:
@@ -241,7 +240,7 @@ def search_leg_orgs(ans, session):
 
 
 def search_module(event, session):
-    try:
+    
         keyset = set(event.keys()) & search_keys
         page_size = int(event.get('page_size', RET_SIZE))
         page = int(event.get('page', 0)) * page_size
@@ -270,7 +269,13 @@ def search_module(event, session):
                     docs = search_reg_docs(ans, page_size)
                 else:
                     LOGGER.info("Querying the graph for reg. documents")
-                    docs = search_leg_orgs(ans[page:page + page_size], session)
+                    res = pd.DataFrame([dict(getUniqueResult(a.concept_maps()))
+                                        for a in ans])
+                    res.dropna(subset=['document_uid'], inplace=True)
+                    num_ret = res.shape[0]
+                    res = res.iloc[page:page + page_size]
+                    
+                    docs = search_leg_orgs(res, session)
             LOGGER.info(f"Results: {docs}")
             return {
                 "status_code": 200,
@@ -278,13 +283,6 @@ def search_module(event, session):
                 "total_search_results": num_ret,
                 "documents": docs
             }
-    except Exception as e:
-        LOGGER.error(f"Unidentified Error. {e}")
-        return {
-            "status_code": 500,
-            "status_description": "Server error."
-        }
-
 
 def lambda_handler(ev, context):
     LOGGER.info("Received event: " + json.dumps(ev, indent=2))
