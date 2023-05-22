@@ -49,6 +49,7 @@ def search_module(event, session):
         keyset = set(event.keys()) & search_keys
         page_size = int(event.get('page_size', RET_SIZE))
         page = int(event.get('page', 0)) * page_size
+        order = event.get('order', 'desc')
 
         if len(keyset) == 0:
             return {
@@ -76,7 +77,7 @@ def search_module(event, session):
                     docs = format_doc_results(ans, session, id_search=True)
                 # search + filters
                 else:                    
-                    docs = format_doc_results(ans, session, page=page, page_size=page_size)
+                    docs = format_doc_results(ans, session, page=page, page_size=page_size, asc=order=='asc')
 
             LOGGER.info(f"Results: {docs}")
             return {

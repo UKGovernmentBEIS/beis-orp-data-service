@@ -85,7 +85,7 @@ def search_reg_docs(ans, page_size):
     return docs
 
 
-def format_doc_results(ans, session, page=0, page_size=10, id_search=False):
+def format_doc_results(ans, session, page=0, page_size=10, id_search=False, asc=False):
     
     def get_docs_attrs(uid_list):
         # Query the graph database for document attributes 
@@ -95,7 +95,7 @@ def format_doc_results(ans, session, page=0, page_size=10, id_search=False):
         ans = matchquery(query, session)
         res = DataFrame([dict(getUniqueResult(a.concept_maps()))
                                             for a in ans])
-        return res.sort_values('date_published')
+        return res.sort_values('date_published', ascending=asc)
 
     def get_docs_legs(uid_list):
         # Query the graph database for legislative origins
@@ -118,7 +118,7 @@ def format_doc_results(ans, session, page=0, page_size=10, id_search=False):
     res = DataFrame([dict(getUniqueResult(a.concept_maps()))
                         for a in ans])
     if not id_search: 
-        res = res.dropna(subset=['document_uid']).sort_values('date_published')
+        res = res.dropna(subset=['document_uid']).sort_values('date_published', ascending=asc)
         res = res.iloc[page:page + page_size]
         res = get_docs_attrs(res.document_uid)        
     
