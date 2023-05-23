@@ -1,4 +1,4 @@
-# import os
+import os
 import json
 import boto3
 from datetime import datetime
@@ -8,8 +8,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-# STATE_MACHINE_ARN = os.environ['STATE_MACHINE']
-STATE_MACHINE = 'arn:aws:states:eu-west-2:412071276468:stateMachine:orp_document_ingestion'
+STATE_MACHINE_ARN = os.environ['STATE_MACHINE_ARN']
 
 
 @logger.inject_lambda_context(log_event=True)
@@ -25,7 +24,7 @@ def handler(event, context: LambdaContext):
     sf_client = boto3.client('stepfunctions')
 
     # Define the ARN of the Step Functions state machine to trigger
-    state_machine_arn = STATE_MACHINE
+    state_machine_arn = STATE_MACHINE_ARN
 
     # Define the input for the state machine execution as the payload received
     # in the POST request
