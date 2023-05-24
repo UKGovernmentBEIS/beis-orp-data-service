@@ -1,5 +1,5 @@
 import os
-# import json
+import json
 # import boto3
 from datetime import datetime
 from typedb.client import TransactionType, SessionType, TypeDB
@@ -49,7 +49,7 @@ def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
     # Get the JSON payload from the POST request
-    payload = event['body']
+    payload = json.loads(event['body'])
 
     logger.info(f'Received event with a payload: {payload}')
     # payload['time'] = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
