@@ -1,6 +1,5 @@
 import os
 import json
-# import boto3
 from datetime import datetime
 from typedb.client import TransactionType, SessionType, TypeDB
 from aws_lambda_powertools.logging.logger import Logger
@@ -12,13 +11,13 @@ logger = Logger()
 
 def match_delete(session, query):
     with session.transaction(TransactionType.WRITE) as transaction:
-        logger.debug(f'Query:\n {query}')
+        logger.info(f'Query:\n {query}')
         transaction.query().delete(query)
         transaction.commit()
 
 
 def query_function(event, session):
-    
+
     uid = event['uuid']
     regulator_id = event['regulator_id']
 
@@ -26,10 +25,11 @@ def query_function(event, session):
             f'has regulator_id "{regulator_id}";' \
             'delete $x isa entity;'
     match_delete(query=query, session=session)
+    logger.info('Finished deletion query')
     return {
-            "status_code": 200,
-            "status_description": "OK"
-        }
+        "status_code": 200,
+        "status_description": "OK"
+    }
 
 
 def validate_env_variable(env_var_name):
