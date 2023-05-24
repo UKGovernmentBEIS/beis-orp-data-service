@@ -18,14 +18,9 @@ def match_delete(session, query):
 
 
 def query_function(event, session):
-    try:
-        uid = event['uuid']
-        regulator_id = event['regulator_id']
-    except:
-        return {
-            "status_code": 400,
-            "status_description": "Bad Request - Missing parameter(s)."
-        }
+    
+    uid = event['uuid']
+    regulator_id = event['regulator_id']
 
     query = f'match $x isa entity, has document_uid "{uid}",'\
             f'has regulator_id "{regulator_id}";' \
@@ -54,7 +49,7 @@ def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
     # Get the JSON payload from the POST request
-    payload = event
+    payload = event['body']
 
     logger.info(f'Received event with a payload: {payload}')
     # payload['time'] = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
