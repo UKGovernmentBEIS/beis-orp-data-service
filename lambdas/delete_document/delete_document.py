@@ -109,6 +109,6 @@ def handler(event, context: LambdaContext):
         delete_from_s3(bucket=UPLOAD_BUCKET,
                        object_key=uri, s3_client=s3_client)
         delete_from_s3(bucket=DATA_LAKE,
-                       object_key=f'{uid}.txt', s3_client=s3_client)
+                       object_key=f'processed/{uid}.txt', s3_client=s3_client)
 
     return qstatus
