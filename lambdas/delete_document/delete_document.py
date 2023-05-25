@@ -81,6 +81,6 @@ def handler(event, context: LambdaContext):
 
     attrs = get_query(uid, regulator_id, session)
     logger.info(f'Metadata of document about to be deleted: {attrs}')
-    qstatus = delete_query(session=session, event=payload)
+    qstatus = delete_query(session=session, uid=uid, regulator_id=regulator_id)
     qstatus['metadata'] = attrs
     return qstatus
