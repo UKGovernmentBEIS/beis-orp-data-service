@@ -104,11 +104,12 @@ def handler(event, context: LambdaContext):
     qstatus['graph_metadata'] = attrs
 
     s3_client = boto3.client('s3')
+    delete_from_s3(bucket=DATA_LAKE,
+                   object_key=f'processed/{uid}.txt', s3_client=s3_client)
+
     if document_format != 'HTML':
-        # There are only S3 documents to delete if the doc is not HTML
+        # There are only S3 documents to delete in the upload bucket if the doc is not HTML
         delete_from_s3(bucket=UPLOAD_BUCKET,
                        object_key=uri, s3_client=s3_client)
-        delete_from_s3(bucket=DATA_LAKE,
-                       object_key=f'processed/{uid}.txt', s3_client=s3_client)
 
     return qstatus
