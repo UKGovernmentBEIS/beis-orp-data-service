@@ -76,8 +76,8 @@ def handler(event, context: LambdaContext):
     client = TypeDB.core_client(TYPEDB_IP + ':' + TYPEDB_PORT)
     session = client.session(TYPEDB_DATABASE_NAME, SessionType.DATA)
 
-    uid = event['uuid']
-    regulator_id = event['regulator_id']
+    uid = payload['uuid']
+    regulator_id = payload['regulator_id']
 
     attrs = get_query(uid, regulator_id, session)
     logger.info(f'Metadata of document about to be deleted: {attrs}')
