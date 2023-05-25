@@ -1,6 +1,5 @@
 import os
-# import json
-# import boto3
+import json
 from datetime import datetime
 from typedb.client import TransactionType, SessionType, TypeDB
 from aws_lambda_powertools.logging.logger import Logger
@@ -12,29 +11,25 @@ logger = Logger()
 
 def match_delete(session, query):
     with session.transaction(TransactionType.WRITE) as transaction:
-        logger.debug(f'Query:\n {query}')
+        logger.info(f'Query:\n {query}')
         transaction.query().delete(query)
         transaction.commit()
 
 
 def query_function(event, session):
-    try:
-        uid = event['uuid']
-        regulator_id = event['regulator_id']
-    except:
-        return {
-            "status_code": 400,
-            "status_description": "Bad Request - Missing parameter(s)."
-        }
+
+    uid = event['uuid']
+    regulator_id = event['regulator_id']
 
     query = f'match $x isa entity, has document_uid "{uid}",'\
             f'has regulator_id "{regulator_id}";' \
             'delete $x isa entity;'
     match_delete(query=query, session=session)
+    logger.info('Finished deletion query')
     return {
-            "status_code": 200,
-            "status_description": "OK"
-        }
+        "status_code": 200,
+        "status_description": "OK"
+    }
 
 
 def validate_env_variable(env_var_name):
@@ -54,7 +49,7 @@ def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
     # Get the JSON payload from the POST request
-    payload = event
+    payload = json.loads(event['body'])
 
     logger.info(f'Received event with a payload: {payload}')
     # payload['time'] = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
