@@ -1,0 +1,76 @@
+<!DOCTYPE orpml>
+<orpml>
+
+    <head>
+        <title>Liquidate your limited company</title>
+        <meta charset="utf-8">
+        <!-- Dublin Core Metadata -->
+        <!-- If the title or date published are missing, they will be inferred at ingest -->
+        <meta name="DC.title" content="Liquidate your limited company">
+        <meta name="DC.date" content="2014-12-04"> <!-- Assuming this is date published -->
+        <meta name="DC.creator" content="John Doe">
+        <meta name="DC.subject" content="Liquidation">
+        <meta name="DC.description"
+            content="Compulsory and voluntary liquidation, the liquidation process, how liquidation affects company directors and the role of a liquidator">
+        <meta name="DC.publisher" content="GOV.UK">
+        <meta name="DC.language" content="en">
+
+        <!-- Inferred during upload (will be added to document during upload)-->
+        <meta name="DC.type" content="GD">
+        <meta name="DC.format" content="ORPML">
+        <meta name="DTAC.regulator_id" content="mdrx.tech">
+        <meta name="DTAC.user_id" content="5c6eccc7-921e-486b-ace7-7b42cb5efb7e">
+        <!-- Either the HTML URL or the S3 URL of the uploaded doc-->
+        <meta name="DTAC.uri" content="https://www.gov.uk/liquidate-your-company">
+        <meta name="DTAC.date_uploaded" content="2023-05-30">
+        <meta name="DTAC.regulatory_topic"
+            content="/business-and-industry, /business-and-industry/running-a-business, /business-and-industry/running-a-business/business-debt-and-bankruptcy">
+        <meta name="DTAC.status" content="published">
+
+        <!-- Data Science Enrichments (will be added to document during ingest)-->
+        <meta name="DTAC.keywords"
+            content="debt, bank, company, liquidate, manage, own, shareholder, insolvent, bankrupt, capital">
+        <meta name="DTAC.summary"
+            content="You can choose to liquidate your limited company. 75% of shareholders must agree to the winding-up to pass a 'winding-up resolution'. The resolution is sent to Companies House within 15 days. It costs £2,600 to submit the petition and £280 for the court hearing. If the court accepts the petition, you get a date for the hearing.">
+        <meta name="DTAC.legislative_origins" content="">
+    </head>
+
+    <body>
+        <h1 class="part-title">Overview</h1>
+        <section id="section 1">
+            <p>You can choose to liquidate your limited company (also called "winding up" a company).</p>
+
+            <p>The company will stop doing business and employing people. The company will not exist once it's been
+                removed
+                ("struck off") from the companies register at Companies House.</p>
+
+            <p>When you liquidate a company, its assets are used to pay off its debts. Any money left goes to
+                shareholders.
+                You'll need a validation order to access your company bank account.</p>
+
+            <p>If that money has not been shared between the shareholders by the time the company is removed from the
+                register,
+                it will go to the state.</p>
+
+            <p>You'll need to restore your company to claim back money after it's been removed from the register.</p>
+        </section>
+        <section id="section 2">
+            <p>There are 3 types of liquidation:</p>
+            <ul>
+                <li>
+                    Creditors' voluntary liquidation - your company cannot pay its debts and you involve your creditors
+                    when
+                    you liquidate it
+                </li>
+                <li>
+                    Compulsory liquidation - your company cannot pay its debts and you apply to the courts to liquidate
+                    it
+                </li>
+                <li>
+                    Members' voluntary liquidation - your company can pay its debts but you want to close it
+                </li>
+            </ul>
+        </section>
+    </body>
+
+</orpml>
