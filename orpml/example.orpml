@@ -7,7 +7,7 @@
         <!-- Dublin Core Metadata -->
         <!-- If the title or date published are missing, they will be inferred at ingest -->
         <meta name="DC.title" content="Liquidate your limited company">
-        <meta name="DC.date" content="2014-12-04"> <!-- Assuming this is date published -->
+        <meta name="DC.date" content="2014-12-04"> <!-- Maps to date_published -->
         <meta name="DC.creator" content="John Doe">
         <meta name="DC.subject" content="Liquidation">
         <meta name="DC.description"
@@ -16,23 +16,25 @@
         <meta name="DC.language" content="en">
 
         <!-- Inferred during upload (will be added to document during upload)-->
-        <meta name="DC.type" content="GD">
-        <meta name="DC.format" content="ORPML">
-        <meta name="DTAC.regulator_id" content="mdrx.tech">
-        <meta name="DTAC.user_id" content="5c6eccc7-921e-486b-ace7-7b42cb5efb7e">
+        <meta name="DC.type" content="GD"> <!-- Maps to document_type -->
+        <meta name="DC.format" content="ORPML"> <!-- Maps to document_format -->
+        <meta name="DTAC.regulatorId" content="mdrx.tech"> <!-- Maps to regulator_id -->
+        <meta name="DTAC.userId" content="5c6eccc7-921e-486b-ace7-7b42cb5efb7e"> <!-- Maps to user_id -->
         <!-- Either the HTML URL or the S3 URL of the uploaded doc-->
         <meta name="DTAC.uri" content="https://www.gov.uk/liquidate-your-company">
-        <meta name="DTAC.date_uploaded" content="2023-05-30">
-        <meta name="DTAC.regulatory_topic"
+        <meta name="DTAC.dateSubmitted" content="2023-05-30"> <!-- Maps to date_uploaded-->
+        <meta name="DTAC.regulatoryTopic"
             content="/business-and-industry, /business-and-industry/running-a-business, /business-and-industry/running-a-business/business-debt-and-bankruptcy">
+        <!-- Maps to regulatory_topic -->
         <meta name="DTAC.status" content="published">
 
         <!-- Data Science Enrichments (will be added to document during ingest)-->
-        <meta name="DTAC.keywords"
+        <meta name="DTAC.subjectKeywords"
             content="debt, bank, company, liquidate, manage, own, shareholder, insolvent, bankrupt, capital">
+        <!-- Maps to subject_keywords -->
         <meta name="DTAC.summary"
             content="You can choose to liquidate your limited company. 75% of shareholders must agree to the winding-up to pass a 'winding-up resolution'. The resolution is sent to Companies House within 15 days. It costs £2,600 to submit the petition and £280 for the court hearing. If the court accepts the petition, you get a date for the hearing.">
-        <meta name="DTAC.legislative_origins" content="">
+        <meta name="DTAC.legislativeOrigins" content=""> <!-- Maps to legislative_origins -->
     </head>
 
     <body>
