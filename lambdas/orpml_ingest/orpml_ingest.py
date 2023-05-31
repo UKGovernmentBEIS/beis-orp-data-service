@@ -3,6 +3,7 @@ import os
 import json
 import boto3
 from datetime import datetime
+from bs4 import BeautifulSoup
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
@@ -38,13 +39,48 @@ def get_s3_metadata(s3_client, object_key, source_bucket):
     return metadata
 
 
+def process_orpml(doc_bytes_io, metadata):
+    '''Attaches key metadata to the ORPML header'''
+
+    with open(doc_bytes_io, 'r') as fp:
+        orpml_doc = fp.read()
+
+    soup = BeautifulSoup(orpml_doc, 'html.parser')
+
+    # Finding the time the object was uploaded
+    date_uploaded = datetime.now()
+    date_uploaded_formatted = date_uploaded.strftime("%Y-%m-%dT%H:%M:%S")
+
+    regulatory_topics = json.loads(metadata.get('topics'))
+    regulatory_topics_formatted = ', '.join(regulatory_topics)
+
+    meta_tags = [
+        {'name': 'DC.identifier', 'content': metadata['uuid']},
+        {'name': 'DC.regulatorId', 'content': metadata['regulator_id']},
+        {'name': 'DC.userId', 'content': metadata['user_id']},
+        {'name': 'DC.type', 'content': metadata['document_type']},
+        {'name': 'DC.status', 'content': metadata['status']},
+        {'name': 'DC.regulatoryTopic', 'content': regulatory_topics_formatted},
+        {'name': 'DC.dateSubmitted', 'content': date_uploaded_formatted},
+        {'name': 'DC.uri', 'content': metadata['uri']},
+    ]
+
+    head = soup.head
+    for meta_tag in meta_tags:
+        new_meta = soup.new_tag("meta", attrs=meta_tag)
+        head.append(new_meta)
+
+    logger.info('Finished attaching metadata to ORPML header')
+    return str(soup.prettify())
+
+
 def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUCKET):
-    '''Write the extracted text to a .txt file in the staging bucket'''
+    '''Write the processed ORPML to a .orpml file in the data lake'''
 
     response = s3_client.put_object(
         Body=text,
         Bucket=destination_bucket,
-        Key=f'processed/{document_uid}.txt',
+        Key=f'processed/{document_uid}.orpml',
         Metadata={
             'uuid': document_uid
         }
@@ -65,11 +101,6 @@ def handler(event, context: LambdaContext):
         f'New document in {source_bucket}: {object_key}'
     )
 
-    # Finding the time the object was uploaded
-    date_uploaded = event['time']
-    date_obj = datetime.strptime(date_uploaded, "%Y-%m-%dT%H:%M:%SZ")
-    date_uploaded_formatted = date_obj.strftime("%Y-%m-%dT%H:%M:%S")
-
     s3_client = boto3.client('s3')
     doc_bytes_io = download_text(
         s3_client=s3_client,
@@ -81,49 +112,31 @@ def handler(event, context: LambdaContext):
         object_key=object_key,
         source_bucket=source_bucket
     )
+    doc_s3_metadata['uri'] = object_key
 
     # Raise an error if there is no UUID in the document's S3 metadata
     assert doc_s3_metadata.get('uuid'), 'Document must have a UUID attached'
-
-    # Getting S3 metadata from S3 object
-    document_uid = doc_s3_metadata['uuid']
-    regulator_id = doc_s3_metadata.get('regulator_id')
-    user_id = doc_s3_metadata.get('user_id')
     api_user = doc_s3_metadata.get('api_user')
-    document_type = doc_s3_metadata.get('document_type')
-    status = doc_s3_metadata.get('status')
-    regulatory_topics = json.loads(doc_s3_metadata.get('topics'))
 
-    write_text(s3_client=s3_client, text=doc_bytes_io,
-               document_uid=document_uid, destination_bucket=DESTINATION_BUCKET)
+    # Inserting the metadata into the ORPML header
+    orpml_document = process_orpml(doc_bytes_io=doc_bytes_io, metadata=doc_s3_metadata)
 
-    logger.info('All data extracted')
+    # Getting crucial S3 metadata from S3 object
+    document_uid = doc_s3_metadata['uuid']
+    user_id = doc_s3_metadata.get('user_id')
 
-    # Building metadata document
-    doc = {
-        # 'title': title,
+    # Writing the processed ORPML to S3
+    write_text(
+        s3_client=s3_client,
+        text=orpml_document,
+        document_uid=document_uid,
+        destination_bucket=DESTINATION_BUCKET
+    )
+
+    # Passing key metadata onto the next function
+    return {
         'document_uid': document_uid,
-        'regulator_id': regulator_id,
         'user_id': user_id,
-        'uri': object_key,
-        'data':
-        {
-            'dates':
-            {
-                # 'date_published': date_published,
-                'date_uploaded': date_uploaded_formatted
-            }
-        },
-        'document_type': document_type,
-        'document_format': 'ORPML',
-        'regulatory_topic': regulatory_topics,
-        'status': status,
-    }
-
-    handler_response = {
-        'document': doc,
-        'object_key': object_key,
         'api_user': api_user,
+        'uri': object_key
     }
-
-    return handler_response
