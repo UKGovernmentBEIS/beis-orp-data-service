@@ -71,7 +71,7 @@ def process_orpml(doc_bytes_io, metadata):
         head.append(new_meta)
 
     logger.info('Finished attaching metadata to ORPML header')
-    return str(soup.prettify())
+    return str(soup)
 
 
 def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUCKET):
