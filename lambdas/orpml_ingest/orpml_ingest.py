@@ -4,6 +4,7 @@ import json
 import boto3
 from datetime import datetime
 from bs4 import BeautifulSoup
+from bs4.formatter import HTMLFormatter
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
@@ -11,6 +12,22 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 logger = Logger()
 
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
+
+
+class CustomHTMLFormatter(HTMLFormatter):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def attributes(self, tag):
+        attrs = super().attributes(tag)
+        if tag.name == 'meta':
+            return ' '.join(sorted(attrs))
+        return attrs
+
+    def empty_tag(self, tag):
+        if tag.name == 'meta':
+            return self.starttag(tag)[:-2] + '>'
+        return super().empty_tag(tag)
 
 
 def download_text(s3_client, object_key, source_bucket):
@@ -71,7 +88,10 @@ def process_orpml(doc_bytes_io, metadata):
         head.append(new_meta)
 
     logger.info('Finished attaching metadata to ORPML header')
-    return str(soup)
+
+    formatter = CustomHTMLFormatter()
+    beautified_orpml = soup.prettify(formatter=formatter)
+    return str(beautified_orpml)
 
 
 def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUCKET):
