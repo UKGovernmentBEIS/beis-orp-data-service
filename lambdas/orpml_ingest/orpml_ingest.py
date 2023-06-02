@@ -15,19 +15,9 @@ DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
 
 
 class CustomHTMLFormatter(HTMLFormatter):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def attributes(self, tag):
-        attrs = super().attributes(tag)
-        if tag.name == 'meta':
-            return ' '.join(sorted(attrs))
-        return attrs
-
-    def empty_tag(self, tag):
-        if tag.name == 'meta':
-            return self.starttag(tag)[:-2] + '>'
-        return super().empty_tag(tag)
+        for k, v in tag.attrs.items():
+            yield k, v
 
 
 def download_text(s3_client, object_key, source_bucket):
@@ -89,8 +79,7 @@ def process_orpml(doc_bytes_io, metadata):
 
     logger.info('Finished attaching metadata to ORPML header')
 
-    formatter = CustomHTMLFormatter()
-    beautified_orpml = soup.prettify(formatter=formatter)
+    beautified_orpml = soup.prettify(formatter=CustomHTMLFormatter())
     return str(beautified_orpml)
 
 
