@@ -14,7 +14,7 @@ DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
 
 
 def download_text(s3_client, object_key, source_bucket):
-    '''Downloads the PDF from S3 ready for conversion and metadata extraction'''
+    '''Downloads the ORPML document from S3 ready for conversion and metadata extraction'''
 
     document = s3_client.get_object(
         Bucket=source_bucket,
@@ -42,8 +42,8 @@ def get_s3_metadata(s3_client, object_key, source_bucket):
 def process_orpml(doc_bytes_io, metadata):
     '''Attaches key metadata to the ORPML header'''
 
-    with open(doc_bytes_io, 'r') as fp:
-        orpml_doc = fp.read()
+    # with open(doc_bytes_io, 'r') as fp:
+    orpml_doc = doc_bytes_io.read()
 
     soup = BeautifulSoup(orpml_doc, 'html.parser')
 
