@@ -49,15 +49,15 @@ def get_s3_metadata(s3_client, object_key, source_bucket):
 def process_orpml(doc_bytes_io, metadata):
     '''Attaches key metadata to the ORPML header'''
 
-    # with open(doc_bytes_io, 'r') as fp:
+    # Reading in the S3 document and parsing it as HTML
     orpml_doc = doc_bytes_io.read()
-
     soup = BeautifulSoup(orpml_doc, 'html.parser')
 
     # Finding the time the object was uploaded
     date_uploaded = datetime.now()
     date_uploaded_formatted = date_uploaded.strftime("%Y-%m-%dT%H:%M:%S")
 
+    # Turning the S3 metadata into HTML meta tags
     regulatory_topics = json.loads(metadata.get('topics'))
     regulatory_topics_formatted = ', '.join(regulatory_topics)
 
@@ -72,6 +72,7 @@ def process_orpml(doc_bytes_io, metadata):
         {'name': 'DC.uri', 'content': metadata['uri']},
     ]
 
+    # Attaching the meta tags to the ORPML header
     head = soup.head
     for meta_tag in meta_tags:
         new_meta = soup.new_tag("meta", attrs=meta_tag)
