@@ -71,7 +71,7 @@ __pycache__/
 *.jsonl
 *.bkp
 *.dtmp
-pdf*
+pdf_output_*
 *.pdf
 munging.ipynb
 *.DS_Store
