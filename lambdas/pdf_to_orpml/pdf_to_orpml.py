@@ -148,13 +148,13 @@ def process_orpml(pages: dict, pdf_meta_tags: dict, s3_metadata: dict) -> str:
 
     s3_meta_tags = [
         {'name': 'DC.identifier', 'content': s3_metadata['uuid']},
-        {'name': 'DC.regulatorId', 'content': s3_metadata['regulator_id']},
-        {'name': 'DC.userId', 'content': s3_metadata['user_id']},
+        {'name': 'DTAC.regulatorId', 'content': s3_metadata['regulator_id']},
+        {'name': 'DTAC.userId', 'content': s3_metadata['user_id']},
         {'name': 'DC.type', 'content': s3_metadata['document_type']},
-        {'name': 'DC.status', 'content': s3_metadata['status']},
-        {'name': 'DC.regulatoryTopic', 'content': regulatory_topics_formatted},
-        {'name': 'DC.dateSubmitted', 'content': date_uploaded_formatted},
-        {'name': 'DC.uri', 'content': s3_metadata['uri']},
+        {'name': 'DTAC.status', 'content': s3_metadata['status']},
+        {'name': 'DTAC.regulatoryTopic', 'content': regulatory_topics_formatted},
+        {'name': 'DTAC.dateSubmitted', 'content': date_uploaded_formatted},
+        {'name': 'DTAC.uri', 'content': s3_metadata['uri']},
     ]
 
     meta_tags = pdf_meta_tags + s3_meta_tags
@@ -184,12 +184,12 @@ def process_orpml(pages: dict, pdf_meta_tags: dict, s3_metadata: dict) -> str:
 
 
 def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUCKET):
-    '''Write the extracted text to a .txt file in the staging bucket'''
+    '''Write the extracted text to a .orpml file in the data lake'''
 
     response = s3_client.put_object(
         Body=text,
         Bucket=destination_bucket,
-        Key=f'processed/{document_uid}.txt',
+        Key=f'processed/{document_uid}.orpml',
         Metadata={
             'uuid': document_uid
         }
