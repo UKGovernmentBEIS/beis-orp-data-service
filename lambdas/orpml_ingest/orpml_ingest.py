@@ -63,13 +63,13 @@ def process_orpml(doc_bytes_io, metadata):
 
     meta_tags = [
         {'name': 'DC.identifier', 'content': metadata['uuid']},
-        {'name': 'DC.regulatorId', 'content': metadata['regulator_id']},
-        {'name': 'DC.userId', 'content': metadata['user_id']},
+        {'name': 'DTAC.regulatorId', 'content': metadata['regulator_id']},
+        {'name': 'DTAC.userId', 'content': metadata['user_id']},
         {'name': 'DC.type', 'content': metadata['document_type']},
-        {'name': 'DC.status', 'content': metadata['status']},
-        {'name': 'DC.regulatoryTopic', 'content': regulatory_topics_formatted},
-        {'name': 'DC.dateSubmitted', 'content': date_uploaded_formatted},
-        {'name': 'DC.uri', 'content': metadata['uri']},
+        {'name': 'DTAC.status', 'content': metadata['status']},
+        {'name': 'DTAC.regulatoryTopic', 'content': regulatory_topics_formatted},
+        {'name': 'DTAC.dateSubmitted', 'content': date_uploaded_formatted},
+        {'name': 'DTAC.uri', 'content': metadata['uri']},
     ]
 
     # Attaching the meta tags to the ORPML header
