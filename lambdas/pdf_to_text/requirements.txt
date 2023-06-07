@@ -1,9 +1,0 @@
-aws_lambda_powertools==2.10.0
-boto3==1.26.23
-openpyxl==3.0.10
-pandas==2.0.1
-pdfminer==20191125
-pdfminer.six==20221105
-pikepdf==6.2.9
-PyMuPDF==1.21.1
-PyPDF2==3.0.1

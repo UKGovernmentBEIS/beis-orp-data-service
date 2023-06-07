@@ -71,6 +71,8 @@ __pycache__/
 *.jsonl
 *.bkp
 *.dtmp
+pdf_output_*
+*.pdf
 munging.ipynb
 *.DS_Store
 advent_of_code/

@@ -63,13 +63,13 @@ def process_orpml(doc_bytes_io, metadata):
 
     meta_tags = [
         {'name': 'DC.identifier', 'content': metadata['uuid']},
-        {'name': 'DC.regulatorId', 'content': metadata['regulator_id']},
-        {'name': 'DC.userId', 'content': metadata['user_id']},
+        {'name': 'DTAC.regulatorId', 'content': metadata['regulator_id']},
+        {'name': 'DTAC.userId', 'content': metadata['user_id']},
         {'name': 'DC.type', 'content': metadata['document_type']},
-        {'name': 'DC.status', 'content': metadata['status']},
-        {'name': 'DC.regulatoryTopic', 'content': regulatory_topics_formatted},
-        {'name': 'DC.dateSubmitted', 'content': date_uploaded_formatted},
-        {'name': 'DC.uri', 'content': metadata['uri']},
+        {'name': 'DTAC.status', 'content': metadata['status']},
+        {'name': 'DTAC.regulatoryTopic', 'content': regulatory_topics_formatted},
+        {'name': 'DTAC.dateSubmitted', 'content': date_uploaded_formatted},
+        {'name': 'DTAC.uri', 'content': metadata['uri']},
     ]
 
     # Attaching the meta tags to the ORPML header
@@ -105,12 +105,14 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
 def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
+    # Finding the object key of the newly uploaded document
     source_bucket = event['detail']['bucket']['name']
     object_key = event['detail']['object']['key']
     logger.info(
         f'New document in {source_bucket}: {object_key}'
     )
 
+    # Downloading document and S3 metadata from S3
     s3_client = boto3.client('s3')
     doc_bytes_io = download_text(
         s3_client=s3_client,
@@ -126,14 +128,14 @@ def handler(event, context: LambdaContext):
 
     # Raise an error if there is no UUID in the document's S3 metadata
     assert doc_s3_metadata.get('uuid'), 'Document must have a UUID attached'
-    api_user = doc_s3_metadata.get('api_user')
 
-    # Inserting the metadata into the ORPML header
+    # Inserting the S3 metadata into the ORPML header
     orpml_document = process_orpml(doc_bytes_io=doc_bytes_io, metadata=doc_s3_metadata)
 
     # Getting crucial S3 metadata from S3 object
     document_uid = doc_s3_metadata['uuid']
     user_id = doc_s3_metadata.get('user_id')
+    api_user = doc_s3_metadata.get('api_user')
 
     # Writing the processed ORPML to S3
     write_text(
