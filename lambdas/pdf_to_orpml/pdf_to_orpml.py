@@ -24,7 +24,7 @@ class CustomHTMLFormatter(HTMLFormatter):
             yield k, v
 
 
-def remove_excess_punctuation(text) -> str:
+def remove_excess_punctuation(text: str) -> str:
     '''Removes excess punctuation (obvs lol)'''
 
     text = text.replace(' .', '')
@@ -33,7 +33,7 @@ def remove_excess_punctuation(text) -> str:
     return text
 
 
-def clean_text(text):
+def clean_text(text: str) -> str:
     '''Clean the text by removing illegal characters and excess whitespace'''
 
     pattern = re.compile(r'\s+')
@@ -42,7 +42,7 @@ def clean_text(text):
     text = text.replace(' .', '. ')
     text = re.sub('(\\d+(\\.\\d+)?)', r' \1 .', text)
     text = re.sub(pattern, ' ', text)
-    text = remove_excess_punctuation(text)
+    text = remove_excess_punctuation(text=text)
     text = re.sub(ILLEGAL_CHARACTERS_RE, ' ', text)
 
     # Space out merged words by adding a space before a capital letter
@@ -64,7 +64,9 @@ def clean_text(text):
     return text
 
 
-def download_text(s3_client, object_key, source_bucket):
+def download_text(s3_client: boto3.client,
+                  object_key: str,
+                  source_bucket: str) -> BytesIO:
     '''Downloads the PDF from S3 ready for conversion and metadata extraction'''
 
     document = s3_client.get_object(
@@ -79,7 +81,9 @@ def download_text(s3_client, object_key, source_bucket):
     return doc_bytes_io
 
 
-def get_s3_metadata(s3_client, object_key, source_bucket):
+def get_s3_metadata(s3_client: boto3.client,
+                    object_key: str,
+                    source_bucket: str) -> dict:
     '''Gets the S3 metadata attached to the PDF'''
 
     metadata = s3_client.head_object(
@@ -93,6 +97,8 @@ def get_s3_metadata(s3_client, object_key, source_bucket):
 
 
 def extract_pdf_metadata(doc_bytes_io: BytesIO) -> list:
+    '''Extracts the metadata in the PDF'''
+
     with pdfplumber.open(doc_bytes_io) as pdf:
         metadata = pdf.metadata
 
@@ -116,6 +122,8 @@ def extract_pdf_metadata(doc_bytes_io: BytesIO) -> list:
 
 
 def extract_pdf_text(doc_bytes_io: BytesIO) -> list:
+    '''Extracts the body of the text in the PDF'''
+
     pages = list()
     with pdfplumber.open(doc_bytes_io) as pdf:
         for i, page in enumerate(pdf.pages):
@@ -123,7 +131,7 @@ def extract_pdf_text(doc_bytes_io: BytesIO) -> list:
             page_content = page.extract_text().strip()
 
             # Remove excess punctuation from the text
-            page_content = clean_text(page_content)
+            page_content = clean_text(text=page_content)
             pages.append(page_content)
 
     logger.info('Extracted text from PDF')
@@ -132,6 +140,7 @@ def extract_pdf_text(doc_bytes_io: BytesIO) -> list:
 
 
 def process_orpml(pages: dict, pdf_meta_tags: dict, s3_metadata: dict) -> str:
+    '''Builds the ORPML document from the metadata and text extracted from the PDF'''
 
     orpml = BeautifulSoup(
         '<!DOCTYPE orpml><orpml><head></head><body></body></orpml>',
@@ -183,7 +192,10 @@ def process_orpml(pages: dict, pdf_meta_tags: dict, s3_metadata: dict) -> str:
     return str(beautified_orpml)
 
 
-def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUCKET):
+def write_text(s3_client: boto3.client,
+               text: str,
+               document_uid: str,
+               destination_bucket=DESTINATION_BUCKET) -> None:
     '''Write the extracted text to a .orpml file in the data lake'''
 
     response = s3_client.put_object(
@@ -201,7 +213,7 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
 
 
 @logger.inject_lambda_context(log_event=True)
-def handler(event, context: LambdaContext):
+def handler(event: dict, context: LambdaContext) -> dict:
     logger.set_correlation_id(context.aws_request_id)
 
     # Finding the object key of the newly uploaded document
