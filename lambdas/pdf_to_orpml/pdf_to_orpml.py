@@ -92,7 +92,7 @@ def get_s3_metadata(s3_client, object_key, source_bucket):
     return metadata
 
 
-def extract_pdf_metadata(doc_bytes_io: BytesIO) -> list(dict):
+def extract_pdf_metadata(doc_bytes_io: BytesIO) -> list:
     with pdfplumber.open(doc_bytes_io) as pdf:
         metadata = pdf.metadata
 
