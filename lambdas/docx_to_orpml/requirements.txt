@@ -1,0 +1,6 @@
+aws_lambda_powertools==2.16.2
+beautifulsoup4==4.12.2
+boto3==1.26.23
+docx==0.2.4
+openpyxl==3.0.10
+python_docx==0.8.11
