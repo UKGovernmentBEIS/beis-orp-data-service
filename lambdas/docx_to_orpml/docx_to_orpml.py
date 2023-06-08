@@ -25,7 +25,7 @@ class CustomHTMLFormatter(HTMLFormatter):
 
 
 def remove_excess_punctuation(text: str) -> str:
-    '''Removes excess punctuation (obvs lol)'''
+    '''Removes excess punctuation'''
 
     text = text.replace(' .', '')
     for punc in string.punctuation:
