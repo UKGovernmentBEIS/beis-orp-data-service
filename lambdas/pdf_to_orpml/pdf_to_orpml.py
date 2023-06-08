@@ -106,14 +106,18 @@ def extract_pdf_metadata(doc_bytes_io: BytesIO) -> list:
         date = datetime.strptime(metadata.get('ModDate')[2:-7], '%Y%m%d%H%M%S')
         date_formatted = datetime.strftime(date, '%Y-%m-%d')
     elif metadata.get('CreationDate'):
-        date = datetime.strptime(metadata.get('CreationDate')[2:-7], '%Y%m%d%H%M%S')
+        date = datetime.strptime(metadata.get(
+            'CreationDate')[2:-7], '%Y%m%d%H%M%S')
         date_formatted = datetime.strftime(date, '%Y-%m-%d')
+    else:
+        date_formatted = None
 
     pdf_meta_tags = [
         {'name': 'DC.title', 'content': metadata.get('Title')},
         {'name': 'DC.subject', 'content': metadata.get('Subject')},
         {'name': 'DC.date', 'content': date_formatted},
-        {'name': 'DC.publisher', 'content': metadata.get('Author')}
+        {'name': 'DC.publisher', 'content': metadata.get('Author')},
+        {'name': 'DC.format', 'content': 'PDF'}
     ]
 
     logger.info('Extracted metadata from PDF')
@@ -225,7 +229,8 @@ def handler(event: dict, context: LambdaContext) -> dict:
 
     # Finding the time the object was uploaded
     date_uploaded = datetime.strptime(event['time'], '%Y-%m-%dT%H:%M:%SZ')
-    date_uploaded_formatted = datetime.strftime(date_uploaded, '%Y-%m-%dT%H:%M:%S')
+    date_uploaded_formatted = datetime.strftime(
+        date_uploaded, '%Y-%m-%dT%H:%M:%S')
 
     # Downloading document and S3 metadata from S3
     s3_client = boto3.client('s3')
