@@ -123,7 +123,7 @@ def extract_docx_metadata(doc_bytes_io: BytesIO) -> list:
     return docx_meta_tags
 
 
-def extract_docx_text(doc_bytes_io: BytesIO) -> list:
+def extract_docx_text(doc_bytes_io: BytesIO) -> str:
     '''Extracts the body of the text in the DOCX'''
 
     doc = docx.Document(doc_bytes_io)
@@ -133,12 +133,14 @@ def extract_docx_text(doc_bytes_io: BytesIO) -> list:
         text = clean_text(text=paragraph.text)
         paragraphs.append(text)
 
+    text_body = clean_text('\n'.join(paragraphs))
+
     logger.info('Extracted text from DOCX')
 
-    return paragraphs
+    return text_body
 
 
-def process_orpml(paragraphs: list, docx_meta_tags: dict, s3_metadata: dict) -> str:
+def process_orpml(text_body: str, docx_meta_tags: dict, s3_metadata: dict) -> str:
     '''Builds the ORPML document from the metadata and text extracted from the DOCX'''
 
     orpml = BeautifulSoup(
@@ -176,14 +178,11 @@ def process_orpml(paragraphs: list, docx_meta_tags: dict, s3_metadata: dict) -> 
     logger.info('Finished attaching metadata to ORPML header')
 
     body_tag = orpml.find('body')
-    # Iterate over the pages and append them to the <body> tag
-    for paragraph in paragraphs:
-        # Create a new HTML tag for the paragraph
-        paragraph_tag = orpml.new_tag('p', attrs={'class': 'paragraph'})
-        paragraph_tag.string = paragraph
-
-        # Append the paragraph or section tag to the <body>
-        body_tag.append(paragraph_tag)
+    # Create a new HTML tag for the text
+    text_tag = orpml.new_tag('div', attrs={'class': 'text'})
+    text_tag.string = text_body
+    # Append the text tag to the <body>
+    body_tag.append(text_tag)
 
     logger.info('Finished attaching page to ORPML body')
 
@@ -248,11 +247,11 @@ def handler(event: dict, context: LambdaContext) -> dict:
     docx_meta_tags = extract_docx_metadata(doc_bytes_io=doc_bytes_io)
     docx_meta_tags.append(
         {'name': 'DC.dateSubmitted', 'content': date_uploaded_formatted})
-    paragraphs = extract_docx_text(doc_bytes_io=doc_bytes_io)
+    text_body = extract_docx_text(doc_bytes_io=doc_bytes_io)
 
     # Build ORPML document (insert header and body)
     orpml_doc = process_orpml(
-        paragraphs=paragraphs,
+        text_body=text_body,
         docx_meta_tags=docx_meta_tags,
         s3_metadata=doc_s3_metadata
     )
