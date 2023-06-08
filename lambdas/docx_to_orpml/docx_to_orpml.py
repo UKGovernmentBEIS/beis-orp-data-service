@@ -221,11 +221,6 @@ def handler(event: dict, context: LambdaContext) -> dict:
         f'New document in {source_bucket}: {object_key}'
     )
 
-    # Finding the time the object was uploaded
-    date_uploaded = datetime.strptime(event['time'], '%Y-%m-%dT%H:%M:%SZ')
-    date_uploaded_formatted = datetime.strftime(
-        date_uploaded, '%Y-%m-%dT%H:%M:%S')
-
     # Downloading document and S3 metadata from S3
     s3_client = boto3.client('s3')
     doc_bytes_io = download_text(
@@ -245,8 +240,6 @@ def handler(event: dict, context: LambdaContext) -> dict:
 
     # Extract text and metadata from PDF
     docx_meta_tags = extract_docx_metadata(doc_bytes_io=doc_bytes_io)
-    docx_meta_tags.append(
-        {'name': 'DC.dateSubmitted', 'content': date_uploaded_formatted})
     text_body = extract_docx_text(doc_bytes_io=doc_bytes_io)
 
     # Build ORPML document (insert header and body)
