@@ -4,10 +4,12 @@ import json
 import docx
 import boto3
 import string
+import zipfile
 from io import BytesIO
 from datetime import datetime
 from bs4 import BeautifulSoup
 from bs4.formatter import HTMLFormatter
+import xml.etree.ElementTree as ET
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -16,6 +18,14 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 logger = Logger()
 
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
+
+# Defining elements from openxml schema
+WORD_NAMESPACE = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
+PARA = WORD_NAMESPACE + 'p'
+TEXT = WORD_NAMESPACE + 't'
+TABLE = WORD_NAMESPACE + 'tbl'
+ROW = WORD_NAMESPACE + 'tr'
+CELL = WORD_NAMESPACE + 'tc'
 
 
 class CustomHTMLFormatter(HTMLFormatter):
@@ -124,20 +134,29 @@ def extract_docx_metadata(doc_bytes_io: BytesIO) -> list:
 
 
 def extract_docx_text(doc_bytes_io: BytesIO) -> str:
-    '''Extracts the body of the text in the DOCX'''
-
-    doc = docx.Document(doc_bytes_io)
+    '''
+    Extracts the entire body of the text in the DOCX
+    Other methods only extract certain sections, this extracts the entirety
+    '''
+    document = zipfile.ZipFile(doc_bytes_io)
+    xml_content = document.read('word/document.xml')
+    document.close()
+    tree = ET.XML(xml_content)
 
     paragraphs = []
-    for paragraph in doc.paragraphs:
-        text = clean_text(text=paragraph.text)
-        paragraphs.append(text)
+    for paragraph in tree.iter(PARA):
+        texts = [node.text
+                 for node in paragraph.iter(TEXT)
+                 if node.text]
+        if texts:
+            paragraphs.append(''.join(texts))
 
-    text_body = clean_text('\n'.join(paragraphs))
+    whole_text = '\n\n'.join(paragraphs)
+    cleaned_text = clean_text(whole_text)
 
     logger.info('Extracted text from DOCX')
 
-    return text_body
+    return cleaned_text
 
 
 def process_orpml(text_body: str, docx_meta_tags: dict, s3_metadata: dict) -> str:
