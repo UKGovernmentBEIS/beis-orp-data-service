@@ -1,13 +1,15 @@
-import os
 import re
+import os
 import json
-import pdfplumber
+import docx
 import boto3
 import string
+import zipfile
 from io import BytesIO
 from datetime import datetime
 from bs4 import BeautifulSoup
 from bs4.formatter import HTMLFormatter
+import xml.etree.ElementTree as ET
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -17,6 +19,14 @@ logger = Logger()
 
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
 
+# Defining elements from openxml schema
+WORD_NAMESPACE = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
+PARA = WORD_NAMESPACE + 'p'
+TEXT = WORD_NAMESPACE + 't'
+TABLE = WORD_NAMESPACE + 'tbl'
+ROW = WORD_NAMESPACE + 'tr'
+CELL = WORD_NAMESPACE + 'tc'
+
 
 class CustomHTMLFormatter(HTMLFormatter):
     def attributes(self, tag):
@@ -25,7 +35,7 @@ class CustomHTMLFormatter(HTMLFormatter):
 
 
 def remove_excess_punctuation(text: str) -> str:
-    '''Removes excess punctuation (obvs lol)'''
+    '''Removes excess punctuation'''
 
     text = text.replace(' .', '')
     for punc in string.punctuation:
@@ -67,7 +77,7 @@ def clean_text(text: str) -> str:
 def download_text(s3_client: boto3.client,
                   object_key: str,
                   source_bucket: str) -> BytesIO:
-    '''Downloads the PDF from S3 ready for conversion and metadata extraction'''
+    '''Downloads the DOCX from S3 ready for conversion and metadata extraction'''
 
     document = s3_client.get_object(
         Bucket=source_bucket,
@@ -84,7 +94,7 @@ def download_text(s3_client: boto3.client,
 def get_s3_metadata(s3_client: boto3.client,
                     object_key: str,
                     source_bucket: str) -> dict:
-    '''Gets the S3 metadata attached to the PDF'''
+    '''Gets the S3 metadata attached to the DOCX'''
 
     metadata = s3_client.head_object(
         Bucket=source_bucket,
@@ -96,55 +106,61 @@ def get_s3_metadata(s3_client: boto3.client,
     return metadata
 
 
-def extract_pdf_metadata(doc_bytes_io: BytesIO) -> list:
-    '''Extracts the metadata in the PDF'''
+def extract_docx_metadata(doc_bytes_io: BytesIO) -> list:
+    '''Extracts the metadata in the DOCX'''
 
-    with pdfplumber.open(doc_bytes_io) as pdf:
-        metadata = pdf.metadata
+    doc = docx.Document(doc_bytes_io)
+    prop = doc.core_properties
 
-    if metadata.get('ModDate'):
-        date = datetime.strptime(metadata.get('ModDate')[2:-7], '%Y%m%d%H%M%S')
-        date_formatted = datetime.strftime(date, '%Y-%m-%d')
-    elif metadata.get('CreationDate'):
-        date = datetime.strptime(metadata.get(
-            'CreationDate')[2:-7], '%Y%m%d%H%M%S')
-        date_formatted = datetime.strftime(date, '%Y-%m-%d')
+    if prop.modified:
+        date_formatted = datetime.strftime(prop.modified, '%Y-%m-%d')
+    elif prop.created:
+        date_formatted = datetime.strftime(prop.created, '%Y-%m-%d')
     else:
         date_formatted = None
 
-    pdf_meta_tags = [
-        {'name': 'DC.title', 'content': metadata.get('Title')},
-        {'name': 'DC.subject', 'content': metadata.get('Subject')},
+    docx_meta_tags = [
+        {'name': 'DC.title', 'content': prop.title},
+        {'name': 'DC.subject', 'content': prop.subject},
         {'name': 'DC.date', 'content': date_formatted},
-        {'name': 'DC.publisher', 'content': metadata.get('Author')},
-        {'name': 'DC.format', 'content': 'PDF'}
+        {'name': 'DC.publisher', 'content': prop.author},
+        {'name': 'DC.language', 'content': prop.language},
+        {'name': 'DC.format', 'content': 'DOCX'}
     ]
 
-    logger.info('Extracted metadata from PDF')
+    logger.info('Extracted metadata from DOCX')
 
-    return pdf_meta_tags
-
-
-def extract_pdf_text(doc_bytes_io: BytesIO) -> list:
-    '''Extracts the body of the text in the PDF'''
-
-    pages = list()
-    with pdfplumber.open(doc_bytes_io) as pdf:
-        for i, page in enumerate(pdf.pages):
-            # Extract text content from the page
-            page_content = page.extract_text().strip()
-
-            # Remove excess punctuation from the text
-            page_content = clean_text(text=page_content)
-            pages.append(page_content)
-
-    logger.info('Extracted text from PDF')
-
-    return pages
+    return docx_meta_tags
 
 
-def process_orpml(pages: dict, pdf_meta_tags: dict, s3_metadata: dict) -> str:
-    '''Builds the ORPML document from the metadata and text extracted from the PDF'''
+def extract_docx_text(doc_bytes_io: BytesIO) -> str:
+    '''
+    Extracts the entire body of the text in the DOCX
+    Other methods only extract certain sections, this extracts the entirety
+    '''
+    document = zipfile.ZipFile(doc_bytes_io)
+    xml_content = document.read('word/document.xml')
+    document.close()
+    tree = ET.XML(xml_content)
+
+    paragraphs = []
+    for paragraph in tree.iter(PARA):
+        texts = [node.text
+                 for node in paragraph.iter(TEXT)
+                 if node.text]
+        if texts:
+            paragraphs.append(''.join(texts))
+
+    whole_text = '\n\n'.join(paragraphs)
+    cleaned_text = clean_text(whole_text)
+
+    logger.info('Extracted text from DOCX')
+
+    return cleaned_text
+
+
+def process_orpml(text_body: str, docx_meta_tags: dict, s3_metadata: dict) -> str:
+    '''Builds the ORPML document from the metadata and text extracted from the DOCX'''
 
     orpml = BeautifulSoup(
         '<!DOCTYPE orpml><orpml><head></head><body></body></orpml>',
@@ -170,7 +186,7 @@ def process_orpml(pages: dict, pdf_meta_tags: dict, s3_metadata: dict) -> str:
         {'name': 'DTAC.uri', 'content': s3_metadata['uri']},
     ]
 
-    meta_tags = pdf_meta_tags + s3_meta_tags
+    meta_tags = docx_meta_tags + s3_meta_tags
 
     # Attaching the meta tags to the ORPML header
     head = orpml.head
@@ -181,14 +197,11 @@ def process_orpml(pages: dict, pdf_meta_tags: dict, s3_metadata: dict) -> str:
     logger.info('Finished attaching metadata to ORPML header')
 
     body_tag = orpml.find('body')
-    # Iterate over the pages and append them to the <body> tag
-    for page in pages:
-        # Create a new HTML tag for the page
-        page_tag = orpml.new_tag('div', attrs={'class': 'page'})
-        page_tag.string = page
-
-        # Append the page tag to the HTML
-        body_tag.append(page_tag)
+    # Create a new HTML tag for the text
+    text_tag = orpml.new_tag('div', attrs={'class': 'text'})
+    text_tag.string = text_body
+    # Append the text tag to the <body>
+    body_tag.append(text_tag)
 
     logger.info('Finished attaching page to ORPML body')
 
@@ -245,13 +258,13 @@ def handler(event: dict, context: LambdaContext) -> dict:
     assert doc_s3_metadata.get('uuid'), 'Document must have a UUID attached'
 
     # Extract text and metadata from PDF
-    pdf_meta_tags = extract_pdf_metadata(doc_bytes_io=doc_bytes_io)
-    text_pages = extract_pdf_text(doc_bytes_io=doc_bytes_io)
+    docx_meta_tags = extract_docx_metadata(doc_bytes_io=doc_bytes_io)
+    text_body = extract_docx_text(doc_bytes_io=doc_bytes_io)
 
     # Build ORPML document (insert header and body)
     orpml_doc = process_orpml(
-        pages=text_pages,
-        pdf_meta_tags=pdf_meta_tags,
+        text_body=text_body,
+        docx_meta_tags=docx_meta_tags,
         s3_metadata=doc_s3_metadata
     )
 
