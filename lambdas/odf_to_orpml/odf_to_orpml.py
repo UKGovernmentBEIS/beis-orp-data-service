@@ -124,14 +124,19 @@ def extract_odf_metadata(metadataXML: str) -> list:
     soup = BeautifulSoup(metadataXML, 'lxml')
     metadata = soup.find('ns0:meta')
 
-    date = datetime.strptime(metadata.find('dc:date').text, '%Y-%m-%dT%H:%M:%SZ')
+    date = datetime.strptime(
+        getattr(metadata.find('dc:date'), 'text', ''),
+        '%Y-%m-%dT%H:%M:%SZ'
+    )
     date_formatted = datetime.strftime(date, '%Y-%m-%d')
 
     odf_meta_tags = [
-        {'name': 'DC.title', 'content': metadata.find('dc:title').text},
-        {'name': 'DC.subject', 'content': metadata.find('dc:subject').text},
+        {'name': 'DC.title', 'content': getattr(metadata.find('dc:title'), 'text', '')},
+        {'name': 'DC.subject', 'content': getattr(
+            metadata.find('dc:subject'), 'text', '')},
         {'name': 'DC.date', 'content': date_formatted},
-        {'name': 'DC.publisher', 'content': metadata.find('creator').text},
+        {'name': 'DC.publisher', 'content': getattr(
+            metadata.find('creator'), 'text', '')},
         {'name': 'DC.format', 'content': 'ODF'}
     ]
 
