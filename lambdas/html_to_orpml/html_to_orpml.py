@@ -103,8 +103,8 @@ def process_orpml(text_body: str, metadata: dict) -> str:
     date_uploaded = datetime.now()
     date_uploaded_formatted = date_uploaded.strftime('%Y-%m-%dT%H:%M:%S')
 
-    # Turning the S3 metadata into HTML meta tags
-    regulatory_topics = json.loads(metadata.get('topics'))
+    # Turning the metadata into HTML meta tags
+    regulatory_topics = metadata.get('topics')
     regulatory_topics_formatted = ', '.join(regulatory_topics)
 
     meta_tags = [
