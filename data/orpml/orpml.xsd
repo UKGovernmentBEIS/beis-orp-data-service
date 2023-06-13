@@ -1,0 +1,142 @@
+<?xml version="1.0"  ?>
+<xs:schema 
+xmlns="http://www.beis.gov.uk/namespaces/orpml"
+xmlns:xs="http://www.w3.org/2001/XMLSchema#"
+xmlns:dc="http://purl.org/dc/elements/1.1/"
+xmlns:dcat="https://www.w3.org/TR/vocab-dcat-2/">
+
+
+  <!-- define DublinCore content type-->
+  <xs:complexType name="dublinCoreType">
+    <xs:all>
+      <dc:contributor minOccurs="1" maxOccurs="1"/>
+      <dc:coverage minOccurs="1" maxOccurs="1"/>
+      <dc:created minOccurs="1" maxOccurs="1"/>
+      <dc:creator minOccurs="1" maxOccurs="1"/>
+      <dc:description minOccurs="1" maxOccurs="1"/>
+      <dc:format minOccurs="1" maxOccurs="1"/>
+      <dc:identifier minOccurs="1" maxOccurs="1"/>
+      <dc:issued minOccurs="1" maxOccurs="1"/>
+      <dc:language minOccurs="1" maxOccurs="1"/>
+      <dc:license minOccurs="1" maxOccurs="1"/>
+      <dc:modified minOccurs="1" maxOccurs="1"/>
+      <dc:subject minOccurs="1" maxOccurs="1"/>
+      <dc:title minOccurs="1" maxOccurs="1"/>
+      <dc:type minOccurs="1" maxOccurs="1"/>
+
+      <dc:abstract minOccurs="0" maxOccurs="1"/>
+      <dc:accessRights minOccurs="0" maxOccurs="1"/>
+      <dc:accrualMethod minOccurs="0" maxOccurs="1"/>
+      <dc:accrualPeriodicity minOccurs="0" maxOccurs="1"/>
+      <dc:accrualPolicy minOccurs="0" maxOccurs="1"/>
+      <dc:alternative minOccurs="0" maxOccurs="1"/>
+      <dc:audience minOccurs="0" maxOccurs="1"/>
+      <dc:available minOccurs="0" maxOccurs="1"/>
+      <dc:bibleographicCitation minOccurs="0" maxOccurs="1"/>
+      <dc:conformsTo minOccurs="0" maxOccurs="1"/>
+      <dc:date minOccurs="0" maxOccurs="1"/>
+      <dc:dateAccepted minOccurs="0" maxOccurs="1"/>
+      <dc:dateCopyrighted minOccurs="0" maxOccurs="1"/>
+      <dc:dateSubmitted minOccurs="0" maxOccurs="1"/>
+      <dc:extent minOccurs="0" maxOccurs="1"/>
+      <dc:hasFormat minOccurs="0" maxOccurs="1"/>
+      <dc:hasPart minOccurs="0" maxOccurs="1"/>
+      <dc:hasVersion minOccurs="0" maxOccurs="1"/>
+      <dc:instructionalMethod minOccurs="0" maxOccurs="1"/>
+      <dc:isFormatOf minOccurs="0" maxOccurs="1"/>
+      <dc:isPartOf minOccurs="0" maxOccurs="1"/>
+      <dc:isReferencedBy minOccurs="0" maxOccurs="1"/>
+      <dc:isReplacedBy minOccurs="0" maxOccurs="1"/>
+      <dc:isRequiredBy minOccurs="0" maxOccurs="1"/>
+      <dc:isVersionOf minOccurs="0" maxOccurs="1"/>
+      <dc:mediator minOccurs="0" maxOccurs="1"/>
+      <dc:medium minOccurs="0" maxOccurs="1"/>
+      <dc:provenance minOccurs="0" maxOccurs="1"/>
+      <dc:publisher minOccurs="0" maxOccurs="1"/>
+      <dc:references minOccurs="0" maxOccurs="1"/>
+      <dc:replaces minOccurs="0" maxOccurs="1"/>
+      <dc:relation minOccurs="0" maxOccurs="1"/>
+      <dc:requires minOccurs="0" maxOccurs="1"/>
+      <dc:rights minOccurs="0" maxOccurs="1"/>
+      <dc:rightsHolder minOccurs="0" maxOccurs="1"/>
+      <dc:spacial minOccurs="0" maxOccurs="1"/>
+      <dc:source minOccurs="0" maxOccurs="1"/>
+      <dc:tableOfContents minOccurs="0" maxOccurs="1"/>
+      <dc:temporal minOccurs="0" maxOccurs="1"/>
+      <dc:valid minOccurs="0" maxOccurs="1"/>
+    </xs:all>
+  </xs:complexType>
+
+  <!-- define DCAT content type-->
+  <xs:complexType name="dcatType">
+    <xs:all>
+      <dcat:frequency minOccurs="1" maxOccurs="1"/>
+      <dcat:itemTitle minOccurs="1" maxOccurs="1"/>
+      <dcat:keywords minOccurs="1" maxOccurs="1"/>
+      <dcat:issuingBody minOccurs="1" maxOccurs="1"/>
+      <dcat:relatedResource minOccurs="1" maxOccurs="1"/>
+      <dcat:securityClassification minOccurs="1" maxOccurs="1"/>
+      <dcat:topic minOccurs="1" maxOccurs="1"/>
+
+      <dcat:additionalInformation minOccurs="0" maxOccurs="1"/>
+      <dcat:alternativeTitle minOccurs="0" maxOccurs="1"/>
+      <dcat:dateArchived minOccurs="0" maxOccurs="1"/>
+      <dcat:contactName minOccurs="0" maxOccurs="1"/>
+      <dcat:contactEMail minOccurs="0" maxOccurs="1"/>
+      <dcat:seriesTitle minOccurs="0" maxOccurs="1"/>
+      <dcat:seriesNumber minOccurs="0" maxOccurs="1"/>
+      <dcat:timePeriodCoverageStartDate minOccurs="0" maxOccurs="1"/>
+      <dcat:timePeriodCoverageEndDate minOccurs="0" maxOccurs="1"/>
+
+      <dcat:filesize minOccurs="0" maxOccurs="1"/>
+      <dcat:contactOther minOccurs="0" maxOccurs="1"/>
+      <dcat:itemDescription minOccurs="0" maxOccurs="1"/>
+      <dcat:placeOfPublication minOccurs="0" maxOccurs="1"/>
+    </xs:all>
+  </xs:complexType>
+
+  <!-- define ORP metadata type-->
+  <xs:complexType name="orpType">
+    <xs:all>
+      <xs:element name="regulatoryTopics" minOccurs="1" maxOccurs="1">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="regulatoryTopic" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+
+      <xs:element name="status" type="xs:string" minOccurs="1" maxOccurs="1" />
+
+      <xs:element name="dateUploaded" type="xs:dateTime" minOccurs="0" maxOccurs="1" />
+    </xs:all>
+  </xs:complexType>
+
+  <!-- define HTML content type-->
+  <xs:complexType name="HTMLType" mixed="true">
+    <xs:all>
+      <xs:any namespace="http://www.w3.org/1999/xhtml" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:all>
+  </xs:complexType>
+
+  <!-- define orpml -->
+  <xs:element name="orpml" minOccurs="1" maxOccurs="1">
+    <xs:complexType>
+      <xs:all>
+        <!-- document level metadata -->
+        <xs:element name="metadata" minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:all>
+              <xs:element name="dublinCore" type="dublinCoreType" minOccurs="1" maxOccurs="1" />
+              <xs:element name="dcat" type="dcatType" minOccurs="1" maxOccurs="1" />
+              <xs:element name="orp" type="orpType" minOccurs="1" maxOccurs="1" />
+            </xs:all>
+          </xs:complexType>
+        </xs:element>
+
+        <!-- document markup goes here -->
+        <xs:element name="documentContent" type="HTMLType" minOccurs="1" maxOccurs="1"/>
+      </xs:all>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
