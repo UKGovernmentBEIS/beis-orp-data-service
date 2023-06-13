@@ -1,5 +1,0 @@
-aws_lambda_powertools==2.8.0
-beautifulsoup4==4.11.2
-boto3==1.26.23
-pandas==2.0.1
-lxml==4.9.2
