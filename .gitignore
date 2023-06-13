@@ -72,10 +72,8 @@ __pycache__/
 *.bkp
 *.dtmp
 pdf_output_*
-*.pdf
 munging.ipynb
 *.DS_Store
-advent_of_code/
 .ipynb_checkpoints/
 
 # large files
