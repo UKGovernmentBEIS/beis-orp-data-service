@@ -10,8 +10,6 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 logger = Logger()
 
-SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
-# TABLE_NAME = 'legislative_origin'
 TABLE_NAME = os.environ['TABLE_NAME']
 YEAR_INDEX_NAME = os.environ['YEAR_INDEX_NAME']
 CUTOFF = 0.2
@@ -42,18 +40,6 @@ def NLPsetup():
     nlp.max_length = 500000
     nlp.add_pipe('custom_sentencizer', before="parser")
     return nlp
-
-
-def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
-    '''Downloads the raw text from S3 ready for keyword extraction'''
-
-    document = s3_client.get_object(
-        Bucket=bucket,
-        Key=f'processed/{document_uid}.txt'
-    )['Body'].read().decode('utf-8')
-    logger.info('Downloaded text')
-
-    return document
 
 
 def detect_year_span(nlp_text, nlp):
@@ -169,16 +155,13 @@ def extract_legislative_origins(table, title_list):
 def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
-    document_uid = event['document']['document_uid']
-
     # Fetches the raw text of the document matching the UID above
-    s3_client = boto3.client('s3')
-    raw_text = download_text(s3_client=s3_client, document_uid=document_uid)
+    text = event['text']
 
     # Retrieving the first fifth of the text - this reduces the query space
     # and improves performance
-    doc_cutoff_point = int(len(raw_text) * CUTOFF)
-    top_text = raw_text[:doc_cutoff_point]
+    doc_cutoff_point = int(len(text) * CUTOFF)
+    top_text = text[:doc_cutoff_point]
 
     # Intitialising model and text
     nlp = NLPsetup()
@@ -215,8 +198,4 @@ def handler(event, context: LambdaContext):
     deduped_legislative_origins_metadata = list(
         {frozenset(d.items()): d for d in unpacked_legislative_origins_metadata}.values())
 
-    handler_response = event
-    handler_response['lambda'] = 'legislative_origin_extraction'
-    handler_response['document']['data']['legislative_origins'] = deduped_legislative_origins_metadata
-
-    return handler_response
+    return {'legislative_origins': deduped_legislative_origins_metadata}
