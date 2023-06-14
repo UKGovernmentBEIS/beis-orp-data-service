@@ -35,7 +35,7 @@ def download_document(s3_client, document_uid, bucket):
 
     document = s3_client.get_object(
         Bucket=bucket,
-        Key=f'processed/{document_uid}.txt'
+        Key=f'processed/{document_uid}.orpml'
     )['Body'].read().decode('utf-8')
 
     logger.info('Downloaded text')
