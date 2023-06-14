@@ -6,6 +6,7 @@ from botocore.client import Config
 from utils import create_hash_list
 from notification_email import send_email
 from pandas import DataFrame
+from bs4 import BeautifulSoup
 from typedb.client import TransactionType, SessionType, TypeDB
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools.logging.logger import Logger
@@ -29,17 +30,38 @@ def validate_env_variable(env_var_name):
     return env_variable
 
 
-def download_text(s3_client, document_uid, bucket):
+def download_document(s3_client, document_uid, bucket):
     '''Downloads the raw text from S3 ready for keyword extraction'''
 
-    text = s3_client.get_object(
+    document = s3_client.get_object(
         Bucket=bucket,
         Key=f'processed/{document_uid}.txt'
     )['Body'].read().decode('utf-8')
 
     logger.info('Downloaded text')
 
-    return text
+    return document
+
+
+def extract_metadata(document: str) -> dict:
+    soup = BeautifulSoup(document, features='xml')
+    status = soup.metadata.orp.status.text
+    regulatory_topic = soup.metadata.orp.regulatoryTopic.text.split(', ')
+    document_type = soup.metadata.dublinCore.type.text
+    return {
+        'status': status,
+        'document_type': document_type,
+        'regulatory_topic': regulatory_topic,
+    }
+
+
+def extract_text(document: str) -> str:
+    soup = BeautifulSoup(document, features='xml')
+    body_tag = soup.find('body')
+
+    # Extract all the text content from inside the <body> tag
+    text_content = body_tag.get_text(strip=True)
+    return text_content
 
 
 def group_attributes(attr):
@@ -189,7 +211,9 @@ def search_module(session, hash_np, hash_list, incoming_metadata):
 def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
-    document_uid = event['document']['document_uid']
+    key_metadata = event
+
+    document_uid = key_metadata['document_uid']
 
     logger.info('Event Body: ', event)
     SOURCE_BUCKET = validate_env_variable('SOURCE_BUCKET')
@@ -207,16 +231,20 @@ def handler(event, context: LambdaContext):
     # Call S3 and download processed text
     config = Config(connect_timeout=5, retries={'max_attempts': 0})
     s3_client = boto3.client('s3', config=config)
-    text = download_text(
+    document = download_document(
         s3_client=s3_client,
         document_uid=document_uid,
         bucket=SOURCE_BUCKET
     )
 
+    doc_metadata = extract_metadata(document=document)
+    metadata = {**doc_metadata, **key_metadata}
+    text = extract_text(document=document)
+
     # Get incoming metadata
     incoming_metadata = dict(
-        zip(return_vals, [event['document'][val] for val in return_vals]))
-    user_id = event['document']['user_id']
+        zip(return_vals, [metadata[val] for val in return_vals]))
+    user_id = metadata['user_id']
 
     # If search module returns a True i.e. duplicate text with different metadata, then replace existing metadata
     # The returned dictionary is the existing document's metadata
@@ -227,11 +255,11 @@ def handler(event, context: LambdaContext):
     session.close()
     client.close()
 
-    handler_response = event
-    handler_response['lambda'] = 'deduplication'
+    handler_response = metadata
+    handler_response['text'] = text
 
     # ========== 1. If it is not a duplicate, insert hash and pass the document
-    handler_response['document']['hash_text'] = '_'.join(map(str, hash_np.tolist()))
+    handler_response['hash_text'] = '_'.join(map(str, hash_np.tolist()))
     if is_duplicate_results is False:
         logger.info('New document!')
         return handler_response
@@ -239,7 +267,7 @@ def handler(event, context: LambdaContext):
     # ========== 2. If the document is a version (similar text, different metadata) return node ID
     elif is_duplicate_results[0] is False:
         node_id = is_duplicate_results[2]
-        handler_response['document']['node_id'] = node_id
+        handler_response['node_id'] = node_id
         logger.info(
             f"Similar document exists! Node_id of existing version to be changed {node_id}")
         return handler_response

@@ -1,4 +1,6 @@
 boto3==1.26.23
+beautifulsoup4==4.12.2
+lxml==4.9.2
 datasketch==1.5.9
 kshingle==0.10.0
 nltk==3.7
