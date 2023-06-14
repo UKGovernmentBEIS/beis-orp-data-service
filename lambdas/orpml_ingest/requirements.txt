@@ -1,3 +1,4 @@
 aws_lambda_powertools==2.15.0
 beautifulsoup4==4.12.2
 boto3==1.21.32
+lxml==4.9.2

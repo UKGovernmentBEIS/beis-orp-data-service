@@ -1,10 +1,9 @@
-import io
+from io import BytesIO
 import os
 import json
 import boto3
 from datetime import datetime
 from bs4 import BeautifulSoup
-from bs4.formatter import HTMLFormatter
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
@@ -14,13 +13,9 @@ logger = Logger()
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
 
 
-class CustomHTMLFormatter(HTMLFormatter):
-    def attributes(self, tag):
-        for k, v in tag.attrs.items():
-            yield k, v
-
-
-def download_text(s3_client, object_key, source_bucket):
+def download_text(s3_client: boto3.client,
+                  object_key: str,
+                  source_bucket: str) -> BytesIO:
     '''Downloads the ORPML document from S3 ready for conversion and metadata extraction'''
 
     document = s3_client.get_object(
@@ -28,14 +23,16 @@ def download_text(s3_client, object_key, source_bucket):
         Key=object_key
     )['Body'].read()
 
-    doc_bytes_io = io.BytesIO(document)
+    doc_bytes_io = BytesIO(document)
 
     logger.info('Downloaded text')
 
     return doc_bytes_io
 
 
-def get_s3_metadata(s3_client, object_key, source_bucket):
+def get_s3_metadata(s3_client: boto3.client,
+                    object_key: str,
+                    source_bucket: str) -> dict:
     '''Gets the S3 metadata attached to the PDF'''
 
     metadata = s3_client.head_object(
@@ -46,12 +43,12 @@ def get_s3_metadata(s3_client, object_key, source_bucket):
     return metadata
 
 
-def process_orpml(doc_bytes_io, metadata):
+def process_orpml(doc_bytes_io: BytesIO, metadata: dict) -> str:
     '''Attaches key metadata to the ORPML header'''
 
     # Reading in the S3 document and parsing it as HTML
     orpml_doc = doc_bytes_io.read()
-    soup = BeautifulSoup(orpml_doc, 'html.parser')
+    orpml = BeautifulSoup(orpml_doc, features='xml')
 
     # Finding the time the object was uploaded
     date_uploaded = datetime.now()
@@ -61,30 +58,51 @@ def process_orpml(doc_bytes_io, metadata):
     regulatory_topics = json.loads(metadata.get('topics'))
     regulatory_topics_formatted = ', '.join(regulatory_topics)
 
-    meta_tags = [
-        {'name': 'DC.identifier', 'content': metadata['uuid']},
-        {'name': 'DTAC.regulatorId', 'content': metadata['regulator_id']},
-        {'name': 'DTAC.userId', 'content': metadata['user_id']},
-        {'name': 'DC.type', 'content': metadata['document_type']},
-        {'name': 'DTAC.status', 'content': metadata['status']},
-        {'name': 'DTAC.regulatoryTopic', 'content': regulatory_topics_formatted},
-        {'name': 'DTAC.dateSubmitted', 'content': date_uploaded_formatted},
-        {'name': 'DTAC.uri', 'content': metadata['uri']},
-    ]
+    meta_tags = {
+        # The commented out lines should already be defined in the ingested ORPML
+        # 'dc:title': 'PLACEHOLDER',
+        # 'dc:subject': 'PLACEHOLDER',
+        # 'dc:created': 'PLACEHOLDER',
+        # 'dc:publisher': 'PLACEHOLDER',
+        'dc:format': 'ORPML',
+        'dc:language': 'en-GB',
+        'dc:license': 'OGL',
+        # 'dc:issued': 'PLACEHOLDER',
+        'dc:identifier': metadata['uuid'],
+        'orp:regulatorId': metadata['regulator_id'],
+        'dc:contributor': metadata['regulator_id'],
+        'orp:userId': metadata['user_id'],
+        'dc:type': metadata['document_type'],
+        'orp:status': metadata['status'],
+        'orp:regulatoryTopic': regulatory_topics_formatted,
+        'orp:dateUploaded': date_uploaded_formatted,
+        'orp:uri': metadata['uri'],
+    }
 
     # Attaching the meta tags to the ORPML header
-    head = soup.head
-    for meta_tag in meta_tags:
-        new_meta = soup.new_tag("meta", attrs=meta_tag)
-        head.append(new_meta)
+    dublinCore = orpml.metadata.dublinCore
+    dcat = orpml.metadata.dcat
+    orp_meta = orpml.metadata.orp
+    for k, v in meta_tags.items():
+        new_meta = orpml.new_tag(k.split(':')[1])
+        new_meta.string = v if v else ''
+        if k.startswith('dc:'):
+            dublinCore.append(new_meta)
+        elif k.startswith('dcat:'):
+            dcat.append(new_meta)
+        elif k.startswith('orp:'):
+            orp_meta.append(new_meta)
 
     logger.info('Finished attaching metadata to ORPML header')
 
-    beautified_orpml = soup.prettify(formatter=CustomHTMLFormatter())
+    beautified_orpml = orpml.prettify()
     return str(beautified_orpml)
 
 
-def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUCKET):
+def write_text(s3_client: boto3.client,
+               text: str,
+               document_uid: str,
+               destination_bucket=DESTINATION_BUCKET) -> None:
     '''Write the processed ORPML to a .orpml file in the data lake'''
 
     response = s3_client.put_object(
@@ -102,7 +120,7 @@ def write_text(s3_client, text, document_uid, destination_bucket=DESTINATION_BUC
 
 
 @logger.inject_lambda_context(log_event=True)
-def handler(event, context: LambdaContext):
+def handler(event: dict, context: LambdaContext) -> dict:
     logger.set_correlation_id(context.aws_request_id)
 
     # Finding the object key of the newly uploaded document
