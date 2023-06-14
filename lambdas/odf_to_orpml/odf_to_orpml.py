@@ -195,14 +195,14 @@ def process_orpml(text_body: str, odf_meta_tags: dict, s3_metadata: dict) -> str
         'orp:uri': s3_metadata['uri'],
     }
 
-    meta_tags = odf_meta_tags.update(s3_meta_tags)
+    meta_tags = {**odf_meta_tags, **s3_meta_tags}
 
     # Attaching the meta tags to the ORPML header
     dublinCore = orpml.metadata.dublinCore
     dcat = orpml.metadata.dcat
     orp_meta = orpml.metadata.orp
     for k, v in meta_tags.items():
-        new_meta = orpml.new_tag(k)
+        new_meta = orpml.new_tag(k.split(':')[1])
         new_meta.string = v if v else ''
         if k.startswith('dc:'):
             dublinCore.append(new_meta)
