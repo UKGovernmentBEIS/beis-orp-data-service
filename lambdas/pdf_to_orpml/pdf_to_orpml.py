@@ -7,7 +7,6 @@ import string
 from io import BytesIO
 from datetime import datetime
 from bs4 import BeautifulSoup
-from bs4.formatter import HTMLFormatter
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -16,12 +15,6 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 logger = Logger()
 
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
-
-
-class CustomHTMLFormatter(HTMLFormatter):
-    def attributes(self, tag):
-        for k, v in tag.attrs.items():
-            yield k, v
 
 
 def remove_excess_punctuation(text: str) -> str:
@@ -112,16 +105,16 @@ def extract_pdf_metadata(doc_bytes_io: BytesIO) -> list:
     else:
         date_formatted = None
 
-    pdf_meta_tags = [
-        {'dc:title': metadata.get('Title')},
-        {'dc:subject': metadata.get('Subject')},
-        {'dc:created': date_formatted},
-        {'dc:publisher': metadata.get('Author')},
-        {'dc:format': 'PDF'},
-        {'dc:language': 'en-GB'},
-        {'dc:license': 'OGL'},
-        {'dc:issued': date_formatted},
-    ]
+    pdf_meta_tags = {
+        'dc:title': metadata.get('Title'),
+        'dc:subject': metadata.get('Subject'),
+        'dc:created': date_formatted,
+        'dc:publisher': metadata.get('Author'),
+        'dc:format': 'PDF',
+        'dc:language': 'en-GB',
+        'dc:license': 'OGL',
+        'dc:issued': date_formatted,
+    }
 
     logger.info('Extracted metadata from PDF')
 
@@ -187,10 +180,10 @@ def process_orpml(pages: dict, pdf_meta_tags: dict, s3_metadata: dict) -> str:
         'orp:status': s3_metadata['status'],
         'orp:regulatoryTopic': regulatory_topics_formatted,
         'orp:dateUploaded': date_uploaded_formatted,
-        'dcat:uri': s3_metadata['uri'],
+        'orp:uri': s3_metadata['uri'],
     }
 
-    meta_tags = pdf_meta_tags + s3_meta_tags
+    meta_tags = pdf_meta_tags.update(s3_meta_tags)
 
     # Attaching the meta tags to the ORPML header
     dublinCore = orpml.metadata.dublinCore
@@ -220,7 +213,7 @@ def process_orpml(pages: dict, pdf_meta_tags: dict, s3_metadata: dict) -> str:
 
     logger.info('Finished attaching page to ORPML body')
 
-    beautified_orpml = orpml.prettify(formatter=CustomHTMLFormatter())
+    beautified_orpml = orpml.prettify()
     return str(beautified_orpml)
 
 
