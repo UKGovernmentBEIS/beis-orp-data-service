@@ -45,6 +45,7 @@ def download_document(s3_client, document_uid, bucket):
 
 def extract_metadata(document: str) -> dict:
     soup = BeautifulSoup(document, features='xml')
+    title = soup.metadata.dublinCore.title.text
     status = soup.metadata.orp.status.text
     regulatory_topic = soup.metadata.orp.regulatoryTopic.text.split(', ')
     document_type = soup.metadata.dublinCore.type.text
@@ -53,7 +54,8 @@ def extract_metadata(document: str) -> dict:
         'status': status,
         'document_type': document_type,
         'regulatory_topic': regulatory_topic,
-        'date_created': date_created
+        'date_created': date_created,
+        'title': title
     }
 
 
