@@ -184,9 +184,6 @@ def process_orpml(pages: dict, pdf_meta_tags: dict, s3_metadata: dict) -> str:
     }
 
     meta_tags = {**pdf_meta_tags, **s3_meta_tags}
-    logger.info(pdf_meta_tags)
-    logger.info(s3_meta_tags)
-    logger.info(meta_tags)
 
     # Attaching the meta tags to the ORPML header
     dublinCore = orpml.metadata.dublinCore
