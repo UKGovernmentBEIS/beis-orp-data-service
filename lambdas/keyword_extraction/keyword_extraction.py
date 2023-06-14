@@ -122,7 +122,4 @@ def handler(event, context: LambdaContext):
 
     subject_keywords = [i[0] for i in keywords]
 
-    handler_response = event
-    handler_response['keywords'] = subject_keywords
-
-    return handler_response
+    return {'keywords': subject_keywords}
