@@ -6,7 +6,6 @@ import boto3
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
-from bs4.formatter import HTMLFormatter
 from htmldate import find_date
 from govuk_extraction import get_content
 from aws_lambda_powertools.logging.logger import Logger
@@ -18,15 +17,9 @@ logger = Logger()
 DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
 
 
-class CustomHTMLFormatter(HTMLFormatter):
-    def attributes(self, tag):
-        for k, v in tag.attrs.items():
-            yield k, v
-
-
 def get_title_and_text(URL: str) -> tuple:
     '''
-    params: req: request URL
+    params: request URL
         returns: title, text: str
         returns: None: if bad URL is uploaded
     '''
@@ -95,8 +88,24 @@ def process_orpml(text_body: str, metadata: dict) -> str:
     '''Builds the ORPML document from the metadata and text extracted from the URL'''
 
     orpml = BeautifulSoup(
-        '<!DOCTYPE orpml><orpml><head></head><body></body></orpml>',
-        'html.parser'
+        '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            <orpml xmlns="http://www.beis.gov.uk/namespaces/orpml">
+              <metadata>
+                <dublinCore>
+                </dublinCore>
+                <dcat>
+                </dcat>
+                <orp>
+                </orp>
+              </metadata>
+              <documentContent>
+                <html>
+                  <body>
+                  </body>
+                </html>
+              </documentContent>
+            </orpml>''',
+        features='xml'
     )
 
     # Finding the time the object was uploaded
@@ -107,26 +116,39 @@ def process_orpml(text_body: str, metadata: dict) -> str:
     regulatory_topics = metadata.get('topics')
     regulatory_topics_formatted = ', '.join(regulatory_topics)
 
-    meta_tags = [
-        {'name': 'dc:identifier', 'content': metadata['uuid']},
-        {'name': 'dtac:regulatorId', 'content': metadata['regulator_id']},
-        {'name': 'dtac:userId', 'content': metadata['user_id']},
-        {'name': 'dc:type', 'content': metadata['document_type']},
-        {'name': 'dtac:status', 'content': metadata['status']},
-        {'name': 'dtac:regulatoryTopic', 'content': regulatory_topics_formatted},
-        {'name': 'dtac:dateSubmitted', 'content': date_uploaded_formatted},
-        {'name': 'dtac:uri', 'content': metadata['uri']},
-        {'name': 'dc:title', 'content': metadata.get('title')},
-        {'name': 'dc:date', 'content': metadata.get('date_published')},
-        {'name': 'dc:publisher', 'content': metadata.get('regulator_id')},
-        {'name': 'dc:format', 'content': 'HTML'}
-    ]
+    meta_tags = {
+        'dc:identifier': metadata['uuid'],
+        'orp:regulatorId': metadata['regulator_id'],
+        'dc:contributor': metadata['regulator_id'],
+        'orp:userId': metadata['user_id'],
+        'dc:type': metadata['document_type'],
+        'orp:status': metadata['status'],
+        'orp:regulatoryTopic': regulatory_topics_formatted,
+        'orp:dateUploaded': date_uploaded_formatted,
+        'orp:uri': metadata['uri'],
+        'dc:title': metadata.get('title'),
+        # 'dc:subject': metadata.get('subject'),
+        'dc:created': metadata.get('date_published'),
+        'dc:publisher': metadata.get('regulator_id'),
+        'dc:format': 'HTML',
+        'dc:language': 'en-GB',
+        'dc:license': 'OGL',
+        'dc:issued': metadata.get('date_published'),
+    }
 
     # Attaching the meta tags to the ORPML header
-    head = orpml.head
-    for meta_tag in meta_tags:
-        new_meta = orpml.new_tag("meta", attrs=meta_tag)
-        head.append(new_meta)
+    dublinCore = orpml.metadata.dublinCore
+    dcat = orpml.metadata.dcat
+    orp_meta = orpml.metadata.orp
+    for k, v in meta_tags.items():
+        new_meta = orpml.new_tag(k.split(':')[1])
+        new_meta.string = v if v else ''
+        if k.startswith('dc:'):
+            dublinCore.append(new_meta)
+        elif k.startswith('dcat:'):
+            dcat.append(new_meta)
+        elif k.startswith('orp:'):
+            orp_meta.append(new_meta)
 
     logger.info('Finished attaching metadata to ORPML header')
 
@@ -139,7 +161,7 @@ def process_orpml(text_body: str, metadata: dict) -> str:
 
     logger.info('Finished attaching page to ORPML body')
 
-    beautified_orpml = orpml.prettify(formatter=CustomHTMLFormatter())
+    beautified_orpml = orpml.prettify()
     return str(beautified_orpml)
 
 
