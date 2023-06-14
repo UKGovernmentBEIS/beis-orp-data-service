@@ -8,7 +8,6 @@ import zipfile
 from io import BytesIO
 from datetime import datetime
 from bs4 import BeautifulSoup
-from bs4.formatter import HTMLFormatter
 import xml.etree.ElementTree as ET
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from aws_lambda_powertools.logging.logger import Logger
@@ -26,12 +25,6 @@ TEXT = WORD_NAMESPACE + 't'
 TABLE = WORD_NAMESPACE + 'tbl'
 ROW = WORD_NAMESPACE + 'tr'
 CELL = WORD_NAMESPACE + 'tc'
-
-
-class CustomHTMLFormatter(HTMLFormatter):
-    def attributes(self, tag):
-        for k, v in tag.attrs.items():
-            yield k, v
 
 
 def remove_excess_punctuation(text: str) -> str:
@@ -119,14 +112,16 @@ def extract_docx_metadata(doc_bytes_io: BytesIO) -> list:
     else:
         date_formatted = None
 
-    docx_meta_tags = [
-        {'name': 'DC.title', 'content': prop.title},
-        {'name': 'DC.subject', 'content': prop.subject},
-        {'name': 'DC.date', 'content': date_formatted},
-        {'name': 'DC.publisher', 'content': prop.author},
-        {'name': 'DC.language', 'content': prop.language},
-        {'name': 'DC.format', 'content': 'DOCX'}
-    ]
+    docx_meta_tags = {
+        'dc:title': prop.title,
+        'dc:subject': prop.subject,
+        'dc:created': date_formatted,
+        'dc:publisher': prop.author,
+        'dc:format': 'DOCX',
+        'dc:language': prop.language if prop.language else 'en-GB',
+        'dc:license': 'OGL',
+        'dc:issued': date_formatted,
+    }
 
     logger.info('Extracted metadata from DOCX')
 
@@ -163,8 +158,24 @@ def process_orpml(text_body: str, docx_meta_tags: dict, s3_metadata: dict) -> st
     '''Builds the ORPML document from the metadata and text extracted from the DOCX'''
 
     orpml = BeautifulSoup(
-        '<!DOCTYPE orpml><orpml><head></head><body></body></orpml>',
-        'html.parser'
+        '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            <orpml xmlns="http://www.beis.gov.uk/namespaces/orpml">
+              <metadata>
+                <dublinCore>
+                </dublinCore>
+                <dcat>
+                </dcat>
+                <orp>
+                </orp>
+              </metadata>
+              <documentContent>
+                <html>
+                  <body>
+                  </body>
+                </html>
+              </documentContent>
+            </orpml>''',
+        features='xml'
     )
 
     # Finding the time the object was uploaded
@@ -175,24 +186,33 @@ def process_orpml(text_body: str, docx_meta_tags: dict, s3_metadata: dict) -> st
     regulatory_topics = json.loads(s3_metadata.get('topics'))
     regulatory_topics_formatted = ', '.join(regulatory_topics)
 
-    s3_meta_tags = [
-        {'name': 'DC.identifier', 'content': s3_metadata['uuid']},
-        {'name': 'DTAC.regulatorId', 'content': s3_metadata['regulator_id']},
-        {'name': 'DTAC.userId', 'content': s3_metadata['user_id']},
-        {'name': 'DC.type', 'content': s3_metadata['document_type']},
-        {'name': 'DTAC.status', 'content': s3_metadata['status']},
-        {'name': 'DTAC.regulatoryTopic', 'content': regulatory_topics_formatted},
-        {'name': 'DTAC.dateSubmitted', 'content': date_uploaded_formatted},
-        {'name': 'DTAC.uri', 'content': s3_metadata['uri']},
-    ]
+    s3_meta_tags = {
+        'dc:identifier': s3_metadata['uuid'],
+        'orp:regulatorId': s3_metadata['regulator_id'],
+        'dc:contributor': s3_metadata['regulator_id'],
+        'orp:userId': s3_metadata['user_id'],
+        'dc:type': s3_metadata['document_type'],
+        'orp:status': s3_metadata['status'],
+        'orp:regulatoryTopic': regulatory_topics_formatted,
+        'orp:dateUploaded': date_uploaded_formatted,
+        'orp:uri': s3_metadata['uri'],
+    }
 
-    meta_tags = docx_meta_tags + s3_meta_tags
+    meta_tags = {**docx_meta_tags, **s3_meta_tags}
 
     # Attaching the meta tags to the ORPML header
-    head = orpml.head
-    for meta_tag in meta_tags:
-        new_meta = orpml.new_tag("meta", attrs=meta_tag)
-        head.append(new_meta)
+    dublinCore = orpml.metadata.dublinCore
+    dcat = orpml.metadata.dcat
+    orp_meta = orpml.metadata.orp
+    for k, v in meta_tags.items():
+        new_meta = orpml.new_tag(k.split(':')[1])
+        new_meta.string = v if v else ''
+        if k.startswith('dc:'):
+            dublinCore.append(new_meta)
+        elif k.startswith('dcat:'):
+            dcat.append(new_meta)
+        elif k.startswith('orp:'):
+            orp_meta.append(new_meta)
 
     logger.info('Finished attaching metadata to ORPML header')
 
@@ -205,7 +225,7 @@ def process_orpml(text_body: str, docx_meta_tags: dict, s3_metadata: dict) -> st
 
     logger.info('Finished attaching page to ORPML body')
 
-    beautified_orpml = orpml.prettify(formatter=CustomHTMLFormatter())
+    beautified_orpml = orpml.prettify()
     return str(beautified_orpml)
 
 
