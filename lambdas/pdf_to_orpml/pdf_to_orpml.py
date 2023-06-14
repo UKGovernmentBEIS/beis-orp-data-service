@@ -183,7 +183,10 @@ def process_orpml(pages: dict, pdf_meta_tags: dict, s3_metadata: dict) -> str:
         'orp:uri': s3_metadata['uri'],
     }
 
-    meta_tags = pdf_meta_tags.update(s3_meta_tags)
+    meta_tags = pdf_meta_tags.update(**s3_meta_tags)
+    logger.info(pdf_meta_tags)
+    logger.info(s3_meta_tags)
+    logger.info(meta_tags)
 
     # Attaching the meta tags to the ORPML header
     dublinCore = orpml.metadata.dublinCore
