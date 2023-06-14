@@ -193,7 +193,7 @@ def process_orpml(pages: dict, pdf_meta_tags: dict, s3_metadata: dict) -> str:
     dcat = orpml.metadata.dcat
     orp_meta = orpml.metadata.orp
     for k, v in meta_tags.items():
-        new_meta = orpml.new_tag(k)
+        new_meta = orpml.new_tag(k.split(':')[1])
         new_meta.string = v if v else ''
         if k.startswith('dc:'):
             dublinCore.append(new_meta)
