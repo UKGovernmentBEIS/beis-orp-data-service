@@ -222,8 +222,7 @@ def process_orpml(text_body: str, odf_meta_tags: dict, s3_metadata: dict) -> str
 
     logger.info('Finished attaching page to ORPML body')
 
-    beautified_orpml = orpml.prettify()
-    return str(beautified_orpml)
+    return str(orpml)
 
 
 def write_text(s3_client: boto3.client,
