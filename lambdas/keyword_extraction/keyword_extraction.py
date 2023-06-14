@@ -1,6 +1,4 @@
-import os
 import re
-import boto3
 import wordninja
 import torch
 from nltk.stem import WordNetLemmatizer
@@ -14,20 +12,6 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 
 logger = Logger()
-
-SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
-
-
-def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
-    '''Downloads the raw text from S3 ready for keyword extraction'''
-
-    document = s3_client.get_object(
-        Bucket=bucket,
-        Key=f'processed/{document_uid}.txt'
-    )['Body'].read().decode('utf-8')
-    logger.info('Downloaded text')
-
-    return document
 
 
 def load_model(
@@ -121,16 +105,14 @@ def get_relevant_keywords(x):
 def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
-    document_uid = event['document']['document_uid']
-    title = event['document']['title']
+    title = event['title']
+    text = event['text']
 
     logger.info('Started initialisation...')
 
-    s3_client = boto3.client('s3')
-    document = download_text(s3_client=s3_client, document_uid=document_uid)
     kw_model = load_model()
     title_keywords = extract_keywords(text=title, kw_model=kw_model, n=2)
-    doc_keywords = extract_keywords(text=document, kw_model=kw_model)
+    doc_keywords = extract_keywords(text=text, kw_model=kw_model)
     # Combine keywords
     keywords = list(set(title_keywords + doc_keywords))
     keywords = get_relevant_keywords(x=keywords)
@@ -141,7 +123,6 @@ def handler(event, context: LambdaContext):
     subject_keywords = [i[0] for i in keywords]
 
     handler_response = event
-    handler_response['lambda'] = 'keyword_extraction'
-    handler_response['document']['subject_keywords'] = subject_keywords
+    handler_response['keywords'] = subject_keywords
 
     return handler_response
