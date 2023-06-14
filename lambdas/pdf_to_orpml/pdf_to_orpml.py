@@ -173,9 +173,9 @@ def process_orpml(pages: dict, pdf_meta_tags: dict, s3_metadata: dict) -> str:
 
     s3_meta_tags = {
         'dc:identifier': s3_metadata['uuid'],
-        'dcat:regulatorId': s3_metadata['regulator_id'],
+        'orp:regulatorId': s3_metadata['regulator_id'],
         'dc:contributor': s3_metadata['regulator_id'],
-        'dcat:userId': s3_metadata['user_id'],
+        'orp:userId': s3_metadata['user_id'],
         'dc:type': s3_metadata['document_type'],
         'orp:status': s3_metadata['status'],
         'orp:regulatoryTopic': regulatory_topics_formatted,
