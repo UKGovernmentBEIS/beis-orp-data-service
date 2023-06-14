@@ -131,7 +131,7 @@ def extract_docx_metadata(doc_bytes_io: BytesIO) -> list:
 def extract_docx_text(doc_bytes_io: BytesIO) -> str:
     '''
     Extracts the entire body of the text in the DOCX
-    Other methods only extract certain sections, this extracts the entirety
+    Other methods only extract certain sections; this extracts the entirety
     '''
     document = zipfile.ZipFile(doc_bytes_io)
     xml_content = document.read('word/document.xml')
