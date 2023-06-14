@@ -48,10 +48,12 @@ def extract_metadata(document: str) -> dict:
     status = soup.metadata.orp.status.text
     regulatory_topic = soup.metadata.orp.regulatoryTopic.text.split(', ')
     document_type = soup.metadata.dublinCore.type.text
+    date_created = soup.metadata.dublinCore.created.text
     return {
         'status': status,
         'document_type': document_type,
         'regulatory_topic': regulatory_topic,
+        'date_created': date_created
     }
 
 
