@@ -1,5 +1,4 @@
 aws_lambda_powertools==2.8.0
-boto3==1.26.23
 datefinder==0.7.3
 pandas==2.0.1
 python_dateutil==2.8.2
