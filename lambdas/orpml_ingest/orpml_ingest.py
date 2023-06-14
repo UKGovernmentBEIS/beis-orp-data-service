@@ -95,8 +95,7 @@ def process_orpml(doc_bytes_io: BytesIO, metadata: dict) -> str:
 
     logger.info('Finished attaching metadata to ORPML header')
 
-    beautified_orpml = orpml.prettify()
-    return str(beautified_orpml)
+    return str(orpml)
 
 
 def write_text(s3_client: boto3.client,
