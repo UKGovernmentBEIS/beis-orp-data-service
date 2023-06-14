@@ -1,5 +1,4 @@
 aws_lambda_powertools==2.8.0
-boto3==1.26.23
 nltk==3.7
 numpy==1.24.3
 pandas==2.0.1
