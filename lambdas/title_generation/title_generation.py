@@ -104,4 +104,6 @@ def handler(event, context: LambdaContext):
     title = get_title(title=metadata_title, text=text, threshold=85)
     logger.info(f'Document title is: {title}')
 
-    return {'title': title}
+    # Needs to also return the text so that the subsequent Keyword Extraction
+    # lambda has access to this
+    return {'title': title, 'text': text}
