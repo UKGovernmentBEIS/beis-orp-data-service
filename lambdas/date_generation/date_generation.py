@@ -105,8 +105,7 @@ def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
     # Asserting that there is a published date
-    assert event['date_created'].get(
-        'date_created'), 'Document must have a publishing date'
+    assert event.get('date_created'), 'Document must have a publishing date'
     metadata_date = event['date_created']
 
     text = event['text']
