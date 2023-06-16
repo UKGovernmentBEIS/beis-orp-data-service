@@ -1,6 +1,4 @@
 import re
-import os
-import boto3
 import string
 import datetime
 import pandas as pd
@@ -14,20 +12,6 @@ logger = Logger()
 
 # Initalise the matcher
 nlp, matcher = initialise_matcher()
-
-SOURCE_BUCKET = os.environ['SOURCE_BUCKET']
-
-
-def download_text(s3_client, document_uid, bucket=SOURCE_BUCKET):
-    '''Downloads the raw text from S3 ready for keyword extraction'''
-
-    text = s3_client.get_object(
-        Bucket=bucket,
-        Key=f'processed/{document_uid}.txt'
-    )['Body'].read().decode('utf-8')
-    logger.info('Downloaded text')
-
-    return text
 
 
 def preprocess_text(text):
@@ -120,16 +104,11 @@ def check_metadata_date_in_doc(metadata_date, date_list):
 def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
-    document_uid = event['document']['document_uid']
-
     # Asserting that there is a published date
-    assert event['document']['data']['dates'].get(
-        'date_published'), 'Document must have a publishing date'
-    metadata_date = event['document']['data']['dates']['date_published']
+    assert event.get('date_created'), 'Document must have a publishing date'
+    metadata_date = event['date_created']
 
-    # Download raw text
-    s3_client = boto3.client('s3')
-    text = download_text(s3_client=s3_client, document_uid=document_uid)
+    text = event['text']
     clean_text = preprocess_text(text=text)
 
     # Extract date from text
@@ -140,8 +119,4 @@ def handler(event, context: LambdaContext):
         metadata_date=metadata_date, date_list=date_list)
     logger.info(f'Date published: {date}')
 
-    handler_response = event
-    handler_response['lambda'] = 'date_generation'
-    handler_response['document']['data']['dates']['date_published'] = date
-
-    return handler_response
+    return {'date_published': date}

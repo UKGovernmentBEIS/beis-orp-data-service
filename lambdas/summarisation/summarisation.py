@@ -1,5 +1,4 @@
 import os
-import boto3
 from langdetect import detect
 from transformers import pipeline
 from utils import smart_postprocessor, smart_shortener
@@ -32,18 +31,6 @@ def load_model(
     return summarizer
 
 
-def download_text(s3_client, document_uid, bucket):
-    '''Downloads the raw text from S3 ready for keyword extraction'''
-
-    document = s3_client.get_object(
-        Bucket=bucket,
-        Key=f'processed/{document_uid}.txt'
-    )['Body'].read().decode('utf-8')
-    logger.info('Downloaded text')
-
-    return document
-
-
 def detect_language(text):
     """
     Detect language
@@ -57,18 +44,9 @@ def detect_language(text):
 def handler(event, context: LambdaContext):
     logger.set_correlation_id(context.aws_request_id)
 
-    SOURCE_BUCKET = validate_env_variable('SOURCE_BUCKET')
-
-    document_uid = event['document']['document_uid']
-
-    s3_client = boto3.client('s3')
+    text = event['text']
 
     summarizer = load_model()
-
-    text = download_text(
-        s3_client=s3_client,
-        document_uid=document_uid,
-        bucket=SOURCE_BUCKET)
 
     # Detect language
     lang = detect_language(text=text)
@@ -80,10 +58,4 @@ def handler(event, context: LambdaContext):
     logger.info(f'Langauge: {lang}')
     logger.info(f'Summary: {summary}')
 
-    handler_response = event
-    handler_response['lambda'] = 'summarisation'
-
-    handler_response['document']['language'] = lang
-    handler_response['document']['summary'] = summary
-
-    return handler_response
+    return {'summary': summary, 'lang': lang}
