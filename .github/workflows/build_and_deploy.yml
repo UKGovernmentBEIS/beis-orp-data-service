@@ -25,34 +25,67 @@ jobs:
         run: |
           echo "Changed lambda: ${{ env.CHANGED_LAMBDA }}"
 
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials for dev
         if: ${{ env.CHANGED_LAMBDA != '' }}
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
           aws-region: eu-west-2
 
-      - name: Login to Amazon ECR
+      - name: Login to Amazon ECR in dev
         if: ${{ env.CHANGED_LAMBDA != '' }}
-        id: login-ecr
+        id: login-ecr-dev
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build and tag Docker image
+      - name: Build and tag Docker images in dev
         if: ${{ env.CHANGED_LAMBDA != '' }}
         uses: docker/build-push-action@v4
         with:
           context: lambdas/${{ env.CHANGED_LAMBDA }}/
           platforms: linux/amd64
           push: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
+          tags: ${{ steps.login-ecr-dev.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
+
+      - name: Update Lambda function in dev
+        if: ${{ env.CHANGED_LAMBDA != '' }}
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          aws_region: eu-west-2
+          function_name: ${{ env.CHANGED_LAMBDA }}
+          image_uri: ${{ steps.login-ecr-dev.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
+
+      - name: Configure AWS credentials in test
+        if: ${{ env.CHANGED_LAMBDA != '' }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_TEST }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_TEST }}
+          aws-region: eu-west-2
+
+      - name: Login to Amazon ECR in test
+        if: ${{ env.CHANGED_LAMBDA != '' }}
+        id: login-ecr-test
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and tag Docker image in test
+        if: ${{ env.CHANGED_LAMBDA != '' }}
+        uses: docker/build-push-action@v4
+        with:
+          context: lambdas/${{ env.CHANGED_LAMBDA }}/
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.login-ecr-test.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
 
       - name: Update Lambda function
         if: ${{ env.CHANGED_LAMBDA != '' }}
         uses: appleboy/lambda-action@master
         with:
-          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID_TEST }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_TEST }}
           aws_region: eu-west-2
           function_name: ${{ env.CHANGED_LAMBDA }}
-          image_uri: ${{ steps.login-ecr.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
+          image_uri: ${{ steps.login-ecr-test.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
+
