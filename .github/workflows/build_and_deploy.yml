@@ -1,9 +1,9 @@
 name: Build, Push and Deploy Docker Image
 
 on:
-  push:
-    branches-ignore:
-      - main
+  pull_request:
+    types:
+      - closed
 
 jobs:
   build-push-deploy:
