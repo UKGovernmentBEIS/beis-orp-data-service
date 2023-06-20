@@ -18,15 +18,15 @@ jobs:
       - name: Find changed lambda
         id: find-lambda
         run: |
-          echo "CHANGED_LAMBDA=$(git diff --name-only HEAD^ HEAD | grep '^lambdas/' | sed 's/lambdas\///' | sed 's/\/.*//' | sort | uniq)" >> $GITHUB_ENV
+          echo "CHANGED_LAMBDA_DEV=$(git diff --name-only HEAD^ HEAD | grep '^lambdas/' | sed 's/lambdas\///' | sed 's/\/.*//' | sort | uniq)" >> $GITHUB_ENV
 
       - name: Print variables
-        if: ${{ env.CHANGED_LAMBDA != '' }}
+        if: ${{ env.CHANGED_LAMBDA_DEV != '' }}
         run: |
-          echo "Changed lambda: ${{ env.CHANGED_LAMBDA }}"
+          echo "Changed lambda: ${{ env.CHANGED_LAMBDA_DEV }}"
 
       - name: Configure AWS credentials
-        if: ${{ env.CHANGED_LAMBDA != '' }}
+        if: ${{ env.CHANGED_LAMBDA_DEV != '' }}
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
@@ -34,28 +34,28 @@ jobs:
           aws-region: eu-west-2
 
       - name: Login to Amazon ECR
-        if: ${{ env.CHANGED_LAMBDA != '' }}
+        if: ${{ env.CHANGED_LAMBDA_DEV != '' }}
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build and tag Docker image
-        if: ${{ env.CHANGED_LAMBDA != '' }}
+        if: ${{ env.CHANGED_LAMBDA_DEV != '' }}
         uses: docker/build-push-action@v4
         with:
-          context: lambdas/${{ env.CHANGED_LAMBDA }}/
+          context: lambdas/${{ env.CHANGED_LAMBDA_DEV }}/
           platforms: linux/amd64
           push: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.CHANGED_LAMBDA_DEV }}:latest
 
       - name: Update Lambda function
-        if: ${{ env.CHANGED_LAMBDA != '' }}
+        if: ${{ env.CHANGED_LAMBDA_DEV != '' }}
         uses: appleboy/lambda-action@master
         with:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
           aws_region: eu-west-2
-          function_name: ${{ env.CHANGED_LAMBDA }}
-          image_uri: ${{ steps.login-ecr.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
+          function_name: ${{ env.CHANGED_LAMBDA_DEV }}
+          image_uri: ${{ steps.login-ecr.outputs.registry }}/${{ env.CHANGED_LAMBDA_DEV }}:latest
 
   build-push-deploy-test:
     runs-on: ubuntu-latest
@@ -69,15 +69,15 @@ jobs:
       - name: Find changed lambda
         id: find-lambda
         run: |
-          echo "CHANGED_LAMBDA=$(git diff --name-only HEAD^ HEAD | grep '^lambdas/' | sed 's/lambdas\///' | sed 's/\/.*//' | sort | uniq)" >> $GITHUB_ENV
+          echo "CHANGED_LAMBDA_TEST=$(git diff --name-only HEAD^ HEAD | grep '^lambdas/' | sed 's/lambdas\///' | sed 's/\/.*//' | sort | uniq)" >> $GITHUB_ENV
 
       - name: Print variables
-        if: ${{ env.CHANGED_LAMBDA != '' }}
+        if: ${{ env.CHANGED_LAMBDA_TEST != '' }}
         run: |
-          echo "Changed lambda: ${{ env.CHANGED_LAMBDA }}"
+          echo "Changed lambda: ${{ env.CHANGED_LAMBDA_TEST }}"
 
       - name: Configure AWS credentials
-        if: ${{ env.CHANGED_LAMBDA != '' }}
+        if: ${{ env.CHANGED_LAMBDA_TEST != '' }}
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_TEST }}
@@ -85,25 +85,26 @@ jobs:
           aws-region: eu-west-2
 
       - name: Login to Amazon ECR
-        if: ${{ env.CHANGED_LAMBDA != '' }}
+        if: ${{ env.CHANGED_LAMBDA_TEST != '' }}
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build and tag Docker image
-        if: ${{ env.CHANGED_LAMBDA != '' }}
+        if: ${{ env.CHANGED_LAMBDA_TEST != '' }}
         uses: docker/build-push-action@v4
         with:
-          context: lambdas/${{ env.CHANGED_LAMBDA }}/
+          context: lambdas/${{ env.CHANGED_LAMBDA_TEST }}/
           platforms: linux/amd64
           push: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.CHANGED_LAMBDA_TEST }}:latest
 
       - name: Update Lambda function
-        if: ${{ env.CHANGED_LAMBDA != '' }}
+        if: ${{ env.CHANGED_LAMBDA_TEST != '' }}
         uses: appleboy/lambda-action@master
         with:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID_TEST }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_TEST }}
           aws_region: eu-west-2
-          function_name: ${{ env.CHANGED_LAMBDA }}
-          image_uri: ${{ steps.login-ecr.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
+          function_name: ${{ env.CHANGED_LAMBDA_TEST }}
+          image_uri: ${{ steps.login-ecr.outputs.registry }}/${{ env.CHANGED_LAMBDA_TEST }}:latest
+
