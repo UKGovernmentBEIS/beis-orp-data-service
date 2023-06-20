@@ -35,7 +35,7 @@ jobs:
 
       - name: Login to Amazon ECR in dev
         if: ${{ env.CHANGED_LAMBDA != '' }}
-        id: login-ecr
+        id: login-ecr-dev
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build and tag Docker images in dev
@@ -45,7 +45,7 @@ jobs:
           context: lambdas/${{ env.CHANGED_LAMBDA }}/
           platforms: linux/amd64
           push: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
+          tags: ${{ steps.login-ecr-dev.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
 
       - name: Update Lambda function in dev
         if: ${{ env.CHANGED_LAMBDA != '' }}
@@ -55,7 +55,7 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
           aws_region: eu-west-2
           function_name: ${{ env.CHANGED_LAMBDA }}
-          image_uri: ${{ steps.login-ecr.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
+          image_uri: ${{ steps.login-ecr-dev.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
 
       - name: Configure AWS credentials in test
         if: ${{ env.CHANGED_LAMBDA != '' }}
@@ -67,7 +67,7 @@ jobs:
 
       - name: Login to Amazon ECR in test
         if: ${{ env.CHANGED_LAMBDA != '' }}
-        id: login-ecr
+        id: login-ecr-test
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build and tag Docker image in test
@@ -77,7 +77,7 @@ jobs:
           context: lambdas/${{ env.CHANGED_LAMBDA }}/
           platforms: linux/amd64
           push: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
+          tags: ${{ steps.login-ecr-test.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
 
       - name: Update Lambda function
         if: ${{ env.CHANGED_LAMBDA != '' }}
@@ -87,5 +87,5 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_TEST }}
           aws_region: eu-west-2
           function_name: ${{ env.CHANGED_LAMBDA }}
-          image_uri: ${{ steps.login-ecr.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
+          image_uri: ${{ steps.login-ecr-test.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
 
