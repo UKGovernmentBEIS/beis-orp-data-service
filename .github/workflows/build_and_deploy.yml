@@ -50,6 +50,7 @@ jobs:
       - name: Update Lambda function in dev
         if: ${{ env.CHANGED_LAMBDA != '' }}
         uses: appleboy/lambda-action@master
+        continue-on-error: true # Set to true because Lambdas will go "idle" if not invoked for a while and this make Github Actions fail
         with:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
@@ -79,13 +80,82 @@ jobs:
           push: true
           tags: ${{ steps.login-ecr-test.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
 
-      - name: Update Lambda function
+      - name: Update Lambda function in test
         if: ${{ env.CHANGED_LAMBDA != '' }}
         uses: appleboy/lambda-action@master
+        continue-on-error: true # Set to true because Lambdas will go "idle" if not invoked for a while and this make Github Actions fail
         with:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID_TEST }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_TEST }}
           aws_region: eu-west-2
           function_name: ${{ env.CHANGED_LAMBDA }}
           image_uri: ${{ steps.login-ecr-test.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
+
+
+      - name: Configure AWS credentials in preprod
+        if: ${{ env.CHANGED_LAMBDA != '' }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PREPROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PREPROD }}
+          aws-region: eu-west-2
+
+      - name: Login to Amazon ECR in preprod
+        if: ${{ env.CHANGED_LAMBDA != '' }}
+        id: login-ecr-preprod
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and tag Docker image in preprod
+        if: ${{ env.CHANGED_LAMBDA != '' }}
+        uses: docker/build-push-action@v4
+        with:
+          context: lambdas/${{ env.CHANGED_LAMBDA }}/
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.login-ecr-preprod.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
+
+      - name: Update Lambda function in preprod
+        if: ${{ env.CHANGED_LAMBDA != '' }}
+        uses: appleboy/lambda-action@master
+        continue-on-error: true # Set to true because Lambdas will go "idle" if not invoked for a while and this make Github Actions fail
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID_PREPROD }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PREPROD }}
+          aws_region: eu-west-2
+          function_name: ${{ env.CHANGED_LAMBDA }}
+          image_uri: ${{ steps.login-ecr-preprod.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
+
+
+      - name: Configure AWS credentials in prod
+        if: ${{ env.CHANGED_LAMBDA != '' }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          aws-region: eu-west-2
+
+      - name: Login to Amazon ECR in prod
+        if: ${{ env.CHANGED_LAMBDA != '' }}
+        id: login-ecr-prod
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and tag Docker image in prod
+        if: ${{ env.CHANGED_LAMBDA != '' }}
+        uses: docker/build-push-action@v4
+        with:
+          context: lambdas/${{ env.CHANGED_LAMBDA }}/
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.login-ecr-prod.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
+
+      - name: Update Lambda function in prod
+        if: ${{ env.CHANGED_LAMBDA != '' }}
+        uses: appleboy/lambda-action@master
+        continue-on-error: true # Set to true because Lambdas will go "idle" if not invoked for a while and this make Github Actions fail
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          aws_region: eu-west-2
+          function_name: ${{ env.CHANGED_LAMBDA }}
+          image_uri: ${{ steps.login-ecr-prod.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
 
