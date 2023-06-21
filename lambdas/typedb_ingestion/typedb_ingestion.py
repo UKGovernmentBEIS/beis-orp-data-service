@@ -80,7 +80,7 @@ def handler(event, context: LambdaContext):
     # Obtaining values for user_id and whether or not the user has uploaded
     # via GUI or API
     user_id = document['user_id']
-    api_user = event[0]['api_user']
+    api_user = False  # event[0]['api_user']
 
     # Send an email to the user if ingestion is successful and if the user is
     # not an API user
