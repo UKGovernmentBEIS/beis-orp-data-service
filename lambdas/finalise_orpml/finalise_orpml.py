@@ -4,6 +4,7 @@ import os
 import boto3
 # from datetime import datetime
 from bs4 import BeautifulSoup
+import xml.etree.ElementTree as ET
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
@@ -30,8 +31,35 @@ def download_text(s3_client: boto3.client,
     return doc_bytes_io
 
 
+def parse_beautifulsoup_element(metadata_tag: str, orpml: BeautifulSoup):
+
+    metadata_elem = orpml.find(metadata_tag)
+    output_dict = {}
+    for child in metadata_elem.find_all(recursive=False):
+        tag = child.name
+        value = child.text if child.text else ''
+        output_dict[tag] = value
+
+    return output_dict
+
+
 def parse_orpml(doc_bytes_io: BytesIO) -> tuple:
-    return None
+
+    # Reading in the S3 document and parsing it as HTML
+    orpml_doc = doc_bytes_io.read()
+    orpml = BeautifulSoup(orpml_doc, features='xml')
+
+    orpml_body = orpml.find('body')
+    orpml_header = {}
+
+    orpml_header['dublinCore'] = parse_beautifulsoup_element(
+        metadata_tag='dublinCore', orpml=orpml)
+    orpml_header['dcat'] = parse_beautifulsoup_element(
+        metadata_tag='dcat', orpml=orpml)
+    orpml_header['orp'] = parse_beautifulsoup_element(
+        metadata_tag='orp', orpml=orpml)
+
+    return orpml_header, orpml_body
 
 
 def create_orpml_metadata(orpml_header: dict, enrichments: list) -> dict:
@@ -117,6 +145,7 @@ def handler(event: dict, context: LambdaContext) -> dict:
 
     # Formats a metadata document to upload to the graph database
     # Maps the ORPML metadata to the graph schema
-    metadata_document = build_graph_document(orpml_metadata=final_orpml_metadata)
+    metadata_document = build_graph_document(
+        orpml_metadata=final_orpml_metadata)
 
     return metadata_document
