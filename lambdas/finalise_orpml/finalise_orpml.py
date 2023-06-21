@@ -84,16 +84,6 @@ def create_orpml_metadata(orpml_header: dict, enrichments: list) -> dict:
     return orpml_header
 
 
-def create_orpml_body(orpml_body: BeautifulSoup) -> str:
-
-    prettified_body = orpml_body.prettify()
-    final_orpml_body = textwrap.fill(prettified_body, width=80)
-
-    logger.info(final_orpml_body)
-
-    return final_orpml_body
-
-
 def create_orpml_document(orpml_metadata: dict, orpml_body: str) -> str:
     # LegOr and Keywords need finessing
 
@@ -156,9 +146,13 @@ def create_orpml_document(orpml_metadata: dict, orpml_body: str) -> str:
         element.string = value
         orp_element.append(element)
 
+    # Prettify and wrap the ORPML body
+    prettified_body = orpml_body.prettify()
+    final_orpml_body = textwrap.fill(prettified_body, width=80)
+
     # Write the prettified ORPML body
     body_element = final_orpml.find("html")
-    body_element.string = orpml_body
+    body_element.string = final_orpml_body
 
     prettified_orpml = final_orpml.prettify()
     final_orpml_document = re.sub(r'\n\s*\n', '\n', prettified_orpml)
@@ -186,8 +180,32 @@ def write_text(s3_client: boto3.client,
     return None
 
 
-def build_graph_document(orpml_metadata: dict) -> dict:
-    return None
+def build_graph_document(orpml_metadata: dict, event: dict) -> dict:
+
+    metadata_document = {
+        "document_uid": event['document_uid'],
+        "regulator_id": orpml_metadata['orp']['regulatorId'],
+        "user_id": orpml_metadata['orp']['userId'],
+        "uri": orpml_metadata['orp']['uri'],
+        "document_type": event['type'],
+        "document_format": orpml_metadata['dublinCore']['format'],
+        "regulatory_topic": event['regulatory_topic'],
+        "status": event['status'],
+        "hash_text": event['hash_text'],
+        "data": {
+            "dates": {
+                "date_published": event['date_created'],
+                "date_uploaded": orpml_metadata['orp']['dateUploaded']
+            },
+            "legislative_origins": orpml_metadata['dcat'].get('relatedResource')
+        },
+        "subject_keywords": orpml_metadata['dcat']['keywords'],
+        "title": orpml_metadata['dublinCore']['title'],
+        "summary": orpml_metadata['orp']['summary'],
+        "language": orpml_metadata['dublinCore']['language']
+    }
+
+    return metadata_document
 
 
 @logger.inject_lambda_context(log_event=True)
@@ -216,15 +234,10 @@ def handler(event: dict, context: LambdaContext) -> dict:
         enrichments=enrichments
     )
 
-    # Cleaning, formatting and prettifying the text body of the ORPML
-    final_orpml_body = create_orpml_body(
-        orpml_body=existing_orpml_body
-    )
-
     # Joining the final metadata and body to build the final document
     final_orpml_document = create_orpml_document(
         orpml_metadata=final_orpml_metadata,
-        orpml_body=final_orpml_body
+        orpml_body=existing_orpml_body
     )
 
     # Overwriting the existing ORPML with the finalised ORPML in S3
