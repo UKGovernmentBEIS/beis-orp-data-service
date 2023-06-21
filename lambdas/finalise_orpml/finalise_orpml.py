@@ -4,9 +4,7 @@ import re
 import json
 import textwrap
 import boto3
-from datetime import datetime
 from bs4 import BeautifulSoup
-import xml.etree.ElementTree as ET
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
@@ -251,6 +249,7 @@ def handler(event: dict, context: LambdaContext) -> dict:
     # Formats a metadata document to upload to the graph database
     # Maps the ORPML metadata to the graph schema
     metadata_document = build_graph_document(
-        orpml_metadata=final_orpml_metadata)
+        orpml_metadata=final_orpml_metadata,
+        event=event)
 
     return metadata_document
