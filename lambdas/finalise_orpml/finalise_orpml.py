@@ -185,7 +185,7 @@ def build_graph_document(orpml_metadata: dict, event: dict) -> dict:
         "regulator_id": orpml_metadata['orp']['regulatorId'],
         "user_id": orpml_metadata['orp']['userId'],
         "uri": orpml_metadata['orp']['uri'],
-        "document_type": event['type'],
+        "document_type": event['document_type'],
         "document_format": orpml_metadata['dublinCore']['format'],
         "regulatory_topic": event['regulatory_topic'],
         "status": event['status'],
