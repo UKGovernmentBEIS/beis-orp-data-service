@@ -1,5 +1,6 @@
 from io import BytesIO
 import os
+import re
 import json
 import textwrap
 import boto3
@@ -83,7 +84,7 @@ def create_orpml_metadata(orpml_header: dict, enrichments: list) -> dict:
     return orpml_header
 
 
-def create_orpml_body(orpml_body: BeautifulSoup) -> BeautifulSoup:
+def create_orpml_body(orpml_body: BeautifulSoup) -> str:
 
     prettified_body = orpml_body.prettify()
     final_orpml_body = textwrap.fill(prettified_body, width=80)
@@ -93,9 +94,76 @@ def create_orpml_body(orpml_body: BeautifulSoup) -> BeautifulSoup:
     return final_orpml_body
 
 
-def create_orpml_document(orpml_metadata: dict, orpml_body: BeautifulSoup) -> str:
+def create_orpml_document(orpml_metadata: dict, orpml_body: str) -> str:
     # LegOr and Keywords need finessing
-    return None
+
+    final_orpml = BeautifulSoup(
+        '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            <orpml xmlns="http://www.beis.gov.uk/namespaces/orpml">
+              <metadata>
+                <dublinCore>
+                </dublinCore>
+                <dcat>
+                </dcat>
+                <orp>
+                </orp>
+              </metadata>
+              <documentContent>
+                <html>
+                </html>
+              </documentContent>
+            </orpml>''',
+        features='xml'
+    )
+
+    dublincore_element = final_orpml.find("dublinCore")
+    dcat_element = final_orpml.find("dcat")
+    orp_element = final_orpml.find("orp")
+
+    # Update the dublinCore element with the values from the metadata
+    for key, value in orpml_metadata["dublinCore"].items():
+        element = final_orpml.new_tag(key)
+        element.string = value
+        dublincore_element.append(element)
+
+    # Update the dcat element with the keywords from the metadata
+    keywords_element = final_orpml.new_tag("keywords")
+    dcat_element.append(keywords_element)
+    for keyword in orpml_metadata["dcat"]["keywords"]:
+        keyword_element = final_orpml.new_tag("keyword")
+        keyword_element.string = keyword
+        keywords_element.append(keyword_element)
+
+    # Update the dcat element with the relatedResource from the metadata
+    related_resource_element = final_orpml.new_tag("relatedResource")
+    dcat_element.append(related_resource_element)
+    if orpml_metadata["dcat"]["relatedResource"]:
+        for resource in orpml_metadata["dcat"]["relatedResource"]:
+            resource_element = final_orpml.new_tag("legislativeOrigin")
+            for attr, attr_value in resource.items():
+                if attr != "title":
+                    resource_attr_element = final_orpml.new_tag(attr)
+                    resource_attr_element.string = attr_value
+                    resource_element.append(resource_attr_element)
+            resource_title_element = final_orpml.new_tag("resourceTitle")
+            resource_title_element.string = resource["title"]
+            resource_element.append(resource_title_element)
+            related_resource_element.append(resource_element)
+
+    # Update the orp element with the values from the metadata
+    for key, value in orpml_metadata["orp"].items():
+        element = final_orpml.new_tag(key)
+        element.string = value
+        orp_element.append(element)
+
+    # Write the prettified ORPML body
+    body_element = final_orpml.find("html")
+    body_element.string = orpml_body
+
+    prettified_orpml = final_orpml.prettify()
+    final_orpml_document = re.sub(r'\n\s*\n', '\n', prettified_orpml)
+
+    return final_orpml_document
 
 
 def write_text(s3_client: boto3.client,
