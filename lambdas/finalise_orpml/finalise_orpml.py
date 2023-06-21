@@ -1,8 +1,9 @@
 from io import BytesIO
 import os
-# import json
+import json
+import textwrap
 import boto3
-# from datetime import datetime
+from datetime import datetime
 from bs4 import BeautifulSoup
 import xml.etree.ElementTree as ET
 from aws_lambda_powertools.logging.logger import Logger
@@ -64,14 +65,36 @@ def parse_orpml(doc_bytes_io: BytesIO) -> tuple:
 
 def create_orpml_metadata(orpml_header: dict, enrichments: list) -> dict:
 
-    return None
+    merged_enrichments = {}
+    for e in enrichments:
+        merged_enrichments.update(e)
+
+    orpml_header['dublinCore']['created'] = merged_enrichments.get(
+        'date_published')
+    orpml_header['dublinCore']['title'] = merged_enrichments.get('title')
+    orpml_header['dublinCore']['language'] = merged_enrichments.get('lang')
+    orpml_header['dcat']['keywords'] = merged_enrichments.get('keywords')
+    orpml_header['dcat']['relatedResource'] = merged_enrichments.get(
+        'legislative_origins')
+    orpml_header['orp']['summary'] = merged_enrichments.get('summary')
+
+    logger.info(json.dumps(orpml_header, indent=2))
+
+    return orpml_header
 
 
 def create_orpml_body(orpml_body: BeautifulSoup) -> BeautifulSoup:
-    return None
+
+    prettified_body = orpml_body.prettify()
+    final_orpml_body = textwrap.fill(prettified_body, width=80)
+
+    logger.info(final_orpml_body)
+
+    return final_orpml_body
 
 
 def create_orpml_document(orpml_metadata: dict, orpml_body: BeautifulSoup) -> str:
+    # LegOr and Keywords need finessing
     return None
 
 
