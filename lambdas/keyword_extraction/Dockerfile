@@ -20,7 +20,7 @@ RUN mkdir -p ${LAMBDA_TASK_ROOT}/LLM
 COPY local_download.py ${LAMBDA_TASK_ROOT}
 RUN python local_download.py
 
-# Copy function code
+# Copy code
 ADD word_forms_loc.tar.gz ${LAMBDA_TASK_ROOT}
 RUN chown root:root -R ${LAMBDA_TASK_ROOT}/word_forms_loc
 RUN chmod 755 -R ${LAMBDA_TASK_ROOT}/word_forms_loc
