@@ -65,6 +65,7 @@ def parse_orpml(doc_bytes_io: BytesIO) -> tuple:
         metadata_tag='orp', orpml=orpml)
 
     logger.info('Parsed the existing ORPML')
+    # logger.info(orpml_body)
 
     return orpml_header, orpml_body
 
@@ -95,6 +96,8 @@ def create_orpml_metadata(orpml_header: dict, enrichments: list) -> dict:
 
 def create_orpml_document(orpml_metadata: dict, orpml_body: str) -> str:
     '''Creates the final ORPML document from the newly processed metadata header and body'''
+
+    # logger.info(orpml_body)
 
     final_orpml = BeautifulSoup(
         '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
