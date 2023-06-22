@@ -80,11 +80,10 @@ def handler(event, context: LambdaContext):
     # Obtaining values for user_id and whether or not the user has uploaded
     # via GUI or API
     user_id = document['user_id']
-    api_user = False  # event[0]['api_user']
 
     # Send an email to the user if ingestion is successful and if the user is
     # not an API user
-    if response['ResponseMetadata']['HTTPStatusCode'] == 200 and not api_user:
+    if response['ResponseMetadata']['HTTPStatusCode'] == 200:
 
         email_address = get_email_address(COGNITO_USER_POOL, user_id)
         logger.info(f'Pulled email from Cognito: {email_address}')
