@@ -76,6 +76,7 @@ munging.ipynb
 *.DS_Store
 .ipynb_checkpoints/
 *.orpml
+/data
 
 # large files
 **/lo-x86-64-rpm.tar.gz
