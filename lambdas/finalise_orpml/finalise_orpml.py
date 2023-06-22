@@ -31,7 +31,8 @@ def download_text(s3_client: boto3.client,
     return doc_bytes_io
 
 
-def parse_beautifulsoup_element(metadata_tag: str, orpml: BeautifulSoup):
+def parse_beautifulsoup_element(metadata_tag: str, orpml: BeautifulSoup) -> dict:
+    '''Takes a parent metadata tag and returns the child elements as a dictionary'''
 
     metadata_elem = orpml.find(metadata_tag)
     output_dict = {}
@@ -44,6 +45,10 @@ def parse_beautifulsoup_element(metadata_tag: str, orpml: BeautifulSoup):
 
 
 def parse_orpml(doc_bytes_io: BytesIO) -> tuple:
+    '''
+    Parses the existing ORPML document and returns a dictionary of the 
+    metadata header and the content in the body
+    '''
 
     # Reading in the S3 document and parsing it as HTML
     orpml_doc = doc_bytes_io.read()
@@ -59,10 +64,16 @@ def parse_orpml(doc_bytes_io: BytesIO) -> tuple:
     orpml_header['orp'] = parse_beautifulsoup_element(
         metadata_tag='orp', orpml=orpml)
 
+    logger.info('Parsed the existing ORPML')
+
     return orpml_header, orpml_body
 
 
 def create_orpml_metadata(orpml_header: dict, enrichments: list) -> dict:
+    '''
+    Takes the existing header and further enrichments and wraps them up into a new
+    dictionary ready to be transformed into the ORPML header
+    '''
 
     merged_enrichments = {}
     for e in enrichments:
@@ -77,13 +88,13 @@ def create_orpml_metadata(orpml_header: dict, enrichments: list) -> dict:
         'legislative_origins')
     orpml_header['orp']['summary'] = merged_enrichments.get('summary')
 
-    logger.info(json.dumps(orpml_header, indent=2))
+    logger.info('Created new ORPML header')
 
     return orpml_header
 
 
 def create_orpml_document(orpml_metadata: dict, orpml_body: str) -> str:
-    # LegOr and Keywords need finessing
+    '''Creates the final ORPML document from the newly processed metadata header and body'''
 
     final_orpml = BeautifulSoup(
         '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -155,6 +166,8 @@ def create_orpml_document(orpml_metadata: dict, orpml_body: str) -> str:
     prettified_orpml = final_orpml.prettify()
     final_orpml_document = re.sub(r'\n\s*\n', '\n', prettified_orpml)
 
+    logger.info('Created the final ORPML document')
+
     return final_orpml_document
 
 
@@ -172,13 +185,17 @@ def write_text(s3_client: boto3.client,
             'uuid': document_uid
         }
     )
-    logger.info('Saved text to data lake')
+    logger.info('Overwritten existing ORPML in data lake')
     assert response['ResponseMetadata']['HTTPStatusCode'] == 200, 'Text did not successfully write to S3'
 
     return None
 
 
 def build_graph_document(orpml_metadata: dict, event: dict) -> dict:
+    '''
+    Takes the ORPML metadata dict and maps it to the metadata schema the graph
+    is expecting
+    '''
 
     metadata_document = {
         "document_uid": event['document_uid'],
@@ -202,6 +219,8 @@ def build_graph_document(orpml_metadata: dict, event: dict) -> dict:
         "summary": orpml_metadata['orp']['summary'],
         "language": orpml_metadata['dublinCore']['language']
     }
+
+    logger.info('Finished building metadata document for graph')
 
     return metadata_document
 
