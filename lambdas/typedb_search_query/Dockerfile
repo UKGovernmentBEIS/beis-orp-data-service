@@ -5,7 +5,7 @@ FROM public.ecr.aws/lambda/python:3.9
 COPY requirements.txt  .
 RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
-# Copy function code and certificates
+# Copy code and certificates
 ADD word_forms_loc.tar.gz ${LAMBDA_TASK_ROOT}
 RUN chown root:root -R ${LAMBDA_TASK_ROOT}/word_forms_loc
 RUN chmod 755 -R ${LAMBDA_TASK_ROOT}/word_forms_loc
