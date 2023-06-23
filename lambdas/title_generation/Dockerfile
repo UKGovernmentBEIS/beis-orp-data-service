@@ -25,7 +25,7 @@ ADD postprocess ${LAMBDA_TASK_ROOT}/postprocess
 ADD preprocess ${LAMBDA_TASK_ROOT}/preprocess
 ADD search_metadata_title ${LAMBDA_TASK_ROOT}/search_metadata_title 
 
-# Copy function code
+# Copy code
 COPY title_generation.py ${LAMBDA_TASK_ROOT}
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
