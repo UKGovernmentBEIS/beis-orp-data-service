@@ -1,10 +1,10 @@
-import os
 import json
+import os
+
 import boto3
-from typedb.client import TransactionType, SessionType, TypeDB
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
-
+from typedb.client import SessionType, TransactionType, TypeDB
 
 logger = Logger()
 
@@ -105,10 +105,11 @@ def handler(event, context: LambdaContext):
 
     s3_client = boto3.client('s3')
     delete_from_s3(bucket=DATA_LAKE,
-                   object_key=f'processed/{uid}.txt', s3_client=s3_client)
+                   object_key=f'processed/{uid}.orpml', s3_client=s3_client)
 
     if document_format != 'HTML':
-        # There are only S3 documents to delete in the upload bucket if the doc is not HTML
+        # There are only S3 documents to delete in the upload bucket if the doc is
+        # not HTML
         delete_from_s3(bucket=UPLOAD_BUCKET,
                        object_key=uri, s3_client=s3_client)
 
