@@ -33,6 +33,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
           aws-region: eu-west-2
 
+      # Catches repository already created error (exit code: 254) and continues
       - name: Create ECR repository
         if: ${{ env.CHANGED_LAMBDA != '' }}
         run: |
