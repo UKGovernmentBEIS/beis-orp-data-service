@@ -1,12 +1,12 @@
-from io import BytesIO
-import os
 import json
-import boto3
+import os
 from datetime import datetime
-from bs4 import BeautifulSoup
+from io import BytesIO
+
+import boto3
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
-
+from bs4 import BeautifulSoup
 
 logger = Logger()
 

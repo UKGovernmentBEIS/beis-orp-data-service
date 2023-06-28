@@ -1,18 +1,18 @@
-import re
-import os
 import json
-import docx
-import boto3
+import os
+import re
 import string
-import zipfile
-from io import BytesIO
-from datetime import datetime
-from bs4 import BeautifulSoup
 import xml.etree.ElementTree as ET
-from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
+import zipfile
+from datetime import datetime
+from io import BytesIO
+
+import boto3
+import docx
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
-
+from bs4 import BeautifulSoup
+from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 
 logger = Logger()
 

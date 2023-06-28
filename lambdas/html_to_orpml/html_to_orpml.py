@@ -1,16 +1,16 @@
-import re
-import os
 import json
+import os
+import re
 from datetime import datetime
+
 import boto3
-import requests
 import pandas as pd
-from bs4 import BeautifulSoup
-from htmldate import find_date
-from govuk_extraction import get_content
+import requests
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
-
+from bs4 import BeautifulSoup
+from govuk_extraction import get_content
+from htmldate import find_date
 
 logger = Logger()
 
