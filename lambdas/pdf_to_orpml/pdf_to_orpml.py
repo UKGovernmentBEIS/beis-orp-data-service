@@ -1,16 +1,16 @@
+import json
 import os
 import re
-import json
-import pdfplumber
-import boto3
 import string
-from io import BytesIO
 from datetime import datetime
-from bs4 import BeautifulSoup
-from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
+from io import BytesIO
+
+import boto3
+import pdfplumber
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
-
+from bs4 import BeautifulSoup
+from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 
 logger = Logger()
 
