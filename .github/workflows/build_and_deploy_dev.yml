@@ -36,7 +36,14 @@ jobs:
       - name: Create ECR repository
         if: ${{ env.CHANGED_LAMBDA != '' }}
         run: |
+          set +e
           aws ecr create-repository --repository-name ${{ env.CHANGED_LAMBDA }} --region eu-west-2
+          exit_code=$?
+          set -e
+          if [ $exit_code -ne 0 ] && [ $exit_code -ne 254 ]; then
+            echo "Error creating ECR repository: $exit_code"
+            exit $exit_code
+          fi
 
       - name: Login to Amazon ECR
         if: ${{ env.CHANGED_LAMBDA != '' }}
