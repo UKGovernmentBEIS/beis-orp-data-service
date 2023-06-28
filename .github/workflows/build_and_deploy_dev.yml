@@ -1,4 +1,4 @@
-name: Build, Push and Deploy Docker Image
+name: Build, Push and Deploy Docker Image to Dev Environment
 
 on:
   push
@@ -6,7 +6,7 @@ on:
   #   - closed
 
 jobs:
-  build-push-deploy:
+  build-push-deploy-dev:
     runs-on: ubuntu-latest
 
     steps:
@@ -36,11 +36,11 @@ jobs:
       - name: Create ECR repository
         if: ${{ env.CHANGED_LAMBDA != '' }}
         run: |
-          aws ecr create-repository --repository-name my-ecr-repo-dev --region eu-west-2
+          aws ecr create-repository --repository-name ${{ env.CHANGED_LAMBDA }} --region eu-west-2
 
       - name: Login to Amazon ECR
         if: ${{ env.CHANGED_LAMBDA != '' }}
-        id: login-ecr-dev
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build and tag Docker images
@@ -50,7 +50,7 @@ jobs:
           context: lambdas/${{ env.CHANGED_LAMBDA }}/
           platforms: linux/amd64
           push: true
-          tags: ${{ steps.login-ecr-dev.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
 
       - name: Update Lambda function
         if: ${{ env.CHANGED_LAMBDA != '' }}
@@ -61,7 +61,7 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
           aws_region: eu-west-2
           function_name: ${{ env.CHANGED_LAMBDA }}
-          image_uri: ${{ steps.login-ecr-dev.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
+          image_uri: ${{ steps.login-ecr.outputs.registry }}/${{ env.CHANGED_LAMBDA }}:latest
 
       # - name: Configure AWS credentials in test
       #   if: ${{ env.CHANGED_LAMBDA != '' }}
