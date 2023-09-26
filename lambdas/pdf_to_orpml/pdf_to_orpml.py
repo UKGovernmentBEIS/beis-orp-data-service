@@ -96,11 +96,11 @@ def extract_pdf_metadata(doc_bytes_io: BytesIO) -> list:
         metadata = pdf.metadata
 
     if metadata.get('ModDate'):
-        date = datetime.strptime(metadata.get('ModDate')[2:-7], '%Y%m%d%H%M%S')
+        date = datetime.strptime(metadata.get('ModDate').replace("'", ""), "D:%Y%m%d%H%M%S%z")
+
         date_formatted = datetime.strftime(date, '%Y-%m-%d')
     elif metadata.get('CreationDate'):
-        date = datetime.strptime(metadata.get(
-            'CreationDate')[2:-7], '%Y%m%d%H%M%S')
+        date = datetime.strptime(metadata.get('CreationDate').replace("'", ""), "D:%Y%m%d%H%M%S%z")
         date_formatted = datetime.strftime(date, '%Y-%m-%d')
     else:
         date_formatted = None
@@ -116,7 +116,6 @@ def extract_pdf_metadata(doc_bytes_io: BytesIO) -> list:
         'dc:issued': date_formatted,
     }
 
-    logger.info('Extracted metadata from PDF')
 
     return pdf_meta_tags
 
